@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import '../viewmodels/sign_in_viewmodel.dart';
+
+import '../view_models/sign_in_viewModel.dart';
+
+
 
 /// Screen for OTP-based sign-in.
 class SignInScreen extends StatelessWidget {
@@ -18,8 +21,20 @@ class SignInScreen extends StatelessWidget {
             initialData: SignInState(status: SignInStatus.idle),
             builder: (context, snapshot) {
               final state = snapshot.data!;
+
+              print(state.status);
+              print("state.status");
               final isLoading = state.isLoading;
               final isOtpSent = state.isOtpSent;
+              // Show SnackBar for feedback messages, but only once
+              if (state.feedbackMessage != null) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(state.feedbackMessage!)),
+                  );
+                  viewModelBase.clearFeedback(); // Clear after displaying
+                });
+              }
 
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -105,12 +120,12 @@ class SignInScreen extends StatelessWidget {
                                 ? null
                                 : () async {
                                viewModelBase.requestOtp();
-                              if (state.errorMessage == null) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text("OTP resent successfully")),
-                                );
-                              }
+                              // if (state.errorMessage == null) {
+                              //   ScaffoldMessenger.of(context).showSnackBar(
+                              //     const SnackBar(
+                              //         content: Text("OTP resent successfully")),
+                              //   );
+                              // }
                             },
                             child: const Text(
                               "Resend OTP",
@@ -136,27 +151,29 @@ class SignInScreen extends StatelessWidget {
                             : () async {
                           if (!isOtpSent) {
                              viewModelBase.requestOtp();
-                            if (state.errorMessage == null) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text("OTP sent successfully")),
-                              );
-                            }
+                            // if (state.errorMessage == null) {
+                            //   ScaffoldMessenger.of(context).showSnackBar(
+                            //     const SnackBar(
+                            //         content: Text("OTP sent successfully")),
+                            //   );
+                            // }
                           } else {
-                             viewModelBase.
-                            verifyOtp();
-                            if (state.status == SignInStatus.success) {
-                              viewModelBase.clearInputs();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text("Sign-in successful!")),
-                              );
-                            }
+                             await viewModelBase.verifyOtp();
+                             // print(state.status);
+                             // print( SignInStatus.success);
+                             // print( "SignInStatus.success");
+                            // if (state.status == SignInStatus.success) {
+                            //   viewModelBase.clearInputs();
+                            //   ScaffoldMessenger.of(context).showSnackBar(
+                            //     const SnackBar(
+                            //         content: Text("Sign-in successful!")),
+                            //   );
+                            // }
                           }
                         },
                         child: isLoading
                             ? const CircularProgressIndicator(color: Colors.white)
-                            : Text(isOtpSent ? "Verify & Continue" : "Request OTP"),
+                            : Text(isOtpSent ? "Verify & Continue" : "Request OTP",style: TextStyle(color: Colors.white),)
                       ),
                     ),
                     const SizedBox(height: 20),

@@ -1,16 +1,19 @@
-import 'package:aiwel/presentation/screens/sign_in_screen.dart';
-import 'package:aiwel/presentation/viewmodels/sign_in_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'di/auth_injection.dart';
-import 'di/injection.dart';
+import 'features/auth/presentation/screens/sign_in_screen.dart';
+import 'features/auth/presentation/view_models/sign_in_viewModel.dart';
 
 final getIt = GetIt.instance;
 
-void main() {
-  // Setup dependencies using get_it
-  setupAuthDependencies();
-  runApp(const MyApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await setupAuthDependencies();
+  } catch (e) {
+    // Handle or log the error (e.g., print for debugging, use a logging package in production)
+    print('Failed to setup dependencies: $e');
+  }  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
@@ -21,18 +24,16 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  late final SignInViewModel _signInViewModel;
+  late final SignInViewModelBase _signInViewModel;
 
   @override
   void initState() {
     super.initState();
-    // Retrieve the SignInViewModel from get_it
-    _signInViewModel = getIt<SignInViewModel>();
+    _signInViewModel = getIt<SignInViewModelBase>();
   }
 
   @override
   void dispose() {
-    // Dispose of the SignInViewModel to clean up resources
     _signInViewModel.dispose();
     super.dispose();
   }

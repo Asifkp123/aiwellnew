@@ -44,14 +44,17 @@ Future<void> setupAuthDependencies() async {
         () => RequestOtpUseCase(repository: getIt<AuthRepository>()),
   );
   getIt.registerLazySingleton<VerifyOtpUseCase>(
-        () => VerifyOtpUseCase(repository: getIt<AuthRepository>()),
+        () => VerifyOtpUseCase(repository: getIt<AuthRepository>(),
+        authLocalDataSource: getIt<AuthLocalDataSourceImpl>()
+        ),
   );
 
   // Register ViewModel
   getIt.registerFactory<SignInViewModelBase>(
         () => SignInViewModel(
+
       requestOtpUseCase: getIt<RequestOtpUseCase>(),
-      verifyOtpUseCase: getIt<VerifyOtpUseCase>(),
+      verifyOtpUseCaseBase: getIt<VerifyOtpUseCase>(),
       authLocalDataSourceImpl: getIt<AuthLocalDataSourceImpl>(), // Fix parameter name and type
     ),
   );

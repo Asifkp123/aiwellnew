@@ -8,7 +8,10 @@ import 'package:dartz/dartz.dart';
 import '../../../../../core/network/error/failure.dart';
 import '../../../domain/usecases/request_otp_use_case.dart';
 import '../../models/api/otp_request_success.dart';
-  
+
+
+
+
   class AuthRemoteDataSource {
 
    final IApiService apiService;
@@ -36,22 +39,36 @@ import '../../models/api/otp_request_success.dart';
     }
 
     // Verifies the OTP for the given identifier (email or phone number)
-      Future<Either<Failure, VerifyOtpResponse>>  verifyOtp(String identifier, String otp) async {
-      final payload = {
-        'identifier': identifier,
-        'otp': otp,
-      };
-  
-      final response = await http.post(
-        Uri.parse(ApiConfig.verifyOtpEndpoint),
-        body: jsonEncode(payload),
-        headers: ApiConfig.defaultHeaders,
-      );
-  
-      if (response.statusCode == 200) {
-        return Right(VerifyOtpResponse(response.body, response.headers['authorization']?.replaceAll('Bearer ', '') ?? ''));
-      } else {
-        return Left(Failure('Failed to verify OTP: ${response.reasonPhrase}'));
-      }
+   Future<Either<Failure, http.Response>> verifyOtp(String identifier, String otp) async {
+     try {
+       final payload = {
+         'identifier': identifier,
+         'otp': otp,
+       };
+
+       final response = await http.post(
+         Uri.parse(ApiConfig.verifyOtpEndpoint),
+         body: jsonEncode(payload),
+         headers: ApiConfig.defaultHeaders,
+       );
+       print(response.headers);
+       print(response.body);
+       print("response.body");
+
+       return Right(response); // Always return the raw response
+     } catch (e) {
+       return Left(Failure("Network error: $e")); // Handle network exceptions only
+     }
+   }
+  }
+
+  extension Response on http.Response {
+
+    VerifyOtpResponse toVerifyOtpResponse() {
+      final body = jsonDecode(this.body);
+      // Safely handle the response field and token
+      final responseValue = body['response']?.toString() ?? 'No response data';
+      final token = this.headers['authorization']?.replaceAll('Bearer ', '') ?? '';
+      return VerifyOtpResponse(responseValue, token);
     }
   }

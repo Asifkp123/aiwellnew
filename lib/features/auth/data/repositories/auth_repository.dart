@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:dartz/dartz.dart';
+import 'package:http/http.dart' as http;
 
 import '../../../../core/network/error/failure.dart';
 import '../../data/datasources/remote/auth_remote_datasource.dart';
@@ -10,7 +11,7 @@ import '../models/api/verify_otp_response.dart';
 
 abstract class AuthRepository {
   Future<Either<Failure, OtpRequestSuccess>> requestOtp({String? email, String? phoneNumber});
-  Future<Either<Failure, VerifyOtpResponse>> verifyOtp(String identifier, String otp);
+  Future<Either<Failure, http.Response>> verifyOtp(String identifier, String otp);
 }
 
 class AuthRepositoryImpl implements AuthRepository {
@@ -33,25 +34,21 @@ class AuthRepositoryImpl implements AuthRepository {
 
 
   @override
-  Future<Either<Failure, VerifyOtpResponse>> verifyOtp(String identifier, String otp) async {
+  @override
+  Future<Either<Failure, http.Response>> verifyOtp(String identifier, String otp) async {
     final response = await authRemoteDataSource.verifyOtp(identifier, otp);
-
-    // Use fold to handle both Left and Right cases
     return response.fold(
-          (failure) => Left(failure), // Propagate the failure
-          (success) async {
+          (failure) => Left(failure),
+          (response) async {
         try {
-          // Extract and save the token if it exists
-          if (success.token != null) {
-            await authLocalDataSource.saveToken(success.token!);
+          if (response != null) {
+            return Right(response);
+          } else {
+            return Left(Failure('Verification failed: empty response'));
           }
-
-          return Right(success); // Return the success result
         } catch (e) {
-          // Handle errors from saveToken
           return Left(Failure('Failed to save token: $e'));
         }
       },
     );
-  }
-}
+  }}

@@ -1,3 +1,4 @@
+import 'package:aiwel/features/auth/presentation/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'di/auth_injection.dart';
@@ -47,7 +48,8 @@ class _MyAppState extends State<MyApp> {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: SignInScreen(viewModelBase: _signInViewModel),
+      // home: SignInScreen(viewModelBase: _signInViewModel),
+      home: SplashScreen(),
     );
   }
 }

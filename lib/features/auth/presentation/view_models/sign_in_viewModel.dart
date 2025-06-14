@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 import '../../../../core/constants/strings.dart';
 import '../../../../core/network/error/failure.dart';
@@ -49,7 +50,7 @@ abstract class SignInViewModelBase {
 /// ViewModel for the sign-in feature, using streams for state management.
 class SignInViewModel implements SignInViewModelBase {
   final RequestOtpUseCase requestOtpUseCase;
-  final VerifyOtpUseCase verifyOtpUseCase;
+  final VerifyOtpUseCaseBase verifyOtpUseCaseBase;
   final AuthLocalDataSourceImpl authLocalDataSourceImpl;
 
   // Controllers for input fields
@@ -64,7 +65,7 @@ class SignInViewModel implements SignInViewModelBase {
   String? _feedbackMessage;
   SignInViewModel({
     required this.requestOtpUseCase,
-    required this.verifyOtpUseCase,
+    required this.verifyOtpUseCaseBase,
     required this.authLocalDataSourceImpl,
   }) {
     _emitState(); // Emit initial state
@@ -165,36 +166,32 @@ class SignInViewModel implements SignInViewModelBase {
     _emitState();
 
     try {
-      final response = await verifyOtpUseCase.execute(
+      final response = await verifyOtpUseCaseBase.execute(
         _emailController.text.trim(),
         otp,
       );
       return response.fold(
-              (failure) {
-            _errorMessage = failure.message.isNotEmpty ? failure.message : Strings.failedOtpVerificationMessage;
-            _status = SignInStatus.error;
-            _emitState();
-            return Left(failure);
-          },
-              (success) async {
-            _status = SignInStatus.success;
-            // final token = await authLocalDataSourceImpl.getToken();
-            // print(token);
-            // print("token");
-            _feedbackMessage = "Sign-in successful!";
-            _emitState();
-            return Right(VerifyOtpResponse(success.response,  success.token));
-          },
+            (failure) {
+          _errorMessage = failure.message.isNotEmpty ? failure.message : Strings.failedOtpVerificationMessage;
+          _status = SignInStatus.error;
+          _emitState();
+          return Left(failure);
+        },
+            (success) {
+          _status = SignInStatus.success;
+          _feedbackMessage = "Sign-in successful!";
+          _emitState();
+          clearInputs();
+          return Right(success);
+        },
       );
-
     } catch (e) {
       _errorMessage = Strings.failedOtpVerificationMessage;
       _status = SignInStatus.error;
+      _emitState();
       return Left(Failure(_errorMessage!));
     }
-
   }
-
   @override
   void clearInputs() {
     _emailController.clear();

@@ -1,3 +1,4 @@
+import 'package:aiwel/components/constants.dart';
 import 'package:flutter/material.dart';
 
 class LabelButton extends StatelessWidget {
@@ -11,7 +12,7 @@ class LabelButton extends StatelessWidget {
   final double? fontSize;
   final double? borderRadius;
   final LinearGradient? gradient; // Add gradient parameter
-
+  final EdgeInsetsGeometry? padding;
   const LabelButton({
     super.key,
     this.onTap,
@@ -24,19 +25,18 @@ class LabelButton extends StatelessWidget {
     this.borderRadius,
     this.loading = false,
     this.gradient, // Initialize gradient parameter
+    this.padding, // Initialize gradient parameter
   });
 
   @override
   Widget build(BuildContext context) {
-    final borderRadiusValue = borderRadius ?? 8.0;
+    final borderRadiusValue = borderRadius ?? 40.0;
 
-    // Define the shape for the button
     final shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(borderRadiusValue),
       side: BorderSide(color: borderColor ?? Colors.transparent),
     );
 
-    // If a gradient is provided, wrap the button in a Container with the gradient
     Widget button = MaterialButton(
       onPressed: onTap == null
           ? null
@@ -47,8 +47,9 @@ class LabelButton extends StatelessWidget {
       }
           : null,
       height: 48,
+      minWidth: double.infinity,
       elevation: 0.0,
-      disabledColor: disabledColor ?? Theme.of(context).primaryColor.withValues(alpha: 0.5),
+      disabledColor: disabledColor ?? Theme.of(context).primaryColor.withOpacity(0.5),
       color: gradient == null ? (bgColor ?? Theme.of(context).primaryColor) : Colors.transparent,
       shape: shape,
       child: loading
@@ -70,9 +71,8 @@ class LabelButton extends StatelessWidget {
       ),
     );
 
-    // Apply gradient if provided
     if (gradient != null) {
-      return Container(
+      button = Container(
         decoration: BoxDecoration(
           gradient: gradient,
           borderRadius: BorderRadius.circular(borderRadiusValue),
@@ -81,6 +81,10 @@ class LabelButton extends StatelessWidget {
       );
     }
 
-    return button;
+    return Padding(
+      padding: padding ?? EdgeInsets.symmetric(horizontal: scaffoldPadding, vertical: 16),
+      child: button,
+    );
   }
+
 }

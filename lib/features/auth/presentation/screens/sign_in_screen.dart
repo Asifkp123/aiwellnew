@@ -6,6 +6,7 @@ import '../view_models/sign_in_viewModel.dart';
 
 /// Screen for OTP-based sign-in.
 class SignInScreen extends StatelessWidget {
+
   final SignInViewModelBase viewModelBase;
 
   const SignInScreen({Key? key, required this.viewModelBase}) : super(key: key);

@@ -2,17 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart'; // Import google_fonts
 
 final ThemeData lightTheme = ThemeData(
+  primaryColorLight: const Color(0xFFFFFFFF), // <-- Add this line
+
   fontFamily: GoogleFonts.poppins().fontFamily, // Set Poppins as the default font family
   primaryColor: const Color(0xFF6A1B9A),
   colorScheme: ColorScheme(
     brightness: Brightness.light,
-    primary: const Color(0xFF6A1B9A),
+    primary: const Color(0xFF511D85),
     onPrimary: Colors.white,
     secondary: const Color(0xFFE1BEE7),
     onSecondary: const Color(0xFF333333),
     error: const Color(0xFFB71C1C),
     onError: Colors.white,
-    surface: const Color(0xFFFFFFFF),
+    secondaryFixed: const Color(0xFF434343),
+    surface: const Color(0xFF000000),
     onSurface: const Color(0xFF333333),
     onSurfaceVariant: const Color(0xFFEDEEF3),
     surfaceContainer: const Color(0xFFE1BEE7).withOpacity(0.3),
@@ -20,6 +23,7 @@ final ThemeData lightTheme = ThemeData(
   ),
   indicatorColor: const Color(0xFFEDEEF3),
   cardColor: Colors.white,
+
   iconTheme: const IconThemeData(color: Color(0xFF333333)),
   primaryColorDark: const Color(0xFF4A0072),
   dividerColor: const Color(0xFFEDEEF3),
@@ -84,30 +88,30 @@ final ThemeData lightTheme = ThemeData(
     fillColor: const Color(0xFFFFFFFF),
     isDense: true,
     hintStyle: GoogleFonts.poppins(
-      color: const Color(0xFF878CA7),
+      color: const Color(0xFFC1C1C1),
       fontSize: 13,
       fontWeight: FontWeight.w500,
     ),
     enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8.0),
+      borderRadius: BorderRadius.circular(16.0),
       borderSide: const BorderSide(
         color: Color(0xFFEDEEF3),
       ),
     ),
     focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8.0),
+      borderRadius: BorderRadius.circular(16.0),
       borderSide: const BorderSide(
         color: Color(0xFF6A1B9A),
       ),
     ),
     errorBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8.0),
+      borderRadius: BorderRadius.circular(16.0),
       borderSide: const BorderSide(
         color: Color(0xFFB71C1C),
       ),
     ),
     focusedErrorBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8.0),
+      borderRadius: BorderRadius.circular(16.0),
       borderSide: const BorderSide(
         color: Color(0xFFB71C1C),
       ),
@@ -118,7 +122,7 @@ final ThemeData lightTheme = ThemeData(
       color: const Color(0xFFB71C1C),
     ),
     disabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8.0),
+      borderRadius: BorderRadius.circular(16.0),
       borderSide: const BorderSide(
         color: Color(0xFFEDEEF3),
       ),
@@ -126,6 +130,17 @@ final ThemeData lightTheme = ThemeData(
     contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 13),
   ),
   textTheme: TextTheme(
+      bodyLarge: GoogleFonts.poppins(
+        color: const Color(0xFF543474),
+        fontSize: 16,
+        fontWeight: FontWeight.w500,
+      ),
+
+    headlineMedium: GoogleFonts.poppins(
+      color: Color(0xFF543474),
+      fontSize: 18,
+      fontWeight: FontWeight.w400,
+    ),
     bodyMedium: GoogleFonts.poppins(
       color: const Color(0xFF333333),
       fontSize: 15,
@@ -198,8 +213,8 @@ final ThemeData lightTheme = ThemeData(
     yearStyle: GoogleFonts.poppins(color: const Color(0xFF333333)),
     dayStyle: GoogleFonts.poppins(color: const Color(0xFF333333)),
     inputDecorationTheme: InputDecorationTheme(
-      labelStyle: GoogleFonts.poppins(color: const Color(0xFF333333)),
-      hintStyle: GoogleFonts.poppins(color: const Color(0xFF878CA7)),
+      labelStyle: GoogleFonts.poppins(color: const Color(0xFFC1C1C1)),
+      hintStyle: GoogleFonts.poppins(color: const Color(0xFFC1C1C1)),
     ),
     yearOverlayColor: WidgetStateProperty.all<Color>(const Color(0xFF6A1B9A)),
     todayForegroundColor: WidgetStateProperty.all<Color>(const Color(0xFF6A1B9A)),

@@ -12,6 +12,7 @@ const String appName = 'CashLink';
 const String appLogo = 'applogo.svg';
 const String appLogoSmall = 'assets/images/logoSmall.png';
 const double cardPadding = 15.0;
+const double scaffoldPadding = 16.0;
 const double bottomPadding = 100.0;
 double buttonBottomPadding = Platform.isIOS ? 30 : 20.0;
 const double topPadding = 20.0;
@@ -20,8 +21,8 @@ const searchDelayDuration = Duration(milliseconds: 800);
 
 LinearGradient splashGradient (){
   return const LinearGradient(
-    colors: [Color(0x66D5B3FF), Color(0x66D7BEF6)],
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
+    colors: [Color(0xFF543474), Color(0xFF9858D8)],
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
   );
 }

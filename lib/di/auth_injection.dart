@@ -16,46 +16,62 @@ Future<void> setupAuthDependencies() async {
   final sharedPreferences = await SharedPreferences.getInstance();
 
   // Register SharedPreferences
-  getIt.registerSingleton<SharedPreferences>(sharedPreferences);
+  if (!getIt.isRegistered<SharedPreferences>()) {
+    getIt.registerSingleton<SharedPreferences>(sharedPreferences);
+  }
 
-  // Register AuthLocalDataSourceImpl as the concrete type
-  getIt.registerSingleton<AuthLocalDataSourceImpl>(
-    AuthLocalDataSourceImpl(getIt<SharedPreferences>()),
-  );
+  // Register AuthLocalDataSourceImpl
+  if (!getIt.isRegistered<AuthLocalDataSourceImpl>()) {
+    getIt.registerSingleton<AuthLocalDataSourceImpl>(
+      AuthLocalDataSourceImpl(getIt<SharedPreferences>()),
+    );
+  }
 
   // Register IApiService
-  getIt.registerLazySingleton<IApiService>(() => HttpApiService());
+  if (!getIt.isRegistered<IApiService>()) {
+    getIt.registerLazySingleton<IApiService>(() => HttpApiService());
+  }
 
   // Register data sources
-  getIt.registerLazySingleton<AuthRemoteDataSource>(
-        () => AuthRemoteDataSource(apiService: getIt<IApiService>()),
-  );
+  if (!getIt.isRegistered<AuthRemoteDataSource>()) {
+    getIt.registerLazySingleton<AuthRemoteDataSource>(
+          () => AuthRemoteDataSource(apiService: getIt<IApiService>()),
+    );
+  }
 
   // Register repository
-  getIt.registerLazySingleton<AuthRepository>(
-        () => AuthRepositoryImpl(
-      authRemoteDataSource: getIt<AuthRemoteDataSource>(),
-      authLocalDataSource: getIt<AuthLocalDataSourceImpl>(), // Use concrete type here
-    ),
-  );
+  if (!getIt.isRegistered<AuthRepository>()) {
+    getIt.registerLazySingleton<AuthRepository>(
+          () => AuthRepositoryImpl(
+        authRemoteDataSource: getIt<AuthRemoteDataSource>(),
+        authLocalDataSource: getIt<AuthLocalDataSourceImpl>(),
+      ),
+    );
+  }
 
   // Register use cases
-  getIt.registerLazySingleton<RequestOtpUseCase>(
-        () => RequestOtpUseCase(repository: getIt<AuthRepository>()),
-  );
-  getIt.registerLazySingleton<VerifyOtpUseCase>(
-        () => VerifyOtpUseCase(repository: getIt<AuthRepository>(),
-        authLocalDataSource: getIt<AuthLocalDataSourceImpl>()
-        ),
-  );
+  if (!getIt.isRegistered<RequestOtpUseCase>()) {
+    getIt.registerLazySingleton<RequestOtpUseCase>(
+          () => RequestOtpUseCase(repository: getIt<AuthRepository>()),
+    );
+  }
+  if (!getIt.isRegistered<VerifyOtpUseCase>()) {
+    getIt.registerLazySingleton<VerifyOtpUseCase>(
+          () => VerifyOtpUseCase(
+        repository: getIt<AuthRepository>(),
+        authLocalDataSource: getIt<AuthLocalDataSourceImpl>(),
+      ),
+    );
+  }
 
-  // Register ViewModel
-  getIt.registerFactory<SignInViewModelBase>(
-        () => SignInViewModel(
-
-      requestOtpUseCase: getIt<RequestOtpUseCase>(),
-      verifyOtpUseCaseBase: getIt<VerifyOtpUseCase>(),
-      authLocalDataSourceImpl: getIt<AuthLocalDataSourceImpl>(), // Fix parameter name and type
-    ),
-  );
+  // Register ViewModel as singleton
+  if (!getIt.isRegistered<SignInViewModelBase>()) {
+    getIt.registerSingleton<SignInViewModelBase>(
+      SignInViewModel(
+        requestOtpUseCase: getIt<RequestOtpUseCase>(),
+        verifyOtpUseCaseBase: getIt<VerifyOtpUseCase>(),
+        authLocalDataSourceImpl: getIt<AuthLocalDataSourceImpl>(),
+      ),
+    );
+  }
 }

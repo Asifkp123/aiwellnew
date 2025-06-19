@@ -12,6 +12,8 @@ class AuthTextfield extends StatelessWidget {
   final TextInputAction? textInputAction;
   final double? borderRadius;
   final Widget? suffixIcon;
+  final Color? textColor;
+
 
   const AuthTextfield({
     super.key,
@@ -26,6 +28,7 @@ class AuthTextfield extends StatelessWidget {
     this.textInputAction,
     this.borderRadius,
     this.suffixIcon,
+    this.textColor,
   });
 
   @override
@@ -36,9 +39,10 @@ class AuthTextfield extends StatelessWidget {
         validator: validator,
         enabled: isEnabled,
         style: TextStyle(
-          color: Theme.of(context).colorScheme.surface,
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+          letterSpacing: 0.1,
+          color: textColor ?? Theme.of(context).colorScheme.surface,
         ),
         obscureText: isObscure,
         onChanged: onChange,
@@ -50,11 +54,11 @@ class AuthTextfield extends StatelessWidget {
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
           hintText: hintText,
-          hintStyle: const TextStyle(
-            color: Color(0xff878CA7),
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
+          // hintStyle: const TextStyle(
+          //   color: Color(0xff878CA7),
+          //   fontSize: 14,
+          //   fontWeight: FontWeight.w500,
+          // ),
           errorStyle: const TextStyle(fontSize: 0, height: 0),
           prefixIcon: prefixIcon != null
               ? Padding(

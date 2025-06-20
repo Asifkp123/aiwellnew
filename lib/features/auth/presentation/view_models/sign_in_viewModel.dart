@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 import '../../../../core/constants/strings.dart';
 import '../../../../core/network/error/failure.dart';
@@ -21,7 +22,12 @@ class SignInState {
   final String? token;
   final String? feedbackMessage;
   final int countdownSeconds;
-  final String? selectedMood; // Add selected mood to state
+  final String? selectedMood;
+  final String? selectedSleep;
+  final String? selectedWorkout;
+  final String? name;
+  final String? dateOfBirth;
+  final String? gender;
 
   SignInState({
     required this.status,
@@ -30,6 +36,11 @@ class SignInState {
     this.feedbackMessage,
     this.countdownSeconds = 0,
     this.selectedMood,
+    this.selectedSleep,
+    this.selectedWorkout,
+    this.name,
+    this.dateOfBirth,
+    this.gender,
   });
 
   bool get isLoading => status == SignInStatus.loading || status == SignInStatus.verifyingOtp;
@@ -40,10 +51,14 @@ class SignInState {
 abstract class SignInViewModelBase {
   TextEditingController get emailController;
   TextEditingController get otpController;
-  Stream<SignInState> get stateStream;
+  TextEditingController get nameController;
+  TextEditingController get dateOfBirthController;
+  TextEditingController get genderController;
 
+  Stream<SignInState> get stateStream;
   Future<Either<Failure, OtpRequestSuccess>> requestOtp();
   Future<Either<Failure, VerifyOtpResponse>> verifyOtp();
+  Future<Either<Failure, bool>> submitProfile();
   void clearInputs();
   void clearError();
   void dispose();
@@ -51,13 +66,20 @@ abstract class SignInViewModelBase {
   void clearOtpSentFlag();
   void startCountdown();
   void resetCountdown();
-  void startAnimation();
-  GlobalKey<AnimatedListState> get listKey;
+  void startAnimationForEmotian(GlobalKey<AnimatedListState> listKey);
+  void startAnimationForSleep(GlobalKey<AnimatedListState> sleepListKey);
+  void startAnimationForWorkout(GlobalKey<AnimatedListState> workoutListKey);
   List<String> get displayedMoods;
+  List<String> get displayedSleeps;
+  List<String> get displayedWorkouts;
   void selectMood(String mood);
+  void selectSleep(String sleep);
+  void selectWorkout(String workout);
+  bool validateProfile();
+  void selectDate(BuildContext context);
 }
 
-// ViewModel for the sign-in feature, using streams for state management
+// ViewModel for the sign-in feature
 class SignInViewModel implements SignInViewModelBase {
   final RequestOtpUseCase requestOtpUseCase;
   final VerifyOtpUseCaseBase verifyOtpUseCaseBase;
@@ -66,6 +88,9 @@ class SignInViewModel implements SignInViewModelBase {
   // Controllers for input fields
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _otpController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _dateOfBirthController = TextEditingController();
+  final TextEditingController _genderController = TextEditingController();
 
   // StreamController to emit state changes
   final StreamController<SignInState> _stateController = StreamController<SignInState>.broadcast();
@@ -75,40 +100,59 @@ class SignInViewModel implements SignInViewModelBase {
   String? _errorMessage;
   String? _token;
   String? _feedbackMessage;
-  String? _selectedMood; // Track selected mood
-  // Countdown variables
-  int _countdown = 60; // Initial countdown time in seconds
-  Timer? _timer; // Timer for countdown
+  String? _selectedMood;
+  String? _selectedSleep;
+  String? _selectedWorkout;
+  String? _name;
+  String? _dateOfBirth;
+  String? _gender;
 
-  // Mood animation variables
-  final GlobalKey<AnimatedListState> listKey = GlobalKey();
+  // Countdown variables
+  int _countdown = 60;
+  Timer? _timer;
+
+  // Mood, sleep, and workout options
   final List<String> moodOptions = [
     'Happy', 'Sad', 'Angry', 'Anxious', 'Calm', 'Confused', 'Tired', 'Excited'
   ];
-  final List<String> displayedMoods = [];
+  final List<String> sleepOptions = ['Excellent', 'Good', 'Fair', 'Poor'];
+  final List<String> workoutOptions = ['Excellent', 'Good', 'Average', 'Poor'];
+
+  final List<String> displayedMoods = [
+    'Happy', 'Sad', 'Angry', 'Anxious', 'Calm', 'Confused', 'Tired', 'Excited'
+  ];
+  final List<String> displayedSleeps = ['Excellent', 'Good', 'Fair', 'Poor'];
+  final List<String> displayedWorkouts = ['Excellent', 'Good', 'Average', 'Poor'];
+
+  // Flags to prevent multiple animation calls
+  bool _moodAnimationStarted = false;
+  bool _sleepAnimationStarted = false;
+  bool _workoutAnimationStarted = false;
 
   SignInViewModel({
     required this.requestOtpUseCase,
     required this.verifyOtpUseCaseBase,
     required this.authLocalDataSourceImpl,
   }) {
-    _emitState(); // Emit initial state
-    startAnimation(); // Start mood animation
+    _emitState();
   }
 
   @override
   TextEditingController get emailController => _emailController;
-
   @override
   TextEditingController get otpController => _otpController;
+  @override
+  TextEditingController get nameController => _nameController;
+  @override
+  TextEditingController get dateOfBirthController => _dateOfBirthController;
+  @override
+  TextEditingController get genderController => _genderController;
 
   @override
   Stream<SignInState> get stateStream => _stateController.stream;
 
   // Emit the current state to the stream
   void _emitState() {
-    print(
-        'Emitting state: status=$_status, errorMessage=$_errorMessage, token=$_token, countdown=$_countdown');
     _stateController.add(SignInState(
       status: _status,
       errorMessage: _errorMessage,
@@ -116,6 +160,11 @@ class SignInViewModel implements SignInViewModelBase {
       feedbackMessage: _feedbackMessage,
       countdownSeconds: _countdown,
       selectedMood: _selectedMood,
+      selectedSleep: _selectedSleep,
+      selectedWorkout: _selectedWorkout,
+      name: _name,
+      dateOfBirth: _dateOfBirth,
+      gender: _gender,
     ));
   }
 
@@ -219,6 +268,61 @@ class SignInViewModel implements SignInViewModelBase {
   }
 
   @override
+  Future<Either<Failure, bool>> submitProfile() async {
+    if (!validateProfile()) {
+      _errorMessage = "Please complete all required fields and select at least one option (mood, sleep, or workout).";
+      _status = SignInStatus.error;
+      _emitState();
+      return Left(Failure(_errorMessage!));
+    }
+
+    _status = SignInStatus.loading;
+    _emitState();
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://your-api-endpoint.com/profile'), // Replace with your API endpoint
+        headers: {'Content-Type': 'application/json'},
+        body: '''
+        {
+          "first_name": "${_nameController.text.trim()}",
+          "gender": "${_genderController.text.trim()}",
+          "date_of_birth": "${_dateOfBirthController.text.trim()}",
+          "dominant_emotion": "${_selectedMood ?? ''}",
+          "sleep_quality": "${_selectedSleep ?? ''}",
+          "physical_activity": "${_selectedWorkout ?? ''}"
+        }
+        ''',
+      );
+
+      if (response.statusCode == 200) {
+        _status = SignInStatus.success;
+        _feedbackMessage = "Profile submitted successfully!";
+        _emitState();
+        return Right(true);
+      } else {
+        _errorMessage = "Failed to submit profile: ${response.reasonPhrase}";
+        _status = SignInStatus.error;
+        _emitState();
+        return Left(Failure(_errorMessage!));
+      }
+    } catch (e) {
+      _errorMessage = "Error submitting profile: $e";
+      _status = SignInStatus.error;
+      _emitState();
+      return Left(Failure(_errorMessage!));
+    }
+  }
+
+  @override
+  bool validateProfile() {
+    return _nameController.text.trim().isNotEmpty &&
+        _dateOfBirthController.text.trim().isNotEmpty &&
+        _genderController.text.trim().isNotEmpty &&
+        (_selectedMood != null || _selectedSleep != null || _selectedWorkout != null);
+  }
+
+  @override
   void startCountdown() {
     _countdown = 60;
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -245,9 +349,15 @@ class SignInViewModel implements SignInViewModelBase {
   void clearInputs() {
     _emailController.clear();
     _otpController.clear();
+    _nameController.clear();
+    _dateOfBirthController.clear();
+    _genderController.clear();
     _errorMessage = null;
     _token = null;
     _status = SignInStatus.idle;
+    _selectedMood = null;
+    _selectedSleep = null;
+    _selectedWorkout = null;
     resetCountdown();
     _emitState();
   }
@@ -264,6 +374,9 @@ class SignInViewModel implements SignInViewModelBase {
   void dispose() {
     _emailController.dispose();
     _otpController.dispose();
+    _nameController.dispose();
+    _dateOfBirthController.dispose();
+    _genderController.dispose();
     _stateController.close();
     resetCountdown();
   }
@@ -283,11 +396,38 @@ class SignInViewModel implements SignInViewModelBase {
   }
 
   @override
-  void startAnimation() async {
+  void startAnimationForEmotian(GlobalKey<AnimatedListState> listKey) async {
+    if (_moodAnimationStarted) return;
+    _moodAnimationStarted = true;
+    displayedMoods.clear();
     for (int i = 0; i < moodOptions.length; i++) {
       await Future.delayed(Duration(milliseconds: 150));
       displayedMoods.insert(i, moodOptions[i]);
       listKey.currentState?.insertItem(i);
+    }
+  }
+
+  @override
+  void startAnimationForSleep(GlobalKey<AnimatedListState> sleepListKey) async {
+    if (_sleepAnimationStarted) return;
+    _sleepAnimationStarted = true;
+    displayedSleeps.clear();
+    for (int i = 0; i < sleepOptions.length; i++) {
+      await Future.delayed(Duration(milliseconds: 150));
+      displayedSleeps.insert(i, sleepOptions[i]);
+      sleepListKey.currentState?.insertItem(i);
+    }
+  }
+
+  @override
+  void startAnimationForWorkout(GlobalKey<AnimatedListState> workoutListKey) async {
+    if (_workoutAnimationStarted) return;
+    _workoutAnimationStarted = true;
+    displayedWorkouts.clear();
+    for (int i = 0; i < workoutOptions.length; i++) {
+      await Future.delayed(Duration(milliseconds: 150));
+      displayedWorkouts.insert(i, workoutOptions[i]);
+      workoutListKey.currentState?.insertItem(i);
     }
   }
 
@@ -298,5 +438,62 @@ class SignInViewModel implements SignInViewModelBase {
     _emitState();
   }
 
+  @override
+  void selectSleep(String sleep) {
+    _selectedSleep = sleep;
+    _feedbackMessage = "Selected: $sleep";
+    _emitState();
+  }
 
+  @override
+  void selectWorkout(String workout) {
+    _selectedWorkout = workout;
+    _feedbackMessage = "Selected: $workout";
+    _emitState();
+  }
+
+  @override
+  void selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            primaryColor: Colors.purple,
+            colorScheme: const ColorScheme.light(
+              primary: Colors.purple,
+              onPrimary: Colors.white, // Controls the selected date background text color
+            ),
+            textTheme: const TextTheme(
+              bodyLarge: TextStyle(
+                color: Colors.black, // Default day text color
+                fontWeight: FontWeight.normal,
+              ),
+              labelLarge: TextStyle(
+                color: Colors.white, // Selected date text color
+              ),
+            ),
+            buttonTheme: const ButtonThemeData(
+              textTheme: ButtonTextTheme.primary,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      dateOfBirthController.text = DateFormat('yyyy-MM-dd').format(picked);
+    }
+  }
+  // @override
+  // List<String> get displayedMoods => displayedMoods;
+  //
+  // @override
+  // List<String> get displayedSleeps => displayedSleeps;
+  //
+  // @override
+  // List<String> get displayedWorkouts => displayedWorkouts;
 }

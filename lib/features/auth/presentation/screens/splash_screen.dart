@@ -5,6 +5,7 @@ import 'package:aiwel/features/auth/presentation/screens/signin_signup_screen.da
 import 'package:aiwel/features/auth/presentation/widgets/devider.dart';
 import 'package:aiwel/features/routes/routes.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 import '../../../../components/constants.dart';
 
@@ -49,8 +50,8 @@ class SplashScreen extends StatelessWidget {
           children: [
             const SizedBox(height: 250),
             // Logo
-            Image.asset(
-              '$imagePath/applogo.png',
+            SvgPicture.asset(
+              '$svgPath/applogo.svg',
               height: 120,
               width: 120,
             ),

@@ -6,6 +6,8 @@ import 'package:get_it/get_it.dart';
 import '../../test.dart';
 import '../auth/presentation/screens/otp_screen.dart';
 import '../auth/presentation/screens/profile_screens/emotian_screen.dart';
+import '../auth/presentation/screens/profile_screens/sleep_quality_screen.dart';
+import '../auth/presentation/screens/profile_screens/workout_screen.dart';
 import '../auth/presentation/screens/signin_signup_screen.dart';
 import '../auth/presentation/screens/splash_screen.dart';
 
@@ -25,9 +27,21 @@ Widget routeNavigator(String routeName) {
       return OtpScreen(
         viewModelBase: getIt<SignInViewModelBase>(),
       );
+      case EmotianScreen.routeName:
+      return EmotianScreen(
+        viewModelBase: getIt<SignInViewModelBase>(),
+      );
+      case SleepQualityScreen.routeName:
+      return SleepQualityScreen(
+        viewModelBase: getIt<SignInViewModelBase>(),
+      );
+      case WorkoutScreen.routeName:
+      return WorkoutScreen(
+        viewModelBase: getIt<SignInViewModelBase>(),
+      );
     default:
-      // return ProfileScreen(viewModelBase:getIt<SignInViewModelBase>() ,);
-      return EmotianScreen(viewModelBase:getIt<SignInViewModelBase>());
+      return ProfileScreen(viewModelBase:getIt<SignInViewModelBase>() ,);
+      // return SplashScreen();
   }
 }
 

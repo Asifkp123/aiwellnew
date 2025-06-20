@@ -1,25 +1,30 @@
-import 'package:aiwel/components/snackbars/error_snackbar.dart';
 import 'package:aiwel/features/auth/presentation/screens/profile_screens/workout_screen.dart';
+import 'package:aiwel/features/auth/presentation/widgets/three_circle_conatiner.dart';
 import 'package:flutter/material.dart';
+
 import '../../../../../components/buttons/label_button.dart';
 import '../../../../../components/constants.dart';
+import '../../../../../components/snackbars/error_snackbar.dart';
 import '../../../../../components/text_widgets/text_widgets.dart';
 import '../../view_models/sign_in_viewModel.dart';
 import '../../widgets/selectable_listView.dart';
-import '../../widgets/three_circle_conatiner.dart';
-import 'sleep_quality_screen.dart';
+import '../../widgets/slider_animation.dart';
+import '../signin_signup_screen.dart';
 
-class EmotianScreen extends StatelessWidget {
-  static const String routeName = '/emotianScreen';
+class SleepQualityScreen extends StatelessWidget {
+  static const String routeName = '/sleepQualityScreen';
   final SignInViewModelBase viewModelBase;
-  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+  final GlobalKey<AnimatedListState> _sleepListKey = GlobalKey<AnimatedListState>();
 
-  EmotianScreen({super.key, required this.viewModelBase}) {
-    // viewModelBase.startAnimationForEmotian(_listKey);
+  SleepQualityScreen({super.key, required this.viewModelBase}) {
+    // viewModelBase.startAnimationForSleep(_sleepListKey);
   }
 
   @override
   Widget build(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
+
     return StreamBuilder<SignInState>(
       stream: viewModelBase.stateStream,
       initialData: SignInState(status: SignInStatus.idle),
@@ -52,35 +57,48 @@ class EmotianScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        CircleContainer(filled: true, onTap: () {}),
+                        CircleContainer(
+                          filled: true,
+                          onTap: () => Navigator.pushNamed(context, '/emotianScreen'),
+                        ),
                         SizedBox(width: 5),
                         CircleContainer(
-                          filled: false,
-                          onTap: () => Navigator.pushNamed(context, SleepQualityScreen.routeName, arguments: viewModelBase),
+                          filled: true,
+                          onTap: () => Navigator.pushNamed(context, '/sleepQualityScreen', arguments: viewModelBase),
                         ),
                         SizedBox(width: 5),
                         CircleContainer(
                           filled: false,
-                          onTap: () => Navigator.pushNamed(context, WorkoutScreen.routeName, arguments: viewModelBase),
+                          onTap: () => Navigator.pushNamed(context, '/workoutScreen', arguments: viewModelBase),
                         ),
                       ],
                     ),
-                    LargePurpleText("How has your mood been lately?"),
+                    LargePurpleText("Sleeping well these days?"),
                     SizedBox(height: 16),
                     NormalGreyText("Quick check-in before we get started."),
                     const SizedBox(height: 16),
+                    // SizedBox(
+                    //   height: height - 200, // Adjusted to prevent overflow
+                    //   child: AnimatedList(
+                    //     key: _sleepListKey,
+                    //     physics: NeverScrollableScrollPhysics(),
+                    //     initialItemCount: viewModelBase.displayedSleeps.length,
+                    //     itemBuilder: (context, index, animation) {
+                    //       return buildItem(
+                    //         viewModelBase.displayedSleeps[index],
+                    //         animation,
+                    //         viewModelBase,
+                    //         state.selectedSleep,
+                    //       );
+                    //     },
+                    //   ),
+                    // ),
                     SelectableListView(
-                      items: viewModelBase.displayedMoods,
-                      selectedValue: state.selectedMood,
-                      onItemSelected: viewModelBase.selectMood,
+                      items: viewModelBase.displayedSleeps,
+                      selectedValue: state.selectedSleep, // Use state.selectedMood instead of direct field access
+                      onItemSelected: viewModelBase.selectSleep, // Use the method from the view model
                     ),
-                    if (state.errorMessage != null) ...[
-                      const SizedBox(height: 16),
-                      Text(
-                        state.errorMessage!,
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ],
+
                   ],
                 ),
               ),
@@ -89,17 +107,16 @@ class EmotianScreen extends StatelessWidget {
           floatingActionButton: LabelButton(
             label: 'Continue',
             onTap: () {
-
-              if (state.selectedMood == null) {
+              if (state.selectedSleep == null) {
                 ScaffoldMessenger.of(context).showSnackBar(
 
-                errorSnackBarWidget( "Please select your current mood to continue.")
+                    errorSnackBarWidget( "Please choose your sleep quality to proceed.")
                 );
 
                 return;
               }
 
-                  Navigator.pushNamed(context, SleepQualityScreen.routeName, arguments: viewModelBase);
+              Navigator.pushNamed(context, WorkoutScreen.routeName);
             },
             gradient: splashGradient(),
             fontColor: Theme.of(context).primaryColorLight,

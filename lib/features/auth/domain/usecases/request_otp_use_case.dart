@@ -6,8 +6,12 @@ import '../../data/repositories/auth_repository.dart';
 
 
 
+abstract class RequestOtpUseCaseBase {
+  Future<Either<Failure, OtpRequestSuccess>> execute({String? email, String? phoneNumber});
+}
 
-class RequestOtpUseCase {
+
+class RequestOtpUseCase  extends RequestOtpUseCaseBase{
   final AuthRepository repository;
 
   RequestOtpUseCase({required this.repository});

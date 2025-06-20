@@ -3,6 +3,7 @@ import 'package:aiwel/components/snackbars/success_snackbar.dart';
 import 'package:aiwel/components/buttons/label_button.dart';
 import 'package:aiwel/components/text_widgets/text_widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../view_models/sign_in_viewModel.dart';
 import '../widgets/pinput_widget.dart';
@@ -58,8 +59,8 @@ class OtpScreen extends StatelessWidget {
                   children: [
                     const SizedBox(height: 115),
                     Center(
-                      child: Image.asset(
-                        '$imagePath/applogo.png',
+                      child: SvgPicture.asset(
+                        '$svgPath/applogo.svg',
                         height: 120,
                         width: 120,
                       ),

@@ -1,0 +1,60 @@
+import 'dart:convert';
+
+import 'package:dartz/dartz.dart';
+import '../../../../core/network/error/failure.dart';
+import '../../data/datasources/local/auth_local_datasource.dart';
+import '../../data/datasources/remote/auth_remote_datasource.dart';
+
+abstract class RefreshTokenUseCaseBase {
+  Future<Either<Failure, bool>> execute();
+}
+
+class RefreshTokenUseCase implements RefreshTokenUseCaseBase {
+  final AuthRemoteDataSource authRemoteDataSource;
+  final AuthLocalDataSourceBase authLocalDataSource;
+
+  RefreshTokenUseCase({
+    required this.authRemoteDataSource,
+    required this.authLocalDataSource,
+  });
+
+  @override
+  Future<Either<Failure, bool>> execute() async {
+    final refreshToken = await authLocalDataSource.getRefreshToken();
+    final refreshTokenExpiry = await authLocalDataSource.getRefreshTokenExpiry();
+
+    if (refreshToken == null || refreshTokenExpiry == null) {
+      return Left(Failure('No refresh token available'));
+    }
+
+    final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    if (currentTime >= refreshTokenExpiry) {
+      return Left(Failure('Refresh token has expired'));
+    }
+
+    final result = await authRemoteDataSource.refreshToken(refreshToken);
+    return result.fold(
+          (failure) => Left(failure),
+          (response) async {
+        if (response.statusCode == 200) {
+          final accessToken = response.headers['authorization']?.replaceAll('Bearer ', '') ?? '';
+          final accessTokenExpiry = int.tryParse(response.headers['x-token-expiry'] ?? '') ?? 0;
+          final newRefreshToken = response.headers['x-refresh-token'] ?? refreshToken;
+          final newRefreshTokenExpiry = int.tryParse(response.headers['x-refresh-expiry'] ?? '') ?? refreshTokenExpiry;
+
+          await authLocalDataSource.saveTokens(
+            accessToken: accessToken,
+            accessTokenExpiry: accessTokenExpiry,
+            refreshToken: newRefreshToken,
+            refreshTokenExpiry: newRefreshTokenExpiry,
+          );
+          return Right(true);
+        } else {
+          final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
+          final errorMessage = responseBody['message'] ?? 'Token refresh failed: ${response.reasonPhrase}';
+          return Left(Failure(errorMessage));
+        }
+      },
+    );
+  }
+}

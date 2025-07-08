@@ -1,8 +1,10 @@
 import 'package:aiwel/components/snackbars/error_snackbar.dart';
 import 'package:aiwel/features/auth/presentation/screens/profile_screens/workout_screen.dart';
+import 'package:aiwel/features/auth/presentation/widgets/back_button_widget.dart';
 import 'package:flutter/material.dart';
 import '../../../../../components/buttons/label_button.dart';
 import '../../../../../components/constants.dart';
+import '../../../../../components/snackbars/custom_snackbar.dart';
 import '../../../../../components/text_widgets/text_widgets.dart';
 import '../../view_models/sign_in_viewModel.dart';
 import '../../widgets/selectable_listView.dart';
@@ -48,7 +50,11 @@ class EmotianScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(height: 120),
+                    SizedBox(height: 40),
+
+                    BackButtonWidget(),
+                    SizedBox(height: 60),
+
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
@@ -74,13 +80,16 @@ class EmotianScreen extends StatelessWidget {
                       selectedValue: state.selectedMood,
                       onItemSelected: viewModelBase.selectMood,
                     ),
-                    if (state.errorMessage != null) ...[
-                      const SizedBox(height: 16),
-                      Text(
-                        state.errorMessage!,
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ],
+                    // if (state.errorMessage != null) ...[
+                    //   const SizedBox(height: 16),
+                    //   Text(
+                    //     state.errorMessage!,
+                    //     style: TextStyle(color: Colors.red),
+                    //   ),
+                    // ],
+                    SizedBox(height: 50),
+
+
                   ],
                 ),
               ),
@@ -91,10 +100,13 @@ class EmotianScreen extends StatelessWidget {
             onTap: () {
 
               if (state.selectedMood == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                    ScaffoldMessenger.of(context)!.showSnackBar(
 
-                errorSnackBarWidget( "Please select your current mood to continue.")
-                );
+                      commonSnackBarWidget(
+                        content: "Please fill in all fields to proceed.",
+                        type: SnackBarType.error,
+                      ),
+                    );
 
                 return;
               }

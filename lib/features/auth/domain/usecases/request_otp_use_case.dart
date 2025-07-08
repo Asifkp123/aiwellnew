@@ -26,7 +26,7 @@ class RequestOtpUseCase  extends RequestOtpUseCaseBase{
             (otpSuccess) => Right(otpSuccess), // Pass the OtpRequestSuccess directly
       );
     }catch (e) {
-      return Left(Failure('Failed to request OTP: $e'));
+      return Left(Failure('$e'));
     }
   }
 }

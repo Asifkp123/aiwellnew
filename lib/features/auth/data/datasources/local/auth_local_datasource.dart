@@ -1,45 +1,98 @@
-import 'package:shared_preferences/shared_preferences.dart';
-
-
-
+import 'package:flutter/services.dart';
+import '../../../../../core/constants/strings.dart';
+import '../../../../../core/network/error/failure.dart';
 
 abstract class AuthLocalDataSourceBase {
-  Future<void> saveToken(String token);
+  Future<void> saveTokens({
+    required String accessToken,
+    required int accessTokenExpiry,
+    required String refreshToken,
+    required int refreshTokenExpiry,
+  });
+  Future<String?> getAccessToken();
+  Future<int?> getAccessTokenExpiry();
+  Future<String?> getRefreshToken();
+  Future<int?> getRefreshTokenExpiry();
+  Future<void> clearTokens();
   Future<String?> getToken();
-  Future<void> clearToken();
 }
 
 class AuthLocalDataSourceImpl implements AuthLocalDataSourceBase {
-  static const _tokenKey = 'auth_token';
-  final SharedPreferences _prefs; // Store the injected instance
+  static const MethodChannel _channel = MethodChannel('com.qurig.aiwel/secure_storage');
 
-  // Add constructor to accept SharedPreferences
-  AuthLocalDataSourceImpl(this._prefs);
+  static const String _accessTokenKey = 'access_token';
+  static const String _accessTokenExpiryKey = 'access_token_expiry';
+  static const String _refreshTokenKey = 'refresh_token';
+  static const String _refreshTokenExpiryKey = 'refresh_token_expiry';
 
   @override
-  Future<void> saveToken(String token) async {
+  Future<void> saveTokens({
+    required String accessToken,
+    required int accessTokenExpiry,
+    required String refreshToken,
+    required int refreshTokenExpiry,
+  }) async {
     try {
-      await _prefs.setString(_tokenKey, token);
+      await _channel.invokeMethod('saveTokens', {
+        _accessTokenKey: accessToken,
+        _accessTokenExpiryKey: accessTokenExpiry.toString(),
+        _refreshTokenKey: refreshToken,
+        _refreshTokenExpiryKey: refreshTokenExpiry.toString(),
+      });
+    } on PlatformException catch (e) {
+      throw Failure('${Strings.storageError}: ${e.message}');
     } catch (e) {
-      throw Exception('Failed to save token: $e');
+      throw Failure(Strings.storageError);
     }
   }
 
   @override
-  Future<String?> getToken() async {
+  Future<String?> getAccessToken() async {
     try {
-      return _prefs.getString(_tokenKey);
+      return await _channel.invokeMethod('getToken', {'key': _accessTokenKey});
     } catch (e) {
-      throw Exception('Failed to retrieve token: $e');
+      throw Failure('Failed to retrieve access token: $e');
     }
   }
 
   @override
-  Future<void> clearToken() async {
+  Future<int?> getAccessTokenExpiry() async {
     try {
-      await _prefs.remove(_tokenKey);
+      final expiry = await _channel.invokeMethod('getToken', {'key': _accessTokenExpiryKey});
+      return expiry != null ? int.tryParse(expiry) : null;
     } catch (e) {
-      throw Exception('Failed to clear token: $e');
+      throw Failure('Failed to retrieve access token expiry: $e');
     }
   }
+
+  @override
+  Future<String?> getRefreshToken() async {
+    try {
+      return await _channel.invokeMethod('getToken', {'key': _refreshTokenKey});
+    } catch (e) {
+      throw Failure('Failed to retrieve refresh token: $e');
+    }
+  }
+
+  @override
+  Future<int?> getRefreshTokenExpiry() async {
+    try {
+      final expiry = await _channel.invokeMethod('getToken', {'key': _refreshTokenExpiryKey});
+      return expiry != null ? int.tryParse(expiry) : null;
+    } catch (e) {
+      throw Failure('Failed to retrieve refresh token expiry: $e');
+    }
+  }
+
+  @override
+  Future<void> clearTokens() async {
+    try {
+      await _channel.invokeMethod('clearTokens');
+    } catch (e) {
+      throw Failure('Failed to clear tokens: $e');
+    }
+  }
+
+  @override
+  Future<String?> getToken() async => getAccessToken();
 }

@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:ffi';
+import 'package:aiwel/features/auth/domain/usecases/get_access_token_expiry_use_case.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -7,9 +9,14 @@ import 'package:intl/intl.dart';
 import '../../../../core/constants/strings.dart';
 import '../../../../core/network/error/failure.dart';
 import '../../data/datasources/local/auth_local_datasource.dart';
+import '../../data/datasources/remote/auth_remote_datasource.dart';
 import '../../data/models/api/otp_request_success.dart';
+import '../../data/models/api/token_resonse.dart';
 import '../../data/models/api/verify_otp_response.dart';
+import '../../domain/usecases/get_access_token_use_case.dart';
+import '../../domain/usecases/refresh_token_use_case.dart';
 import '../../domain/usecases/request_otp_use_case.dart';
+import '../../domain/usecases/submit_profile_use_case.dart';
 import '../../domain/usecases/verify_otp_use_case.dart';
 
 // Enum for sign-in status
@@ -52,6 +59,7 @@ abstract class SignInViewModelBase {
   TextEditingController get emailController;
   TextEditingController get otpController;
   TextEditingController get nameController;
+  TextEditingController get lastNameController;
   TextEditingController get dateOfBirthController;
   TextEditingController get genderController;
 
@@ -77,18 +85,26 @@ abstract class SignInViewModelBase {
   void selectWorkout(String workout);
   bool validateProfile();
   void selectDate(BuildContext context);
+  Future<String?> getToken();
+  void clearErrorMessage();
 }
 
 // ViewModel for the sign-in feature
 class SignInViewModel implements SignInViewModelBase {
   final RequestOtpUseCase requestOtpUseCase;
   final VerifyOtpUseCaseBase verifyOtpUseCaseBase;
+  final SubmitProfileUseCaseBase submitProfileUseCaseBase;
   final AuthLocalDataSourceImpl authLocalDataSourceImpl;
+  final GetAccessTokenUseCase getAccessTokenUseCase;
+  final GetAccessTokenExpiryUseCase getAccessTokenExpiryUseCase;
+  final RefreshTokenUseCase refreshUseCase;
+
 
   // Controllers for input fields
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _otpController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _dateOfBirthController = TextEditingController();
   final TextEditingController _genderController = TextEditingController();
 
@@ -133,6 +149,10 @@ class SignInViewModel implements SignInViewModelBase {
     required this.requestOtpUseCase,
     required this.verifyOtpUseCaseBase,
     required this.authLocalDataSourceImpl,
+    required this.submitProfileUseCaseBase,
+    required this.getAccessTokenUseCase,
+    required this.getAccessTokenExpiryUseCase,
+    required this.refreshUseCase,
   }) {
     _emitState();
   }
@@ -143,6 +163,8 @@ class SignInViewModel implements SignInViewModelBase {
   TextEditingController get otpController => _otpController;
   @override
   TextEditingController get nameController => _nameController;
+  @override
+  TextEditingController get lastNameController => _lastNameController;
   @override
   TextEditingController get dateOfBirthController => _dateOfBirthController;
   @override
@@ -214,7 +236,6 @@ class SignInViewModel implements SignInViewModelBase {
       },
     );
   }
-
   @override
   Future<Either<Failure, VerifyOtpResponse>> verifyOtp() async {
     final otp = _otpController.text.trim();
@@ -250,13 +271,33 @@ class SignInViewModel implements SignInViewModelBase {
           _emitState();
           return Left(failure);
         },
-            (success) {
-          _status = SignInStatus.success;
-          _feedbackMessage = "Sign-in successful!";
-          resetCountdown();
-          _emitState();
-          clearInputs();
-          return Right(success);
+            (success) async {
+          if (success is TokenResponse) {
+            if (success.accessToken.isEmpty || success.refreshToken.isEmpty) {
+              _errorMessage = Strings.tokenNotFoundMessage;
+              _status = SignInStatus.error;
+              _emitState();
+              return Left(Failure(_errorMessage!));
+            }
+            await authLocalDataSourceImpl.saveTokens(
+              accessToken: success.accessToken,
+              accessTokenExpiry: success.accessTokenExpiry,
+              refreshToken: success.refreshToken,
+              refreshTokenExpiry: success.refreshTokenExpiry,
+            );
+            _status = SignInStatus.success;
+            _feedbackMessage = "Sign-in successful!";
+            _token = success.accessToken;
+            resetCountdown();
+            _emitState();
+            clearInputs();
+            return Right(success);
+          } else {
+            _errorMessage = Strings.tokenNotFoundMessage;
+            _status = SignInStatus.error;
+            _emitState();
+            return Left(Failure(_errorMessage!));
+          }
         },
       );
     } catch (e) {
@@ -267,56 +308,174 @@ class SignInViewModel implements SignInViewModelBase {
     }
   }
 
+
   @override
   Future<Either<Failure, bool>> submitProfile() async {
     if (!validateProfile()) {
-      _errorMessage = "Please complete all required fields and select at least one option (mood, sleep, or workout).";
+      _errorMessage = Strings.invalidProfileMessage;
       _status = SignInStatus.error;
       _emitState();
       return Left(Failure(_errorMessage!));
+    }
+
+    // Ensure valid token before proceeding
+    if (!await _ensureValidToken()) {
+      return Left(Failure(_errorMessage ?? Strings.noTokenAvailable));
     }
 
     _status = SignInStatus.loading;
     _emitState();
 
+    String formattedDate;
     try {
-      final response = await http.post(
-        Uri.parse('https://your-api-endpoint.com/profile'), // Replace with your API endpoint
-        headers: {'Content-Type': 'application/json'},
-        body: '''
-        {
-          "first_name": "${_nameController.text.trim()}",
-          "gender": "${_genderController.text.trim()}",
-          "date_of_birth": "${_dateOfBirthController.text.trim()}",
-          "dominant_emotion": "${_selectedMood ?? ''}",
-          "sleep_quality": "${_selectedSleep ?? ''}",
-          "physical_activity": "${_selectedWorkout ?? ''}"
-        }
-        ''',
-      );
-
-      if (response.statusCode == 200) {
-        _status = SignInStatus.success;
-        _feedbackMessage = "Profile submitted successfully!";
-        _emitState();
-        return Right(true);
-      } else {
-        _errorMessage = "Failed to submit profile: ${response.reasonPhrase}";
-        _status = SignInStatus.error;
-        _emitState();
-        return Left(Failure(_errorMessage!));
-      }
+      DateTime parsedDate = DateFormat('dd-MM-yyyy').parse(_dateOfBirthController.text.trim());
+      formattedDate = DateFormat('yyyy-MM-dd').format(parsedDate);
     } catch (e) {
-      _errorMessage = "Error submitting profile: $e";
+      _errorMessage = Strings.invalidDateFormatMessage;
       _status = SignInStatus.error;
       _emitState();
       return Left(Failure(_errorMessage!));
     }
+
+    final result = await submitProfileUseCaseBase.execute(
+      firstName: _nameController.text.trim(),
+      lastName: _lastNameController.text.trim(),
+      gender: _genderController.text.trim(),
+      dateOfBirth: formattedDate,
+      dominantEmotion: _selectedMood?.toLowerCase() ?? '',
+      sleepQuality: _selectedSleep?.toLowerCase() ?? '',
+      physicalActivity: _selectedWorkout?.toLowerCase() ?? '',
+    );
+
+    return result.fold(
+          (failure) {
+        _errorMessage = failure.message;
+        _status = SignInStatus.error;
+        _emitState();
+        return Left(failure);
+      },
+          (success) {
+        _status = SignInStatus.success;
+        _feedbackMessage = success ? "Profile submitted successfully!" : "Profile submission failed.";
+        _emitState();
+        return Right(success);
+      },
+    );
+  }
+
+  @override
+  Future<String?> getToken() async {
+    try {
+      final token = await authLocalDataSourceImpl.getAccessToken();
+      if (token == null) {
+        _errorMessage = Strings.noTokenAvailable;
+        _status = SignInStatus.error;
+      } else {
+        _status = SignInStatus.idle;
+      }
+      _token = token;
+      _emitState();
+      return token;
+    } catch (e) {
+      _errorMessage = Strings.tokenRetrievalError;
+      _status = SignInStatus.error;
+      _emitState();
+      return null;
+    }
+  }
+
+  Future<bool> _ensureValidToken() async {
+
+    final result = await getAccessTokenUseCase.execute();
+    return result.fold(
+          (failure) async {
+        _errorMessage = failure.message;
+        _status = SignInStatus.error;
+        _emitState();
+        await logout();
+        return false;
+      },
+          (tokenData) async {
+        final accessToken = tokenData.$1;
+        final accessTokenExpiry = tokenData.$2;
+
+        if (accessToken == null || accessTokenExpiry == null) {
+          _errorMessage = Strings.noTokenAvailable;
+          _status = SignInStatus.error;
+          _emitState();
+          await logout();
+          return false;
+        }
+
+        final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+        const buffer = 300; // 5-minute buffer before expiry
+
+        if (currentTime >= accessTokenExpiry - buffer) {
+          final refreshUseCase = RefreshTokenUseCase(
+            authRemoteDataSource: AuthRemoteDataSourceImpl(authLocalDataSource: authLocalDataSourceImpl),
+            authLocalDataSource: authLocalDataSourceImpl,
+          );
+          final refreshResult = await refreshUseCase.execute();
+          return refreshResult.fold(
+                (failure) {
+              _errorMessage = failure.message;
+              _status = SignInStatus.error;
+              _emitState();
+              return false;
+            },
+                (success) async {
+              if (!success) {
+                _errorMessage = Strings.noTokenAfterRefresh;
+                _status = SignInStatus.error;
+                _emitState();
+                await logout();
+                return false;
+              }
+              final newAccessTokenResult = await getAccessTokenUseCase.execute();
+              return newAccessTokenResult.fold(
+                    (failure) async {
+                  _errorMessage = failure.message;
+                  _status = SignInStatus.error;
+                  _emitState();
+                  await logout();
+                  return false;
+                },
+                    (newTokenData) async {
+                  final newAccessToken = newTokenData.$1;
+                  if (newAccessToken == null) {
+                    _errorMessage = Strings.noTokenAfterRefresh;
+                    _status = SignInStatus.error;
+                    _emitState();
+                    await logout();
+                    return false;
+                  }
+                  _token = newAccessToken;
+                  return true;
+                },
+              );
+            },
+          );
+        }
+
+        _token = accessToken;
+        return true;
+      },
+    );
+  }
+  @override
+  Future<void> logout() async {
+    await authLocalDataSourceImpl.clearTokens();
+    _token = null;
+    _status = SignInStatus.idle;
+    _errorMessage = Strings.sessionExpired;
+    clearInputs();
+    _emitState();
   }
 
   @override
   bool validateProfile() {
     return _nameController.text.trim().isNotEmpty &&
+        _lastNameController.text.trim().isNotEmpty &&
         _dateOfBirthController.text.trim().isNotEmpty &&
         _genderController.text.trim().isNotEmpty &&
         (_selectedMood != null || _selectedSleep != null || _selectedWorkout != null);
@@ -350,6 +509,7 @@ class SignInViewModel implements SignInViewModelBase {
     _emailController.clear();
     _otpController.clear();
     _nameController.clear();
+    _lastNameController.clear();
     _dateOfBirthController.clear();
     _genderController.clear();
     _errorMessage = null;
@@ -375,6 +535,7 @@ class SignInViewModel implements SignInViewModelBase {
     _emailController.dispose();
     _otpController.dispose();
     _nameController.dispose();
+    _lastNameController.dispose();
     _dateOfBirthController.dispose();
     _genderController.dispose();
     _stateController.close();
@@ -434,21 +595,18 @@ class SignInViewModel implements SignInViewModelBase {
   @override
   void selectMood(String mood) {
     _selectedMood = mood;
-    _feedbackMessage = "Selected: $mood";
     _emitState();
   }
 
   @override
   void selectSleep(String sleep) {
     _selectedSleep = sleep;
-    _feedbackMessage = "Selected: $sleep";
     _emitState();
   }
 
   @override
   void selectWorkout(String workout) {
     _selectedWorkout = workout;
-    _feedbackMessage = "Selected: $workout";
     _emitState();
   }
 
@@ -465,15 +623,15 @@ class SignInViewModel implements SignInViewModelBase {
             primaryColor: Colors.purple,
             colorScheme: const ColorScheme.light(
               primary: Colors.purple,
-              onPrimary: Colors.white, // Controls the selected date background text color
+              onPrimary: Colors.white,
             ),
             textTheme: const TextTheme(
               bodyLarge: TextStyle(
-                color: Colors.black, // Default day text color
+                color: Colors.black,
                 fontWeight: FontWeight.normal,
               ),
               labelLarge: TextStyle(
-                color: Colors.white, // Selected date text color
+                color: Colors.white,
               ),
             ),
             buttonTheme: const ButtonThemeData(
@@ -485,15 +643,15 @@ class SignInViewModel implements SignInViewModelBase {
       },
     );
     if (picked != null) {
-      dateOfBirthController.text = DateFormat('yyyy-MM-dd').format(picked);
+      dateOfBirthController.text = DateFormat('dd-MM-yyyy').format(picked);
     }
   }
-  // @override
-  // List<String> get displayedMoods => displayedMoods;
-  //
-  // @override
-  // List<String> get displayedSleeps => displayedSleeps;
-  //
-  // @override
-  // List<String> get displayedWorkouts => displayedWorkouts;
+
+  @override
+  void clearErrorMessage() {
+    if (_errorMessage != null) {
+      _errorMessage = null;
+      _emitState();
+    }
+  }
 }

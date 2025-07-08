@@ -1,77 +1,61 @@
 import 'package:aiwel/core/network/http_api_services.dart';
-import 'package:get_it/get_it.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:aiwel/features/auth/data/datasources/local/auth_local_datasource.dart';
+import 'package:aiwel/features/auth/data/datasources/remote/auth_remote_datasource.dart';
+import 'package:aiwel/features/auth/data/repositories/auth_repository.dart';
+import 'package:aiwel/features/auth/domain/usecases/get_access_token_use_case.dart';
+import 'package:aiwel/features/auth/domain/usecases/get_access_token_expiry_use_case.dart';
+import 'package:aiwel/features/auth/domain/usecases/refresh_token_use_case.dart';
+import 'package:aiwel/features/auth/domain/usecases/request_otp_use_case.dart';
+import 'package:aiwel/features/auth/domain/usecases/submit_profile_use_case.dart';
+import 'package:aiwel/features/auth/domain/usecases/verify_otp_use_case.dart';
+import 'package:aiwel/features/auth/presentation/view_models/sign_in_viewModel.dart';
 
-import '../core/network/api_service.dart';
-import '../features/auth/data/datasources/local/auth_local_datasource.dart';
-import '../features/auth/data/datasources/remote/auth_remote_datasource.dart';
-import '../features/auth/data/repositories/auth_repository.dart';
-import '../features/auth/domain/usecases/request_otp_use_case.dart';
-import '../features/auth/domain/usecases/verify_otp_use_case.dart';
-import '../features/auth/presentation/view_models/sign_in_viewModel.dart';
+class DependencyManager {
+static Future<SignInViewModel> createSignInViewModel() async {
+try {
+// Initialize MethodChannel-based AuthLocalDataSourceImpl
+final authLocalDataSource = AuthLocalDataSourceImpl();
 
-Future<void> setupAuthDependencies() async {
-  GetIt getIt = GetIt.instance;
+// Initialize HttpApiService for remote data source
+final apiService = HttpApiService();
 
-  final sharedPreferences = await SharedPreferences.getInstance();
+// Initialize AuthRemoteDataSource with IApiService
+final authRemoteDataSource = AuthRemoteDataSourceImpl(
+authLocalDataSource: authLocalDataSource,
+);
 
-  // Register SharedPreferences
-  if (!getIt.isRegistered<SharedPreferences>()) {
-    getIt.registerSingleton<SharedPreferences>(sharedPreferences);
-  }
+// Initialize AuthRepository
+final authRepository = AuthRepositoryImpl(
+authRemoteDataSource: authRemoteDataSource,
+authLocalDataSource: authLocalDataSource,
+);
 
-  // Register AuthLocalDataSourceImpl
-  if (!getIt.isRegistered<AuthLocalDataSourceImpl>()) {
-    getIt.registerSingleton<AuthLocalDataSourceImpl>(
-      AuthLocalDataSourceImpl(getIt<SharedPreferences>()),
-    );
-  }
+// Initialize use cases
+final requestOtpUseCase = RequestOtpUseCase(repository: authRepository);
+final submitProfileUseCase = SubmitProfileUseCase(authRepository: authRepository);
+final verifyOtpUseCase = VerifyOtpUseCase(
+repository: authRepository,
+authLocalDataSource: authLocalDataSource,
+);
+final getAccessTokenUseCase = GetAccessTokenUseCase(authRepository: authRepository);
+final getAccessTokenExpiryUseCase = GetAccessTokenExpiryUseCase(authRepository: authRepository);
+final refreshTokenUseCase = RefreshTokenUseCase(
+authRemoteDataSource: authRemoteDataSource,
+authLocalDataSource: authLocalDataSource,
+);
 
-  // Register IApiService
-  if (!getIt.isRegistered<IApiService>()) {
-    getIt.registerLazySingleton<IApiService>(() => HttpApiService());
-  }
-
-  // Register data sources
-  if (!getIt.isRegistered<AuthRemoteDataSource>()) {
-    getIt.registerLazySingleton<AuthRemoteDataSource>(
-          () => AuthRemoteDataSource(apiService: getIt<IApiService>()),
-    );
-  }
-
-  // Register repository
-  if (!getIt.isRegistered<AuthRepository>()) {
-    getIt.registerLazySingleton<AuthRepository>(
-          () => AuthRepositoryImpl(
-        authRemoteDataSource: getIt<AuthRemoteDataSource>(),
-        authLocalDataSource: getIt<AuthLocalDataSourceImpl>(),
-      ),
-    );
-  }
-
-  // Register use cases
-  if (!getIt.isRegistered<RequestOtpUseCase>()) {
-    getIt.registerLazySingleton<RequestOtpUseCase>(
-          () => RequestOtpUseCase(repository: getIt<AuthRepository>()),
-    );
-  }
-  if (!getIt.isRegistered<VerifyOtpUseCase>()) {
-    getIt.registerLazySingleton<VerifyOtpUseCase>(
-          () => VerifyOtpUseCase(
-        repository: getIt<AuthRepository>(),
-        authLocalDataSource: getIt<AuthLocalDataSourceImpl>(),
-      ),
-    );
-  }
-
-  // Register ViewModel as singleton
-  if (!getIt.isRegistered<SignInViewModelBase>()) {
-    getIt.registerSingleton<SignInViewModelBase>(
-      SignInViewModel(
-        requestOtpUseCase: getIt<RequestOtpUseCase>(),
-        verifyOtpUseCaseBase: getIt<VerifyOtpUseCase>(),
-        authLocalDataSourceImpl: getIt<AuthLocalDataSourceImpl>(),
-      ),
-    );
-  }
+// Return SignInViewModel with all dependencies
+return SignInViewModel(
+requestOtpUseCase: requestOtpUseCase,
+verifyOtpUseCaseBase: verifyOtpUseCase,
+authLocalDataSourceImpl: authLocalDataSource,
+submitProfileUseCaseBase: submitProfileUseCase,
+getAccessTokenUseCase: getAccessTokenUseCase,
+getAccessTokenExpiryUseCase: getAccessTokenExpiryUseCase,
+refreshUseCase: refreshTokenUseCase,
+);
+} catch (e) {
+throw Exception('Failed to create SignInViewModel: $e');
+}
+}
 }

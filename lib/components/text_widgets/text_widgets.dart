@@ -147,7 +147,7 @@ class MediumPurpleText extends CustomText {
         super.overflow,
       }) : super(
     style: TextStyle(
-      // color: Color(0xFF6A1B9A),
+      color: Color(0xFF6A1B9A),
       fontSize: fontSize ?? 16,
       fontWeight: FontWeight.w500,
     ),

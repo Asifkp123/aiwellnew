@@ -13,6 +13,7 @@ const String appLogo = 'applogo.svg';
 const String appLogoSmall = 'assets/images/logoSmall.png';
 const double cardPadding = 15.0;
 const double scaffoldPadding = 16.0;
+const double buttonPadding = 5.0;
 const double bottomPadding = 100.0;
 double buttonBottomPadding = Platform.isIOS ? 30 : 20.0;
 const double topPadding = 20.0;

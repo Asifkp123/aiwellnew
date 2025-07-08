@@ -1,13 +1,18 @@
+import 'package:aiwel/features/auth/presentation/screens/profile_screens/profile_screen.dart';
 import 'package:aiwel/features/auth/presentation/widgets/three_circle_conatiner.dart';
+import 'package:aiwel/features/home/home_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../components/buttons/label_button.dart';
 import '../../../../../components/constants.dart';
+import '../../../../../components/snackbars/custom_snackbar.dart';
 import '../../../../../components/snackbars/error_snackbar.dart';
 import '../../../../../components/text_widgets/text_widgets.dart';
 import '../../view_models/sign_in_viewModel.dart';
+import '../../widgets/back_button_widget.dart';
 import '../../widgets/selectable_listView.dart';
 import '../../widgets/slider_animation.dart';
+import '../otp_screen.dart';
 import '../signin_signup_screen.dart';
 
 class WorkoutScreen extends StatelessWidget {
@@ -50,7 +55,10 @@ class WorkoutScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(height: 120),
+                    SizedBox(height: 60),
+                    BackButtonWidget(),
+
+                    SizedBox(height: 60),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
@@ -100,26 +108,41 @@ class WorkoutScreen extends StatelessWidget {
           ),
           floatingActionButton: LabelButton(
             label: 'Continue',
-            onTap: () {
+            onTap: () async {
               if (state.selectedWorkout == null) {
                 ScaffoldMessenger.of(context).showSnackBar(
-
-                    errorSnackBarWidget( "Please pick your workout level to move forward.")
+                  errorSnackBarWidget("Please pick your workout level to move forward."),
                 );
-
                 return;
               }
 
+              final result = await viewModelBase.submitProfile();
+              result.fold(
+                    (failure) {
+                      ScaffoldMessenger.of(context)!.showSnackBar(
 
+                        commonSnackBarWidget(
+                          content: "Please fill in all fields to proceed.",
+                          type: SnackBarType.error,
+                        ),
+                      );
 
-              Navigator.pushNamed(context, SigninSignupScreen.routeName);
-              // Navigator.pushNamed(context, SigninSignupScreen.routeName);
+                      Navigator.pushNamed(context, ProfileScreen.routeName);
+                },
+                    (success) {
+                  if (success) {
+                    Navigator.pushNamed(context, HomeScreen.routeName);
+                  } else {
+                    Navigator.pushNamed(context, OtpScreen.routeName);
+                  }
+                },
+              );
             },
-            gradient: splashGradient(), // Cast to access splashGradient
-            fontColor: Theme
-                .of(context)
-                .primaryColorLight,
+            gradient: splashGradient(),
+            fontColor: Theme.of(context).primaryColorLight,
           ),
+
+
           floatingActionButtonLocation: FloatingActionButtonLocation
               .centerFloat,
         );

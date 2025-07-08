@@ -1,9 +1,11 @@
 import 'package:aiwel/features/auth/presentation/screens/profile_screens/workout_screen.dart';
+import 'package:aiwel/features/auth/presentation/widgets/back_button_widget.dart';
 import 'package:aiwel/features/auth/presentation/widgets/three_circle_conatiner.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../components/buttons/label_button.dart';
 import '../../../../../components/constants.dart';
+import '../../../../../components/snackbars/custom_snackbar.dart';
 import '../../../../../components/snackbars/error_snackbar.dart';
 import '../../../../../components/text_widgets/text_widgets.dart';
 import '../../view_models/sign_in_viewModel.dart';
@@ -53,7 +55,10 @@ class SleepQualityScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(height: 120),
+                    SizedBox(height: 60),
+
+                    BackButtonWidget(),
+                    SizedBox(height: 60),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
@@ -108,10 +113,14 @@ class SleepQualityScreen extends StatelessWidget {
             label: 'Continue',
             onTap: () {
               if (state.selectedSleep == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                ScaffoldMessenger.of(context)!.showSnackBar(
 
-                    errorSnackBarWidget( "Please choose your sleep quality to proceed.")
+                  commonSnackBarWidget(
+                    content: "Please fill in all fields to proceed.",
+                    type: SnackBarType.error,
+                  ),
                 );
+
 
                 return;
               }

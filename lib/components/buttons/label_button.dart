@@ -82,7 +82,7 @@ class LabelButton extends StatelessWidget {
     }
 
     return Padding(
-      padding: padding ?? EdgeInsets.symmetric(horizontal: scaffoldPadding, vertical: 16),
+      padding: padding ?? EdgeInsets.symmetric(horizontal: buttonPadding, vertical: 16),
       child: button,
     );
   }

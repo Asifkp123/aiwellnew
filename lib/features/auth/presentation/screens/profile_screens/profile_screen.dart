@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../../components/buttons/label_button.dart';
 import '../../../../../components/constants.dart';
+import '../../../../../components/snackbars/custom_snackbar.dart';
 import '../../../../../components/snackbars/error_snackbar.dart';
 import '../../../../../components/text_widgets/text_widgets.dart';
 import '../../../../../components/textfields/simple_textfield.dart';
@@ -60,6 +61,15 @@ class ProfileScreen extends StatelessWidget {
                     textInputAction: TextInputAction.next,
                   ),
                   const SizedBox(height: 16),
+                  SimpleTextField(
+                    hintText: "Enter your second name",
+                    controller: viewModelBase.lastNameController,
+                    onChange: (value) => viewModelBase.clearError(),
+                    isEnabled: true,
+                    keyboardType: TextInputType.name,
+                    textInputAction: TextInputAction.next,
+                  ),
+                  const SizedBox(height: 16),
                   GestureDetector(
                     onTap: () => viewModelBase.selectDate(context),
                     child: AbsorbPointer(
@@ -77,16 +87,36 @@ class ProfileScreen extends StatelessWidget {
                   DropdownButtonFormField<String>(
                     decoration: InputDecoration(
                       hintText: "Select Gender",
+                      hintStyle: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 0.1,
+                        color: Theme.of(context).hintColor,
+                      ),
                       suffixIcon: Icon(Icons.keyboard_arrow_down, color: Theme.of(context).hintColor),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.1,
+                      color: Colors.black, // Selected item text color
+                    ),
                     value: state.gender,
                     items: ['Male', 'Female', 'Other']
                         .map((gender) => DropdownMenuItem(
                       value: gender,
-                      child: Text(gender),
+                      child: Text(
+                        gender,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: 0.1,
+                          color: Colors.black, // Dropdown menu item text color
+                        ),
+                      ),
                     ))
                         .toList(),
                     onChanged: (value) {
@@ -111,9 +141,19 @@ class ProfileScreen extends StatelessWidget {
               if (viewModelBase.nameController.text.isEmpty ||
                   viewModelBase.dateOfBirthController.text.isEmpty ||
                   viewModelBase.genderController.text.isEmpty) {
-                 ScaffoldMessenger.of(context).showSnackBar(
-                     errorSnackBarWidget( "Please fill in all fields to proceed.")
-                  );
+                 // ScaffoldMessenger.of(context).showSnackBar(
+                 //     errorSnackBarWidget( "Please fill in all fields to proceed.")
+                 //  );
+
+                ScaffoldMessenger.of(context)!.showSnackBar(
+
+                  commonSnackBarWidget(
+                    content: "Please fill in all fields to proceed.",
+                    type: SnackBarType.error,
+                  ),
+                );
+
+
 
                 return;
               }

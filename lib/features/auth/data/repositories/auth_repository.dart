@@ -1,23 +1,32 @@
-import 'dart:async';
 import 'package:dartz/dartz.dart';
-import 'package:http/http.dart' as http;
-
 import '../../../../core/network/error/failure.dart';
-import '../../data/datasources/remote/auth_remote_datasource.dart';
-import '../../data/datasources/local/auth_local_datasource.dart';
-import '../../domain/usecases/request_otp_use_case.dart';
+import '../datasources/local/auth_local_datasource.dart';
+import '../datasources/remote/auth_remote_datasource.dart';
 import '../models/api/otp_request_success.dart';
+import '../models/api/token_resonse.dart';
+import '../models/api/submit_profile_response.dart';
 import '../models/api/verify_otp_response.dart';
 
 abstract class AuthRepository {
-  Future<Either<Failure, OtpRequestSuccess>> requestOtp({String? email, String? phoneNumber});
-  Future<Either<Failure, http.Response>> verifyOtp(String identifier, String otp);
+Future<Either<Failure, OtpRequestSuccess>> requestOtp({String? email, String? phoneNumber});
+Future<Either<Failure, TokenResponse>> verifyOtp(String identifier, String otp);
+Future<Either<Failure, SubmitProfileResponse>> submitProfile({
+required String firstName,
+required String lastName,
+required String gender,
+required String dateOfBirth,
+required String dominantEmotion,
+required String sleepQuality,
+required String physicalActivity,
+});
+Future<String?> getAccessToken();
+Future<int?> getAccessTokenExpiry();
 }
+
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource authRemoteDataSource;
   final AuthLocalDataSourceBase authLocalDataSource;
-
 
   AuthRepositoryImpl({
     required this.authRemoteDataSource,
@@ -25,30 +34,43 @@ class AuthRepositoryImpl implements AuthRepository {
   });
 
   @override
-  Future<Either<Failure, OtpRequestSuccess>> requestOtp(
-      {String? email, String? phoneNumber}) async {
-    Either<Failure, OtpRequestSuccess> response = await authRemoteDataSource
-        .requestOtp(email: email, phoneNumber: phoneNumber);
-    return response;
+  Future<Either<Failure, OtpRequestSuccess>> requestOtp({String? email, String? phoneNumber}) async {
+    return await authRemoteDataSource.requestOtp(email: email, phoneNumber: phoneNumber);
   }
 
+  @override
+  Future<Either<Failure, TokenResponse>> verifyOtp(String identifier, String otp) async {
+    return await authRemoteDataSource.verifyOtp(identifier, otp);
+  }
 
   @override
-  @override
-  Future<Either<Failure, http.Response>> verifyOtp(String identifier, String otp) async {
-    final response = await authRemoteDataSource.verifyOtp(identifier, otp);
-    return response.fold(
-          (failure) => Left(failure),
-          (response) async {
-        try {
-          if (response != null) {
-            return Right(response);
-          } else {
-            return Left(Failure('Verification failed: empty response'));
-          }
-        } catch (e) {
-          return Left(Failure('Failed to save token: $e'));
-        }
-      },
+  Future<Either<Failure, SubmitProfileResponse>> submitProfile({
+    required String firstName,
+    required String lastName,
+    required String gender,
+    required String dateOfBirth,
+    required String dominantEmotion,
+    required String sleepQuality,
+    required String physicalActivity,
+  }) async {
+    return await authRemoteDataSource.submitProfile(
+      firstName: firstName,
+      lastName: lastName,
+      gender: gender,
+      dateOfBirth: dateOfBirth,
+      dominantEmotion: dominantEmotion,
+      sleepQuality: sleepQuality,
+      physicalActivity: physicalActivity,
     );
-  }}
+  }
+
+  @override
+  Future<String?> getAccessToken() async {
+    return await authLocalDataSource.getAccessToken();
+  }
+
+  @override
+  Future<int?> getAccessTokenExpiry() async {
+    return await authLocalDataSource.getAccessTokenExpiry();
+  }
+}

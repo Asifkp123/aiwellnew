@@ -1,12 +1,13 @@
+import 'package:aiwel/features/auth/presentation/screens/profile_screens/profile_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:aiwel/components/buttons/label_button.dart';
 import 'package:aiwel/components/constants.dart';
 import 'package:aiwel/components/snackbars/success_snackbar.dart';
-import 'package:aiwel/components/buttons/label_button.dart';
 import 'package:aiwel/components/text_widgets/text_widgets.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../view_models/sign_in_viewModel.dart';
-import '../widgets/pinput_widget.dart';
+import '../widgets/keyboard.dart';
 
 class OtpScreen extends StatelessWidget {
   static const String routeName = '/otpScreen';
@@ -26,9 +27,9 @@ class OtpScreen extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Color(0xFFE4D6FA), // light purple
-                Color(0xFFF1EAFE), // even lighter
-                Color(0xFFFFFFFF), // white middle
+                Color(0xFFE4D6FA),
+                Color(0xFFF1EAFE),
+                Color(0xFFFFFFFF),
                 Color(0xFFF1EAFE),
                 Color(0xFFE4D6FA),
               ],
@@ -41,10 +42,10 @@ class OtpScreen extends StatelessWidget {
             builder: (context, snapshot) {
               final state = snapshot.data!;
               final isLoading = state.isLoading;
+
               final canResendOtp = state.countdownSeconds == 0 && !isLoading;
               final isCountdownActive = state.countdownSeconds > 0 || state.status == SignInStatus.otpSent;
 
-              // Show feedback message if present
               if (state.feedbackMessage != null) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   successSnackBarWidget(state.feedbackMessage!);
@@ -57,14 +58,14 @@ class OtpScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 115),
-                    Center(
-                      child: SvgPicture.asset(
-                        '$svgPath/applogo.svg',
-                        height: 120,
-                        width: 120,
-                      ),
-                    ),
+                    const SizedBox(height: 100),
+                    // Center(
+                    //   child: SvgPicture.asset(
+                    //     '$svgPath/applogo.svg',
+                    //     height: 120,
+                    //     width: 120,
+                    //   ),
+                    // ),
                     const SizedBox(height: 50),
                     LargePurpleText("We’ve sent you a code"),
                     const SizedBox(height: 16),
@@ -81,9 +82,8 @@ class OtpScreen extends StatelessWidget {
                             text: 'Check your messages - we just sent a 6 digit code to ',
                           ),
                           TextSpan(
-                            text: viewModelBase.emailController.text.isNotEmpty
-                                ? viewModelBase.emailController.text
-                                : 'email__here@.com',
+                            text:
+                                 viewModelBase.emailController.text,
                             style: GoogleFonts.poppins(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
@@ -96,99 +96,60 @@ class OtpScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 32),
-                    PinputWidget(
+                    const SizedBox(height: 15),
+
+                    // CustomPinInput(
+                    //
+                    //   controller: viewModelBase.otpController,
+                    //   onCompleted: (_) async {
+                    //     final result = await viewModelBase.verifyOtp();
+                    //     if (result.isRight()) {
+                    //       viewModelBase.clearInputs();
+                    //       ScaffoldMessenger.of(context).showSnackBar(
+                    //         successSnackBarWidget("OTP verified successfully!"),
+                    //       );
+                    //
+                    //       Navigator.pushNamed(context, ProfileScreen.routeName, arguments: viewModelBase);
+                    //
+                    //     }
+                    //
+                    //
+                    //   },
+                    //   isLoading: state.isLoading,
+                    // ),
+
+
+                    CustomPinInput(
                       controller: viewModelBase.otpController,
-                      onChanged: (value) => viewModelBase.clearError(),
-                      onCompleted: (pin) => viewModelBase.verifyOtp(),
+                      onCompleted: (_) async {
+                        final result = await viewModelBase.verifyOtp();
+                        if (result.isRight()) {
+                          viewModelBase.clearInputs();
+                          // ScaffoldMessenger.of(context).showSnackBar(
+                          //   successSnackBarWidget("OTP verified successfully!"),
+                          // );
+                          Navigator.pushNamed(context, ProfileScreen.routeName, arguments: viewModelBase);
+                        }
+                      },
+                      isLoading: state.isLoading,
+                      countdownSeconds: state.countdownSeconds,
+                      canResend: state.countdownSeconds == 0 && !state.isLoading,
+                      onResend: viewModelBase.requestOtp,
+                      errorMessage: state.errorMessage,
                     ),
-                    if (state.errorMessage != null) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        state.errorMessage!,
-                        style: const TextStyle(
-                          color: Colors.red,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
+
+
+
                     const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        RichText(
-                          text: TextSpan(
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: const Color(0xFF606060),
-                              fontWeight: FontWeight.w400,
-                            ),
-                            children: [
-                              const TextSpan(text: "Didn't get the code? "),
-                              TextSpan(
-                                text: isCountdownActive
-                                    ? 'Resend in ${state.countdownSeconds}s'
-                                    : 'Resend',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.black,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: canResendOtp
-                              ? () async {
-                            final result = await viewModelBase.requestOtp();
-                            // Feedback is handled via state.feedbackMessage
-                          }
-                              : null,
-                          style: TextButton.styleFrom(
-                            foregroundColor: canResendOtp ? Colors.indigo : Colors.grey,
-                            textStyle: GoogleFonts.poppins(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          child: const Text("Resend OTP"),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
+
+
+                  ]
+
+                ),);
             },
           ),
         ),
       ),
-      floatingActionButton: StreamBuilder<SignInState>(
-        stream: viewModelBase.stateStream,
-        initialData: SignInState(status: SignInStatus.idle),
-        builder: (context, snapshot) {
-          final state = snapshot.data!;
-          final isLoading = state.isLoading;
-          return LabelButton(
-            label: isLoading ? 'Verifying...' : 'Verify OTP',
-            onTap: isLoading
-                ? null
-                : () async {
-              final result = await viewModelBase.verifyOtp();
-              if (result.isRight()) {
-                viewModelBase.clearInputs();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Sign-in successful!")),
-                );
-                // Navigate to next screen if needed
-              }
-            },
-            gradient: splashGradient(),
-            fontColor: Theme.of(context).primaryColorLight,
-          );
-        },
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }

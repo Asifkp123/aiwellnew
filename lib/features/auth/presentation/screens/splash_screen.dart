@@ -2,27 +2,46 @@ import 'dart:ui';
 import 'package:aiwel/components/buttons/label_button.dart';
 import 'package:aiwel/components/text_widgets/text_widgets.dart';
 import 'package:aiwel/features/auth/presentation/screens/signin_signup_screen.dart';
-import 'package:aiwel/features/auth/presentation/widgets/devider.dart';
-import 'package:aiwel/features/routes/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../../../../components/constants.dart';
+import '../../../home/home_screen.dart';
+import '../view_models/sign_in_viewModel.dart';
 
 class SplashScreen extends StatelessWidget {
+
+  final SignInViewModelBase viewModelBase;
+
+
   static const String routeName = '/splashScreen';
-  const SplashScreen({super.key});
+  const SplashScreen({super.key,required this.viewModelBase});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton:             LabelButton(
         label: 'Let’s get started',
-        onTap: () {
-          // Navigator.pushNamed(context, '/signinSignup');
-          Navigator.pushNamed(context, SigninSignupScreen.routeName);
+          onTap: () async {
 
-        },
+            final token = await viewModelBase.getToken();
+            print(token);
+            print("token");
+            if (token == null || token.isEmpty) {
+              // No token found, navigate to SigninSignupScreen
+              // return SigninSignupScreen(viewModelBase: viewModel);
+              Navigator.pushNamed(context, SigninSignupScreen.routeName);
+
+            }else{
+
+              Navigator.pushNamed(context, HomeScreen.routeName);
+
+
+            }
+
+            // Navigator.pushNamed(context, '/signinSignup');
+
+          },
         gradient: splashGradient(),
         // bgColor: const Color(0xffF6F6F6),
         fontColor: Theme.of(context).primaryColorLight,

@@ -1,0 +1,44 @@
+import 'package:aiwel/features/auth/data/repositories/auth_repository.dart';
+import 'package:dartz/dartz.dart';
+import 'package:http/http.dart' as http;
+
+import '../../../../core/network/error/failure.dart';
+
+abstract class SubmitProfileUseCaseBase {
+  Future<Either<Failure, http.Response>> execute({
+    required String firstName,
+    required String lastName,
+    required String gender,
+    required String dateOfBirth,
+    required String dominantEmotion,
+    required String sleepQuality,
+    required String physicalActivity,
+  });
+}
+
+class SubmitProfileUseCase implements SubmitProfileUseCaseBase {
+  final AuthRepository authRepository;
+
+  SubmitProfileUseCase({required this.authRepository});
+
+  @override
+  Future<Either<Failure, http.Response>> execute({
+    required String firstName,
+    required String lastName,
+    required String gender,
+    required String dateOfBirth,
+    required String dominantEmotion,
+    required String sleepQuality,
+    required String physicalActivity,
+  }) async {
+    return await authRepository.submitProfile(
+      firstName: firstName,
+      lastName: lastName,
+      gender: gender,
+      dateOfBirth: dateOfBirth,
+      dominantEmotion: dominantEmotion,
+      sleepQuality: sleepQuality,
+      physicalActivity: physicalActivity,
+    );
+  }
+}

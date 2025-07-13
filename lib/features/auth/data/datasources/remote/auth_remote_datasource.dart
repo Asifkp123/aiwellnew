@@ -83,7 +83,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         ));
       } else {
         final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
-        final errorMessage = responseBody['message'] ?? 'OTP verification failed: ${response.reasonPhrase}';
+        final errorMessage = responseBody['message'];
         return Left(Failure(errorMessage));
       }
     } catch (e) {

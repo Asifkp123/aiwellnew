@@ -1,0 +1,563 @@
+import 'dart:async';
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
+import '../../../auth/data/datasources/local/auth_local_datasource.dart';
+import '../../domain/usecases/create_pal_use_case.dart';
+import '../../data/models/api/create_pal_request.dart';
+
+enum AddPalStateStatus { idle, loading, success, error }
+
+class AddPalState {
+  final AddPalStateStatus status;
+  final String? name;
+  final String? lastName;
+  final DateTime? dob;
+  final String? selectedAbleToWalk;
+  final String? gender;
+  final String? primary_diagnosis;
+  final String? errorMessage;
+  final bool? can_walk;
+  final bool? needs_walking_aid;
+  final bool? is_bedridden;
+  final bool? has_dementia;
+  final bool? is_agitated;
+  final bool? is_depressed;
+  final String? dominant_emotion;
+  final String? sleep_pattern;
+  final String? sleep_quality;
+  final String? pain_status;
+  final TextEditingController? primaryDiagnosisController;
+
+  AddPalState({
+    required this.status,
+    this.name,
+    this.lastName,
+    this.dob,
+    this.selectedAbleToWalk,
+    this.gender,
+    this.primary_diagnosis,
+    this.errorMessage,
+    this.can_walk,
+    this.needs_walking_aid,
+    this.is_bedridden,
+    this.has_dementia,
+    this.is_agitated,
+    this.is_depressed,
+    this.dominant_emotion,
+    this.sleep_pattern,
+    this.sleep_quality,
+    this.pain_status,
+    this.primaryDiagnosisController,
+  });
+
+  AddPalState copyWith({
+    AddPalStateStatus? status,
+    String? name,
+    String? lastName,
+    DateTime? dob,
+    String? selectedAbleToWalk,
+    String? gender,
+    String? primary_diagnosis,
+    String? errorMessage,
+    bool? can_walk,
+    bool? needs_walking_aid,
+    bool? is_bedridden,
+    bool? has_dementia,
+    bool? is_agitated,
+    bool? is_depressed,
+    String? dominant_emotion,
+    String? sleep_pattern,
+    String? sleep_quality,
+    String? pain_status,
+  }) {
+    return AddPalState(
+      status: status ?? this.status,
+      name: name ?? this.name,
+      lastName: lastName ?? this.lastName,
+      dob: dob ?? this.dob,
+      selectedAbleToWalk: selectedAbleToWalk ?? this.selectedAbleToWalk,
+      gender: gender ?? this.gender,
+      primary_diagnosis: primary_diagnosis ?? this.primary_diagnosis,
+      errorMessage: errorMessage ?? this.errorMessage,
+      can_walk: can_walk ?? this.can_walk,
+      needs_walking_aid: needs_walking_aid ?? this.needs_walking_aid,
+      is_bedridden: is_bedridden ?? this.is_bedridden,
+      has_dementia: has_dementia ?? this.has_dementia,
+      is_agitated: is_agitated ?? this.is_agitated,
+      is_depressed: is_depressed ?? this.is_depressed,
+      dominant_emotion: dominant_emotion ?? this.dominant_emotion,
+      sleep_pattern: sleep_pattern ?? this.sleep_pattern,
+      sleep_quality: sleep_quality ?? this.sleep_quality,
+      pain_status: pain_status ?? this.pain_status,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'AddPalState(status: $status, name: $name, lastName: $lastName, gender: $gender, can_walk: $can_walk, '
+        'needs_walking_aid: $needs_walking_aid, is_bedridden: $is_bedridden, has_dementia: $has_dementia, '
+        'is_agitated: $is_agitated, is_depressed: $is_depressed, dominant_emotion: $dominant_emotion, '
+        'sleep_pattern: $sleep_pattern, sleep_quality: $sleep_quality, pain_status: $pain_status, '
+        'errorMessage: $errorMessage)';
+  }
+}
+
+abstract class AddViewModelBase {
+  List<String> get yesOrNoList;
+  List<String> get addPalMoodList;
+  List<String> get sleepPatternList;
+  List<String> get sleepBeenList;
+  List<String> get discomfortList;
+  Stream<AddPalState> get stateStream;
+  TextEditingController get emailController;
+  TextEditingController get otpController;
+  TextEditingController get nameController;
+  TextEditingController get lastNameController;
+  TextEditingController get dateOfBirthController;
+  TextEditingController get genderController;
+  TextEditingController get primaryDiagnosisController;
+  void yesOrNoSelected(String value);
+  void clearError();
+  void selectDate(BuildContext context);
+  void setNeedsWalkingAid(String value);
+  void setIsBedridden(String value);
+  void setHasDementia(String value);
+  void setIsAgitated(String value);
+  void setIsDepressed(String value);
+  void setDominantEmotion(String value);
+  void setSleepPattern(String value);
+  void setSleepQuality(String value);
+  void setPainStatus(String value);
+  void updateStateWithControllers();
+  Future<void> submitPalData();
+}
+
+class AddPalViewModel extends AddViewModelBase {
+  final AuthLocalDataSourceImpl authLocalDataSource;
+  final CreatePalUseCase createPalUseCase;
+
+  AddPalViewModel({
+    required this.authLocalDataSource,
+    required this.createPalUseCase,
+  }) {
+    // Initialize default state
+    _currentState = AddPalState(
+      status: AddPalStateStatus.idle,
+      can_walk: false,
+      needs_walking_aid: false,
+      is_bedridden: false,
+      has_dementia: false,
+      is_agitated: false,
+      is_depressed: false,
+      dominant_emotion: 'Neutral',
+      sleep_pattern: 'Uninterrupted',
+      sleep_quality: 'Good',
+      pain_status: 'No Pain',
+    );
+    _stateController.add(_currentState);
+  }
+
+  String? _authToken;
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _otpController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _dateOfBirthController = TextEditingController();
+  final TextEditingController _genderController = TextEditingController();
+  final TextEditingController _primaryDiagnosisController =
+      TextEditingController();
+
+  @override
+  TextEditingController get emailController => _emailController;
+  @override
+  TextEditingController get otpController => _otpController;
+  @override
+  TextEditingController get nameController => _nameController;
+  @override
+  TextEditingController get lastNameController => _lastNameController;
+  @override
+  TextEditingController get dateOfBirthController => _dateOfBirthController;
+  @override
+  TextEditingController get genderController => _genderController;
+  @override
+  TextEditingController get primaryDiagnosisController =>
+      _primaryDiagnosisController;
+
+  final List<String> _yesOrNoList = ['Yes', 'No'];
+  final List<String> _addPalMoodList = [
+    "Happy",
+    "Sad",
+    "Angry",
+    "Anxious",
+    "Calm",
+    "Tired",
+    "Confused",
+    "Excited",
+    "Scared",
+    "Neutral"
+  ];
+  final List<String> _sleepPatternList = [
+    "Uninterrupted",
+    "Fragmented",
+    "Delayed",
+    "Early Awakening",
+    "Oversleeping",
+    "Irregular",
+    "No sleep"
+  ];
+  final List<String> _sleepBeenList = ["Excellent", "Good", "Fair", "Poor"];
+  final List<String> _discomfortList = [
+    "No Pain",
+    "Mild",
+    "Moderate",
+    "Severe",
+    "Very Severe",
+    "Worst Possible",
+    "Unknown"
+  ];
+
+  @override
+  List<String> get yesOrNoList => _yesOrNoList;
+  @override
+  List<String> get addPalMoodList => _addPalMoodList;
+  @override
+  List<String> get sleepPatternList => _sleepPatternList;
+  @override
+  List<String> get sleepBeenList => _sleepBeenList;
+  @override
+  List<String> get discomfortList => _discomfortList;
+
+  final StreamController<AddPalState> _stateController =
+      StreamController<AddPalState>.broadcast();
+  AddPalState _currentState = AddPalState(status: AddPalStateStatus.idle);
+
+  @override
+  Stream<AddPalState> get stateStream => _stateController.stream;
+
+  void _updateState(AddPalState newState) {
+    _currentState = newState;
+    _stateController.add(newState);
+    print('State Updated: $newState');
+  }
+
+  @override
+  void yesOrNoSelected(String value) {
+    _updateStateWithControllers(
+      can_walk: value == 'Yes',
+      selectedAbleToWalk: value,
+    );
+  }
+
+  @override
+  void setDominantEmotion(String value) {
+    _updateStateWithControllers(dominant_emotion: value);
+  }
+
+  @override
+  void setNeedsWalkingAid(String value) {
+    _updateStateWithControllers(needs_walking_aid: value == 'Yes');
+  }
+
+  @override
+  void setIsBedridden(String value) {
+    _updateStateWithControllers(is_bedridden: value == 'Yes');
+  }
+
+  @override
+  void setHasDementia(String value) {
+    _updateStateWithControllers(has_dementia: value == 'Yes');
+  }
+
+  @override
+  void setIsAgitated(String value) {
+    _updateStateWithControllers(is_agitated: value == 'Yes');
+  }
+
+  @override
+  void setIsDepressed(String value) {
+    _updateStateWithControllers(is_depressed: value == 'Yes');
+  }
+
+  @override
+  void setSleepPattern(String value) {
+    _updateStateWithControllers(sleep_pattern: value);
+  }
+
+  @override
+  void setSleepQuality(String value) {
+    _updateStateWithControllers(sleep_quality: value);
+  }
+
+  @override
+  void setPainStatus(String value) {
+    _updateStateWithControllers(pain_status: value);
+  }
+
+  @override
+  void clearError() {
+    _updateStateWithControllers(errorMessage: null);
+  }
+
+  void resetStateStatus() {
+    _updateStateWithControllers(status: AddPalStateStatus.idle);
+  }
+
+  @override
+  void updateStateWithControllers() {
+    _updateStateWithControllers();
+  }
+
+  void _updateStateWithControllers({
+    AddPalStateStatus? status,
+    String? selectedAbleToWalk,
+    bool? can_walk,
+    bool? needs_walking_aid,
+    bool? is_bedridden,
+    bool? has_dementia,
+    bool? is_agitated,
+    bool? is_depressed,
+    String? dominant_emotion,
+    String? sleep_pattern,
+    String? sleep_quality,
+    String? pain_status,
+    String? errorMessage,
+  }) {
+    print('_updateStateWithControllers called');
+    print('_nameController.text: "${_nameController.text}"');
+    print('_genderController.text: "${_genderController.text}"');
+    print('DEBUG: errorMessage parameter: $errorMessage');
+
+    _updateState(AddPalState(
+      status: status ?? _currentState.status,
+      name: _nameController.text.isNotEmpty ? _nameController.text : null,
+      lastName:
+          _lastNameController.text.isNotEmpty ? _lastNameController.text : null,
+      selectedAbleToWalk:
+          selectedAbleToWalk ?? _currentState.selectedAbleToWalk,
+      gender: _genderController.text.isNotEmpty ? _genderController.text : null,
+      errorMessage: errorMessage ?? _currentState.errorMessage,
+      can_walk: can_walk ?? _currentState.can_walk,
+      needs_walking_aid: needs_walking_aid ?? _currentState.needs_walking_aid,
+      is_bedridden: is_bedridden ?? _currentState.is_bedridden,
+      has_dementia: has_dementia ?? _currentState.has_dementia,
+      is_agitated: is_agitated ?? _currentState.is_agitated,
+      is_depressed: is_depressed ?? _currentState.is_depressed,
+      dominant_emotion: dominant_emotion ?? _currentState.dominant_emotion,
+      sleep_pattern: sleep_pattern ?? _currentState.sleep_pattern,
+      sleep_quality: sleep_quality ?? _currentState.sleep_quality,
+      pain_status: pain_status ?? _currentState.pain_status,
+    ));
+  }
+
+  @override
+  void selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+      builder: (context, child) => Theme(
+        data: ThemeData.light().copyWith(
+          primaryColor: Colors.purple,
+          colorScheme: const ColorScheme.light(
+              primary: Colors.purple, onPrimary: Colors.white),
+          textTheme: const TextTheme(
+            bodyLarge:
+                TextStyle(color: Colors.black, fontWeight: FontWeight.normal),
+            labelLarge: TextStyle(color: Colors.white),
+          ),
+          buttonTheme:
+              const ButtonThemeData(textTheme: ButtonTextTheme.primary),
+        ),
+        child: child!,
+      ),
+    );
+    if (picked != null) {
+      _dateOfBirthController.text = DateFormat('dd-MM-yyyy').format(picked);
+      _updateStateWithControllers();
+    }
+  }
+
+  AddPalState getCurrentStateWithControllers() {
+    return _currentState.copyWith(
+      name: _nameController.text.isNotEmpty ? _nameController.text : null,
+      lastName:
+          _lastNameController.text.isNotEmpty ? _lastNameController.text : null,
+      gender: _genderController.text.isNotEmpty ? _genderController.text : null,
+    );
+  }
+
+  Future<void> _initializeAuthToken() async {
+    try {
+      final accessToken = await authLocalDataSource.getAccessToken();
+      final expiry = await authLocalDataSource.getAccessTokenExpiry();
+      final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+      if (accessToken != null && expiry != null && currentTime < expiry) {
+        _authToken = accessToken;
+      } else {
+        _updateStateWithControllers(
+          errorMessage: 'Access token invalid or expired. Please log in again.',
+          status: AddPalStateStatus.error,
+        );
+        await authLocalDataSource.clearTokens();
+      }
+    } catch (e) {
+      _updateStateWithControllers(
+        errorMessage: 'Failed to retrieve access token: $e',
+        status: AddPalStateStatus.error,
+      );
+    }
+  }
+
+  @override
+  Future<void> submitPalData() async {
+    try {
+      final currentState = getCurrentStateWithControllers();
+      print('Submitting PAL data: $currentState');
+
+      // Validate required fields
+      if (!_validateRequiredFields(currentState)) {
+        return;
+      }
+
+      _updateStateWithControllers(status: AddPalStateStatus.loading);
+
+      // Format date
+      final formattedDate = _formatDate(_dateOfBirthController.text.trim());
+      if (formattedDate == null) {
+        _showError('Invalid date format. Please use DD-MM-YYYY format.');
+        return;
+      }
+
+      // Create request object
+      final request = CreatePalRequest(
+        firstName: currentState.name?.trim() ?? '',
+        lastName: currentState.lastName?.trim() ?? '',
+        dob: formattedDate,
+        gender: currentState.gender!,
+        primaryDiagnosis: _primaryDiagnosisController.text.isNotEmpty
+            ? _primaryDiagnosisController.text
+            : null,
+        canWalk: currentState.can_walk,
+        needsWalkingAid: currentState.needs_walking_aid,
+        isBedridden: currentState.is_bedridden,
+        hasDementia: currentState.has_dementia,
+        isAgitated: currentState.is_agitated,
+        isDepressed: currentState.is_depressed,
+        dominantEmotion: _mapEnum(currentState.dominant_emotion, _emotionMap),
+        sleepPattern: _mapEnum(currentState.sleep_pattern, _sleepPatternMap),
+        sleepQuality: _mapEnum(currentState.sleep_quality, _sleepQualityMap),
+        painStatus: _mapEnum(currentState.pain_status, _painStatusMap),
+      );
+
+      print('Request payload: ${request.toJson()}');
+
+      final result = await createPalUseCase.execute(request);
+      result.fold(
+        (failure) => _showError(failure.message),
+        (response) {
+          print('PAL created successfully: ${response.message}');
+          _updateStateWithControllers(status: AddPalStateStatus.success);
+        },
+      );
+    } catch (e) {
+      _showError(_getErrorMessage(e));
+    }
+  }
+
+  bool _validateRequiredFields(AddPalState state) {
+    print('DEBUG: _validateRequiredFields called');
+    print('DEBUG: name: ${state.name}');
+    print('DEBUG: lastName: ${state.lastName}');
+    print('DEBUG: gender: ${state.gender}');
+    print('DEBUG: dateOfBirth: ${_dateOfBirthController.text}');
+
+    if (state.name?.trim().isEmpty ??
+        true || state.lastName!.trim().isEmpty ??
+        true || state.gender!.isEmpty ??
+        true || _dateOfBirthController.text.trim().isEmpty) {
+      print('DEBUG: Validation failed - showing error');
+      _showError(
+          'First name, last name, gender, and date of birth are required.');
+      return false;
+    }
+    print('DEBUG: Validation passed');
+    return true;
+  }
+
+  String? _formatDate(String date) {
+    try {
+      final parsedDate = DateFormat('dd-MM-yyyy').parse(date);
+      return DateFormat('yyyy-MM-dd').format(parsedDate);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  String? _mapEnum(String? value, Map<String, String> mapping) {
+    return value != null ? mapping[value] ?? value.toLowerCase() : null;
+  }
+
+  void _showError(String message) {
+    print('DEBUG: _showError called with message: $message');
+    _updateStateWithControllers(
+      errorMessage: message,
+      status: AddPalStateStatus.error,
+    );
+  }
+
+  String _getErrorMessage(dynamic e) {
+    if (e is http.Response) {
+      try {
+        final errorJson = jsonDecode(e.body);
+        return errorJson['detail']?.toString() ?? 'An error occurred.';
+      } catch (_) {}
+    }
+    return e is TypeError || e is NoSuchMethodError
+        ? e.toString()
+        : 'An error occurred. Please try again later.';
+  }
+
+  final _emotionMap = {
+    'Happy': 'happy',
+    'Sad': 'sad',
+    'Angry': 'angry',
+    'Anxious': 'anxious',
+    'Calm': 'calm',
+    'Confused': 'confused',
+    'Tired': 'tired',
+    'Excited': 'excited',
+    'Scared': 'scared',
+    'Neutral': 'neutral',
+  };
+
+  final _sleepPatternMap = {
+    'Uninterrupted': 'uninterrupted',
+    'Fragmented': 'fragmented',
+    'Delayed': 'delayed_onset',
+    'Early Awakening': 'early_awakening',
+    'Oversleeping': 'oversleeping',
+    'Irregular': 'irregular',
+    'No sleep': 'no_sleep',
+  };
+
+  final _sleepQualityMap = {
+    'Excellent': 'excellent',
+    'Good': 'good',
+    'Fair': 'fair',
+    'Poor': 'poor',
+  };
+
+  final _painStatusMap = {
+    'No Pain': 'no_pain',
+    'Mild': 'mild',
+    'Moderate': 'moderate',
+    'Severe': 'severe',
+    'Very Severe': 'very_severe',
+    'Worst Possible': 'worst_possible',
+    'Unknown': 'unknown',
+  };
+}

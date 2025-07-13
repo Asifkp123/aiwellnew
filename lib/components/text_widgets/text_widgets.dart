@@ -165,7 +165,7 @@ class LargePurpleText extends CustomText {
     style: TextStyle(
       color: Color(0xFF543474),
       fontSize: fontSize ?? 32,
-      fontWeight: FontWeight.w500,
+      fontWeight: FontWeight.w400,
     ),
   );
 }
@@ -185,6 +185,54 @@ class NormalGreyText extends CustomText {
     ),
   );
 }
+class Sixteen400GreyText extends CustomText {
+  Sixteen400GreyText(
+      super.text, {
+        super.key,
+        super.fontSize,
+        super.align,
+        super.maxLines,
+        super.overflow,
+      }) : super(
+    style: TextStyle(
+      color: Color(0xFF606060),
+      fontSize: fontSize ?? 16,
+      fontWeight: FontWeight.w400,
+    ),
+  );
+}
+class Fourteen400GreyText extends CustomText {
+  Fourteen400GreyText(
+      super.text, {
+        super.key,
+        super.fontSize,
+        super.align,
+        super.maxLines,
+        super.overflow,
+      }) : super(
+    style: TextStyle(
+      color: Color(0xFF606060),
+      fontSize: fontSize ?? 14,
+      fontWeight: FontWeight.w400,
+    ),
+  );
+}
+class Sixteen400BlackText extends CustomText {
+  Sixteen400BlackText(
+      super.text, {
+        super.key,
+        super.fontSize,
+        super.align,
+        super.maxLines,
+        super.overflow,
+      }) : super(
+    style: TextStyle(
+      color: Color(0xFF000000),
+      fontSize: fontSize ?? 16,
+      fontWeight: FontWeight.w400,
+    ),
+  );
+}
 class Purple18Text extends CustomText {
   Purple18Text(
       super.text, {
@@ -199,6 +247,24 @@ class Purple18Text extends CustomText {
       color:color?? lightTheme.primaryColor,
       fontSize: fontSize ?? 18,
       fontWeight: FontWeight.w400,
+
+    ),
+  );
+}
+class PurpleBoldText extends CustomText {
+  PurpleBoldText(
+      super.text, {
+        super.key,
+        super.fontSize,
+        super.align,
+        super.maxLines,
+        super.overflow,
+        super.color,
+      }) : super(
+    style: GoogleFonts.poppins(
+      color:color?? lightTheme.primaryColor,
+      fontSize: fontSize ?? 18,
+      fontWeight: FontWeight.bold,
 
     ),
   );

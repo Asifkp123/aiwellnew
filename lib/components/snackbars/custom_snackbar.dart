@@ -18,7 +18,8 @@ class AnimatedSnackBarContent extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _AnimatedSnackBarContentState createState() => _AnimatedSnackBarContentState();
+  _AnimatedSnackBarContentState createState() =>
+      _AnimatedSnackBarContentState();
 }
 
 class _AnimatedSnackBarContentState extends State<AnimatedSnackBarContent>
@@ -53,14 +54,11 @@ class _AnimatedSnackBarContentState extends State<AnimatedSnackBarContent>
       _controller.forward();
     }
 
-    // Reverse animation (slide down and fade out) before dismissing
-    Future.delayed(widget.duration - const Duration(milliseconds: 200), () {
+    // Start reverse animation before the snackbar duration ends
+    // This ensures smooth exit animation
+    Future.delayed(widget.duration - const Duration(milliseconds: 300), () {
       if (mounted) {
-        _controller.reverse().then((_) {
-          if (mounted && context.mounted) {
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          }
-        });
+        _controller.reverse();
       }
     });
   }
@@ -111,13 +109,15 @@ class _AnimatedSnackBarContentState extends State<AnimatedSnackBarContent>
       animation: _controller,
       builder: (context, child) {
         return Transform.translate(
-          offset: _positionAnimation.value * 100, // Scale offset for slide effect
+          offset:
+              _positionAnimation.value * 100, // Scale offset for slide effect
           child: Opacity(
             opacity: _opacityAnimation.value,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: baseColor.withOpacity(_opacityAnimation.value), // Apply opacity to background
+                color: baseColor.withOpacity(
+                    _opacityAnimation.value), // Apply opacity to background
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
@@ -150,7 +150,9 @@ SnackBar commonSnackBarWidget({
     duration: duration,
     elevation: 0,
     behavior: SnackBarBehavior.floating,
-    backgroundColor: Colors.transparent, // Transparent to allow AnimatedSnackBarContent to handle color
-    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10), // Ensure proper positioning
+    backgroundColor: Colors
+        .transparent, // Transparent to allow AnimatedSnackBarContent to handle color
+    margin: const EdgeInsets.symmetric(
+        horizontal: 16, vertical: 10), // Ensure proper positioning
   );
 }

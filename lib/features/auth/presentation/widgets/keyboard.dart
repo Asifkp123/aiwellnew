@@ -28,7 +28,8 @@ class CustomPinInput extends StatefulWidget {
   State<CustomPinInput> createState() => _CustomPinInputState();
 }
 
-class _CustomPinInputState extends State<CustomPinInput> with SingleTickerProviderStateMixin {
+class _CustomPinInputState extends State<CustomPinInput>
+    with SingleTickerProviderStateMixin {
   String _pin = '';
   bool _showKeyboard = true;
   late AnimationController _blinkController;
@@ -42,7 +43,8 @@ class _CustomPinInputState extends State<CustomPinInput> with SingleTickerProvid
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
-    _blinkAnimation = Tween<double>(begin: 0.3, end: 1.0).animate(_blinkController);
+    _blinkAnimation =
+        Tween<double>(begin: 0.3, end: 1.0).animate(_blinkController);
     if (mounted) {
       _blinkController.repeat(reverse: true);
     }
@@ -76,7 +78,8 @@ class _CustomPinInputState extends State<CustomPinInput> with SingleTickerProvid
   void _submitOtp() {
     if (_pin.length == 6 && mounted) {
       widget.onCompleted(_pin);
-      setState(() => _showKeyboard = false);
+      // Don't hide keyboard immediately, let the parent handle it
+      // setState(() => _showKeyboard = false);
     }
   }
 
@@ -102,7 +105,8 @@ class _CustomPinInputState extends State<CustomPinInput> with SingleTickerProvid
                       color: Colors.white,
                       border: Border.all(
                         color: isFocused
-                            ? lightTheme.primaryColor.withOpacity(_blinkAnimation.value)
+                            ? lightTheme.primaryColor
+                                .withOpacity(_blinkAnimation.value)
                             : Colors.grey.shade300,
                         width: isFocused ? 2.0 : 1.0,
                       ),
@@ -110,7 +114,8 @@ class _CustomPinInputState extends State<CustomPinInput> with SingleTickerProvid
                     ),
                     child: Text(
                       index < _pin.length ? _pin[index] : '',
-                      style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w600),
+                      style: GoogleFonts.poppins(
+                          fontSize: 20, fontWeight: FontWeight.w600),
                     ),
                   );
                 },
@@ -130,8 +135,12 @@ class _CustomPinInputState extends State<CustomPinInput> with SingleTickerProvid
             child: LabelButton(
               label: widget.isLoading ? 'Verifying...' : 'Verify OTP',
               onTap: _pin.length == 6 && !widget.isLoading ? _submitOtp : null,
-              gradient: _pin.length == 6 && !widget.isLoading ? splashGradient() : null,
-              bgColor: _pin.length < 6 || widget.isLoading ? Colors.grey.shade300 : null,
+              gradient: _pin.length == 6 && !widget.isLoading
+                  ? splashGradient()
+                  : null,
+              bgColor: _pin.length < 6 || widget.isLoading
+                  ? Colors.grey.shade300
+                  : null,
               fontColor: _pin.length == 6 && !widget.isLoading
                   ? Theme.of(context).primaryColorLight
                   : Colors.grey.shade600,
@@ -149,7 +158,8 @@ class _CustomPinInputState extends State<CustomPinInput> with SingleTickerProvid
               mainAxisSpacing: 10,
               childAspectRatio: 2.5,
               children: [
-                ...['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((e) => _buildKey(e)),
+                ...['1', '2', '3', '4', '5', '6', '7', '8', '9']
+                    .map((e) => _buildKey(e)),
                 _buildIcon(Icons.check, _submitOtp),
                 _buildKey('0'),
                 _buildIcon(Icons.backspace, _deleteDigit),

@@ -262,6 +262,8 @@ class SignInViewModel implements SignInViewModelBase {
         _emailController.text.trim(),
         otp,
       );
+      print(response.toString());
+      print("response.toString()");
       return response.fold(
             (failure) {
           _errorMessage = failure.message.isNotEmpty
@@ -273,6 +275,13 @@ class SignInViewModel implements SignInViewModelBase {
         },
             (success) async {
           if (success is TokenResponse) {
+            print(success.accessToken);
+            print(success.accessTokenExpiry);
+            print(success.refreshToken);
+            print(success.refreshTokenExpiry);
+
+
+
             if (success.accessToken.isEmpty || success.refreshToken.isEmpty) {
               _errorMessage = Strings.tokenNotFoundMessage;
               _status = SignInStatus.error;

@@ -7,11 +7,11 @@ class ApiConfig {
   static const String verifyOtpEndpoint = '$baseUrl/verify_otp';
   static const String profileEndpoint = '$baseUrl/profile';
   static const String refreshTokenEndpoint = '$baseUrl/refresh_token';
+  static const String patientCreationEndPoint = '$baseUrl/patient';
 
   static Map<String, String> get defaultHeaders => {
-    'Content-Type': 'application/json',
-  };
-
+        'Content-Type': 'application/json',
+      };
 
   static Future<Map<String, String>> getAuthenticatedHeaders() async {
     final authLocalDataSource = AuthLocalDataSourceImpl();

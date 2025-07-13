@@ -9,53 +9,67 @@ import 'package:aiwel/features/auth/domain/usecases/request_otp_use_case.dart';
 import 'package:aiwel/features/auth/domain/usecases/submit_profile_use_case.dart';
 import 'package:aiwel/features/auth/domain/usecases/verify_otp_use_case.dart';
 import 'package:aiwel/features/auth/presentation/view_models/sign_in_viewModel.dart';
+import 'package:aiwel/features/pal_creation/presentation/view_models/add_pal_view_model.dart';
+import 'package:aiwel/features/pal_creation/di/pal_injection.dart';
 
 class DependencyManager {
-static Future<SignInViewModel> createSignInViewModel() async {
-try {
+  static Future<SignInViewModel> createSignInViewModel() async {
+    try {
 // Initialize MethodChannel-based AuthLocalDataSourceImpl
-final authLocalDataSource = AuthLocalDataSourceImpl();
+      final authLocalDataSource = AuthLocalDataSourceImpl();
 
 // Initialize HttpApiService for remote data source
-final apiService = HttpApiService();
+      final apiService = HttpApiService();
 
 // Initialize AuthRemoteDataSource with IApiService
-final authRemoteDataSource = AuthRemoteDataSourceImpl(
-authLocalDataSource: authLocalDataSource,
-);
+      final authRemoteDataSource = AuthRemoteDataSourceImpl(
+        authLocalDataSource: authLocalDataSource,
+      );
 
 // Initialize AuthRepository
-final authRepository = AuthRepositoryImpl(
-authRemoteDataSource: authRemoteDataSource,
-authLocalDataSource: authLocalDataSource,
-);
+      final authRepository = AuthRepositoryImpl(
+        authRemoteDataSource: authRemoteDataSource,
+        authLocalDataSource: authLocalDataSource,
+      );
 
 // Initialize use cases
-final requestOtpUseCase = RequestOtpUseCase(repository: authRepository);
-final submitProfileUseCase = SubmitProfileUseCase(authRepository: authRepository);
-final verifyOtpUseCase = VerifyOtpUseCase(
-repository: authRepository,
-authLocalDataSource: authLocalDataSource,
-);
-final getAccessTokenUseCase = GetAccessTokenUseCase(authRepository: authRepository);
-final getAccessTokenExpiryUseCase = GetAccessTokenExpiryUseCase(authRepository: authRepository);
-final refreshTokenUseCase = RefreshTokenUseCase(
-authRemoteDataSource: authRemoteDataSource,
-authLocalDataSource: authLocalDataSource,
-);
+      final requestOtpUseCase = RequestOtpUseCase(repository: authRepository);
+      final submitProfileUseCase =
+          SubmitProfileUseCase(authRepository: authRepository);
+      final verifyOtpUseCase = VerifyOtpUseCase(
+        repository: authRepository,
+        authLocalDataSource: authLocalDataSource,
+      );
+      final getAccessTokenUseCase =
+          GetAccessTokenUseCase(authRepository: authRepository);
+      final getAccessTokenExpiryUseCase =
+          GetAccessTokenExpiryUseCase(authRepository: authRepository);
+      final refreshTokenUseCase = RefreshTokenUseCase(
+        authRemoteDataSource: authRemoteDataSource,
+        authLocalDataSource: authLocalDataSource,
+      );
 
 // Return SignInViewModel with all dependencies
-return SignInViewModel(
-requestOtpUseCase: requestOtpUseCase,
-verifyOtpUseCaseBase: verifyOtpUseCase,
-authLocalDataSourceImpl: authLocalDataSource,
-submitProfileUseCaseBase: submitProfileUseCase,
-getAccessTokenUseCase: getAccessTokenUseCase,
-getAccessTokenExpiryUseCase: getAccessTokenExpiryUseCase,
-refreshUseCase: refreshTokenUseCase,
-);
-} catch (e) {
-throw Exception('Failed to create SignInViewModel: $e');
-}
-}
+      return SignInViewModel(
+        requestOtpUseCase: requestOtpUseCase,
+        verifyOtpUseCaseBase: verifyOtpUseCase,
+        authLocalDataSourceImpl: authLocalDataSource,
+        submitProfileUseCaseBase: submitProfileUseCase,
+        getAccessTokenUseCase: getAccessTokenUseCase,
+        getAccessTokenExpiryUseCase: getAccessTokenExpiryUseCase,
+        refreshUseCase: refreshTokenUseCase,
+      );
+    } catch (e) {
+      throw Exception('Failed to create SignInViewModel: $e');
+    }
+  }
+
+  static Future<AddPalViewModel> createAddPalViewModel() async {
+    try {
+      // Use the PAL dependency manager
+      return await PalDependencyManager.createAddPalViewModel();
+    } catch (e) {
+      throw Exception('Failed to create AddPalViewModel: $e');
+    }
+  }
 }

@@ -1,15 +1,15 @@
-import 'package:aiwel/components/text_widgets/text_widgets.dart';
-import 'package:aiwel/components/theme/light_theme.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../components/constants.dart';
+import '../../../components/constants.dart';
+import '../../../components/text_widgets/text_widgets.dart';
+import '../../../components/theme/light_theme.dart';
 
-class SelectableListView extends StatelessWidget {
+class SelctablelistviewPalCreation extends StatelessWidget {
   final List<String> items;
-  final String? selectedValue;
+  final bool? selectedValue; // Changed from String? to bool?
   final Function(String) onItemSelected;
 
-  const SelectableListView({
+  const SelctablelistviewPalCreation({
     super.key,
     required this.items,
     required this.selectedValue,
@@ -26,7 +26,11 @@ class SelectableListView extends StatelessWidget {
         itemCount: items.length,
         itemBuilder: (context, index) {
           final item = items[index];
-          final isSelected = selectedValue == item;
+          // Map bool? to the corresponding item ("Yes" or "No")
+          final isSelected = selectedValue != null && (
+              (selectedValue! && item == 'Yes') ||
+                  (!selectedValue! && item == 'No')
+          );
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 6.0),
             child: GestureDetector(

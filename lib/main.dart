@@ -14,11 +14,13 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
     final signInViewModel = await DependencyManager.createSignInViewModel();
+    final addPalViewModel = await DependencyManager.createAddPalViewModel();
     // final profileViewModel = await DependencyManager.createProfileViewModel();
     // final settingsViewModel = await DependencyManager.createSettingsViewModel();
     runApp(MyApp(
       viewModels: {
         SigninSignupScreen.routeName: signInViewModel,
+        "AddPalViewModel": addPalViewModel,
         // OtpScreen.routeName: signInViewModel,
         // EmotianScreen.routeName: signInViewModel,
         // SleepQualityScreen.routeName: signInViewModel,

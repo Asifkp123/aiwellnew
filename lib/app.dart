@@ -1,10 +1,13 @@
-  import 'package:aiwel/features/auth/presentation/screens/profile_screens/profile_screen.dart';
-import 'package:aiwel/routes/routes.dart';
-  import 'package:flutter/material.dart';
-  import 'components/theme/light_theme.dart';
-  import 'features/auth/presentation/screens/signin_signup_screen.dart';
-  import 'features/auth/presentation/screens/splash_screen.dart';
-  import 'features/auth/presentation/view_models/sign_in_viewModel.dart';
+  import 'package:aiwel/routes/routes.dart';
+import 'package:flutter/material.dart';
+
+import 'components/theme/light_theme.dart';
+import 'features/auth/presentation/screens/signin_signup_screen.dart';
+import 'features/auth/presentation/screens/splash_screen.dart';
+import 'features/home/home_screen.dart';
+import 'features/pal_creation/presentation/screens/add_pal_completion_congrats_screen.dart';
+import 'features/pal_creation/presentation/screens/add_pal_confirmation_submit_screen.dart';
+import 'features/pal_creation/presentation/screens/add_pal_splash_screen.dart';
 
   final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
   GlobalKey<ScaffoldMessengerState>();
@@ -29,7 +32,7 @@ import 'package:aiwel/routes/routes.dart';
     @override
     Widget build(BuildContext context) {
       final signInViewModel = widget.viewModels[SigninSignupScreen.routeName];
-
+      final addPalViewModel = widget.viewModels["AddPalViewModel"];
       return MaterialApp(
         title: 'Aiwel',
         theme: lightTheme,

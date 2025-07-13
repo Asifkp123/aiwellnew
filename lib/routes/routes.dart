@@ -7,103 +7,26 @@ import '../features/auth/presentation/screens/profile_screens/emotian_screen.dar
 import '../features/auth/presentation/screens/profile_screens/sleep_quality_screen.dart';
 import '../features/auth/presentation/screens/profile_screens/workout_screen.dart';
 import '../features/auth/presentation/screens/signin_signup_screen.dart';
+import '../features/pal_creation/presentation/screens/add_pal_able_to_walk_screen.dart';
+import '../features/pal_creation/presentation/screens/add_pal_confirmation_submit_screen.dart';
+import '../features/pal_creation/presentation/screens/add_pal_diagnosis_screen.dart';
+import '../features/pal_creation/presentation/screens/add_pal_discomfort_pain_screen.dart';
+import '../features/pal_creation/presentation/screens/add_pal_down_quite_screen.dart';
+import '../features/pal_creation/presentation/screens/add_pal_memory_changes_confution_screen.dart';
+import '../features/pal_creation/presentation/screens/add_pal_mood_selection_screen.dart';
+import '../features/pal_creation/presentation/screens/add_pal_need_walker_stick_screen.dart';
+import '../features/pal_creation/presentation/screens/add_pal_profile_creation_screen.dart';
+import '../features/pal_creation/presentation/screens/add_pal_resting_bed_screen.dart';
+import '../features/pal_creation/presentation/screens/add_pal_sensitive_rest_less_screen.dart';
+import '../features/pal_creation/presentation/screens/add_pal_sleep_pattern_screen.dart';
+import '../features/pal_creation/presentation/screens/add_pal_sleepbeen_screen.dart';
+import '../features/pal_creation/presentation/screens/add_pal_splash_screen.dart';
 
 
+Future<Widget> routeNavigator(String routeName, {Map<String, dynamic>? viewModels, Map<String, dynamic>? arguments}) async {
+  dynamic viewModel = arguments?['viewModelBase'] ?? viewModels?[routeName] ?? viewModels?[SigninSignupScreen.routeName];
+  dynamic addPalVeiewModel = viewModels?["AddPalViewModel"] ?? viewModels?[AddPalProfileCreationScreen.routeName];
 
-// Future<Widget> routeNavigator(String routeName, {Map<String, dynamic>? viewModels}) async {
-//
-//   print("hrerere");
-//   print('Navigating to: $routeName');
-//
-//   // Initialize dependencies using DependencyManager
-//   final prefs = await SharedPreferences.getInstance();
-//   final authLocalDataSource = AuthLocalDataSourceImpl(prefs);
-//   final authRemoteDataSource = AuthRemoteDataSourceImpl(authLocalDataSource: authLocalDataSource);
-//   final authRepository = AuthRepositoryImpl(
-//     authRemoteDataSource: authRemoteDataSource,
-//     authLocalDataSource: authLocalDataSource,
-//   );
-//
-//   // Default viewModel
-//   dynamic viewModel = viewModels?[routeName] ?? await DependencyManager.createSignInViewModel();
-//
-//   // Handle navigation for app start (SplashScreen)
-//   if (routeName == SplashScreen.routeName) {
-//     final token = await authLocalDataSource.getToken();
-// print(token);
-// print("token");
-//     if (token == null || token.isEmpty) {
-//       // No token found, navigate to SigninSignupScreen
-//       // return SigninSignupScreen(viewModelBase: viewModel);
-//       return HomeScreen();
-//     }else{
-//
-//     return HomeScreen() ;
-//
-//
-//     }
-//
-//
-//
-//
-//     // // Verify token validity
-//     // final tokenVerificationResult = await authRepository.verifyToken(token);
-//     // return tokenVerificationResult.fold(
-//     //       (failure) async {
-//     //     // Token is invalid or expired, clear token and profile status
-//     //     await authLocalDataSource.clearToken();
-//     //     await authLocalDataSource.saveProfileCompletion(false);
-//     //     return SigninSignupScreen(viewModelBase: viewModel);
-//     //   },
-//     //       (isValid) async {
-//     //     if (!isValid) {
-//     //       // Token is invalid, clear token and profile status
-//     //       await authLocalDataSource.clearToken();
-//     //       // await authLocalDataSource.saveProfileCompletion(false);
-//     //       return SigninSignupScreen(viewModelBase: viewModel);
-//     //     }
-//     //
-//     //     // Token is valid, check profile completion
-//     //     // final isProfileComplete = await authLocalDataSource.isProfileComplete();
-//     //     if (isProfileComplete) {
-//     //       // Profile is complete, navigate to HomeScreen
-//     //       return SigninSignupScreen(viewModelBase: viewModel);
-//     //       return HomeScreen(viewModelBase: viewModel);
-//     //     } else {
-//     //       // Profile is not complete, navigate to ProfileScreen
-//     //       return ProfileScreen(viewModelBase: viewModel);
-//     //     }
-//     //   },
-//     // );
-//   }
-//
-//
-//   // Handle specific routes
-//   switch (routeName) {
-//     case SigninSignupScreen.routeName:
-//       return SigninSignupScreen(viewModelBase: viewModel);
-//     case OtpScreen.routeName:
-//       return OtpScreen(viewModelBase: viewModel);
-//     case EmotianScreen.routeName:
-//       return EmotianScreen(viewModelBase: viewModel);
-//     case WorkoutScreen.routeName:
-//       return WorkoutScreen(viewModelBase: viewModel);
-//     case SleepQualityScreen.routeName:
-//       return SleepQualityScreen(viewModelBase: viewModel);
-//     case ProfileScreen.routeName:
-//       return ProfileScreen(viewModelBase: viewModel);
-//       case HomeScreen.routeName:
-//       return HomeScreen();
-//     // case HomeScreen.routeName:
-//     //   return HomeScreen(viewModelBase: viewModel);
-//     default:
-//       return SplashScreen();
-//   }
-// }
-Future<Widget> routeNavigator(String routeName, {Map<String, dynamic>? viewModels}) async {
-  print('Navigating to000: $routeName');
-  // Default to SignInViewModel if viewModels is null or no match is found
-  dynamic viewModel = viewModels?[routeName] ?? viewModels?[SigninSignupScreen.routeName];
 
   switch (routeName) {
     case SigninSignupScreen.routeName:
@@ -113,14 +36,50 @@ Future<Widget> routeNavigator(String routeName, {Map<String, dynamic>? viewModel
     case EmotianScreen.routeName:
       return EmotianScreen(viewModelBase: viewModel);
     case WorkoutScreen.routeName:
-      return WorkoutScreen(viewModelBase: viewModel); // Keep only this case
+      return WorkoutScreen(viewModelBase: viewModel);
     case SleepQualityScreen.routeName:
       return SleepQualityScreen(viewModelBase: viewModel);
     case ProfileScreen.routeName:
       return ProfileScreen(viewModelBase: viewModel);
     case HomeScreen.routeName:
       return HomeScreen();
+    case AddPalProfileCreationScreen.routeName:
+      return AddPalProfileCreationScreen(viewModelBase: addPalVeiewModel);
+    case AddPalSplashScreen.routeName:
+      return AddPalSplashScreen(viewModelBase: addPalVeiewModel);
+
+      case AddPalDiagnosisScreen.routeName:
+      return AddPalDiagnosisScreen(viewModelBase: addPalVeiewModel);
+
+      case AddPalAbleToWalkScreen.routeName:
+      return AddPalAbleToWalkScreen(viewModelBase: addPalVeiewModel);
+
+      case AddPalNeedWalkerStickScreen.routeName:
+      return AddPalNeedWalkerStickScreen(viewModelBase: addPalVeiewModel);
+      case AddPalRestingBedScreen.routeName:
+      return AddPalRestingBedScreen(viewModelBase: addPalVeiewModel);
+      case AddPalMemoryChangesConfutionScreen.routeName:
+      return AddPalMemoryChangesConfutionScreen(viewModelBase: addPalVeiewModel);
+
+      case AddPalSensitiveRestLessScreen.routeName:
+      return AddPalSensitiveRestLessScreen(viewModelBase: addPalVeiewModel);
+      case AddPalDownQuiteScreen.routeName:
+      return AddPalDownQuiteScreen(viewModelBase: addPalVeiewModel);
+
+      case AddPalMoodSelectionScreen.routeName:
+      return AddPalMoodSelectionScreen(viewModelBase: addPalVeiewModel);
+
+
+      case AddPalSleepPatternScreen.routeName:
+      return AddPalSleepPatternScreen(viewModelBase: addPalVeiewModel);
+      case AddPalSleepbeenScreen.routeName:
+      return AddPalSleepbeenScreen(viewModelBase: addPalVeiewModel);
+
+      case AddPalDiscomfortOrPainScreen.routeName:
+      return AddPalDiscomfortOrPainScreen(viewModelBase: addPalVeiewModel);
+      case AddPalConfirmationSubmitScreen.routeName:
+      return AddPalConfirmationSubmitScreen(viewModelBase: addPalVeiewModel);
     default:
-      return ProfileScreen(viewModelBase: viewModel);
+      return AddPalProfileCreationScreen(viewModelBase: addPalVeiewModel);
   }
 }

@@ -1,9 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:aiwel/features/auth/presentation/screens/signin_signup_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import '../../../auth/data/datasources/local/auth_local_datasource.dart';
+import 'package:dartz/dartz.dart';
+import '../../../../core/services/token_manager.dart';
+import '../../../auth/domain/usecases/get_access_token_use_case.dart';
+import '../../../auth/domain/usecases/refresh_token_use_case.dart';
+import '../../../../core/constants/strings.dart';
+import '../../../../core/network/error/failure.dart';
 import '../../domain/usecases/create_pal_use_case.dart';
 import '../../data/models/api/create_pal_request.dart';
 
@@ -18,6 +24,7 @@ class AddPalState {
   final String? gender;
   final String? primary_diagnosis;
   final String? errorMessage;
+  final String? successMessage;
   final bool? can_walk;
   final bool? needs_walking_aid;
   final bool? is_bedridden;
@@ -39,6 +46,7 @@ class AddPalState {
     this.gender,
     this.primary_diagnosis,
     this.errorMessage,
+    this.successMessage,
     this.can_walk,
     this.needs_walking_aid,
     this.is_bedridden,
@@ -61,6 +69,7 @@ class AddPalState {
     String? gender,
     String? primary_diagnosis,
     String? errorMessage,
+    String? successMessage,
     bool? can_walk,
     bool? needs_walking_aid,
     bool? is_bedridden,
@@ -81,6 +90,7 @@ class AddPalState {
       gender: gender ?? this.gender,
       primary_diagnosis: primary_diagnosis ?? this.primary_diagnosis,
       errorMessage: errorMessage ?? this.errorMessage,
+      successMessage: successMessage ?? this.successMessage,
       can_walk: can_walk ?? this.can_walk,
       needs_walking_aid: needs_walking_aid ?? this.needs_walking_aid,
       is_bedridden: is_bedridden ?? this.is_bedridden,
@@ -135,12 +145,16 @@ abstract class AddViewModelBase {
 }
 
 class AddPalViewModel extends AddViewModelBase {
-  final AuthLocalDataSourceImpl authLocalDataSource;
+  final TokenManager tokenManager;
   final CreatePalUseCase createPalUseCase;
+  final GetAccessTokenUseCase getAccessTokenUseCase;
+  final RefreshTokenUseCase refreshTokenUseCase;
 
   AddPalViewModel({
-    required this.authLocalDataSource,
+    required this.tokenManager,
     required this.createPalUseCase,
+    required this.getAccessTokenUseCase,
+    required this.refreshTokenUseCase,
   }) {
     // Initialize default state
     _currentState = AddPalState(
@@ -151,10 +165,10 @@ class AddPalViewModel extends AddViewModelBase {
       has_dementia: false,
       is_agitated: false,
       is_depressed: false,
-      dominant_emotion: 'Neutral',
-      sleep_pattern: 'Uninterrupted',
-      sleep_quality: 'Good',
-      pain_status: 'No Pain',
+      dominant_emotion: null,
+      sleep_pattern: null,
+      sleep_quality: null,
+      pain_status: null,
     );
     _stateController.add(_currentState);
   }
@@ -323,6 +337,7 @@ class AddPalViewModel extends AddViewModelBase {
     String? sleep_quality,
     String? pain_status,
     String? errorMessage,
+    String? successMessage,
   }) {
     print('_updateStateWithControllers called');
     print('_nameController.text: "${_nameController.text}"');
@@ -338,6 +353,7 @@ class AddPalViewModel extends AddViewModelBase {
           selectedAbleToWalk ?? _currentState.selectedAbleToWalk,
       gender: _genderController.text.isNotEmpty ? _genderController.text : null,
       errorMessage: errorMessage ?? _currentState.errorMessage,
+      successMessage: successMessage ?? _currentState.successMessage,
       can_walk: can_walk ?? _currentState.can_walk,
       needs_walking_aid: needs_walking_aid ?? _currentState.needs_walking_aid,
       is_bedridden: is_bedridden ?? _currentState.is_bedridden,
@@ -391,8 +407,8 @@ class AddPalViewModel extends AddViewModelBase {
 
   Future<void> _initializeAuthToken() async {
     try {
-      final accessToken = await authLocalDataSource.getAccessToken();
-      final expiry = await authLocalDataSource.getAccessTokenExpiry();
+      final accessToken = await tokenManager.getAccessToken();
+      final expiry = await tokenManager.getAccessTokenExpiry();
       final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
       if (accessToken != null && expiry != null && currentTime < expiry) {
@@ -402,7 +418,7 @@ class AddPalViewModel extends AddViewModelBase {
           errorMessage: 'Access token invalid or expired. Please log in again.',
           status: AddPalStateStatus.error,
         );
-        await authLocalDataSource.clearTokens();
+        await tokenManager.clearTokens();
       }
     } catch (e) {
       _updateStateWithControllers(
@@ -410,6 +426,94 @@ class AddPalViewModel extends AddViewModelBase {
         status: AddPalStateStatus.error,
       );
     }
+  }
+
+  Future<bool> _ensureValidToken() async {
+    print("🔍 _ensureValidToken called");
+
+    final tokenResult = await getAccessTokenUseCase.execute();
+    return tokenResult.fold(
+      (failure) async {
+        print("❌ Token validation failed: ${failure.message}");
+        // Try to refresh token if access token is expired
+        print("🔄 Attempting token refresh...");
+        final refreshResult = await refreshTokenUseCase.execute();
+        return refreshResult.fold(
+          (refreshFailure) async {
+            print("❌ Token refresh failed: ${refreshFailure.message}");
+            _updateStateWithControllers(
+              errorMessage: 'Session expired. Please sign in again.',
+              status: AddPalStateStatus.error,
+            );
+            await _logout();
+            return false;
+          },
+          (refreshSuccess) async {
+            print("✅ Token refresh successful: $refreshSuccess");
+            if (refreshSuccess) {
+              // Get the new token after refresh
+              print("🔄 Getting new token after refresh...");
+              final newTokenResult = await getAccessTokenUseCase.execute();
+              return newTokenResult.fold(
+                (newFailure) async {
+                  print("❌ Failed to get new token: ${newFailure.message}");
+                  _updateStateWithControllers(
+                    errorMessage: 'Session expired. Please sign in again.',
+                    status: AddPalStateStatus.error,
+                  );
+                  await _logout();
+                  return false;
+                },
+                (newTokenData) async {
+                  final newAccessToken = newTokenData.$1;
+                  print(
+                      "🔑 New access token: ${newAccessToken != null ? 'Present' : 'Null'}");
+                  if (newAccessToken == null) {
+                    print("❌ New access token is null");
+                    _updateStateWithControllers(
+                      errorMessage: 'Session expired. Please sign in again.',
+                      status: AddPalStateStatus.error,
+                    );
+                    await _logout();
+                    return false;
+                  }
+                  _authToken = newAccessToken;
+                  print("✅ Token validation successful after refresh");
+                  return true;
+                },
+              );
+            }
+            print("❌ Token refresh returned false");
+            return false;
+          },
+        );
+      },
+      (tokenData) async {
+        final accessToken = tokenData.$1;
+        print("🔑 Access token: ${accessToken != null ? 'Present' : 'Null'}");
+        if (accessToken == null) {
+          print("❌ Access token is null");
+          _updateStateWithControllers(
+            errorMessage: 'Session expired. Please sign in again.',
+            status: AddPalStateStatus.error,
+          );
+          await _logout();
+          return false;
+        }
+        _authToken = accessToken;
+        print("✅ Token validation successful");
+        return true;
+      },
+    );
+  }
+
+  Future<void> _logout() async {
+    await tokenManager.clearTokens();
+    _authToken = null;
+    _updateStateWithControllers(
+      errorMessage: 'Session expired. Please sign in again.',
+      status: AddPalStateStatus.error,
+    );
   }
 
   @override
@@ -420,6 +524,11 @@ class AddPalViewModel extends AddViewModelBase {
 
       // Validate required fields
       if (!_validateRequiredFields(currentState)) {
+        return;
+      }
+
+      // Ensure valid token before proceeding
+      if (!await _ensureValidToken()) {
         return;
       }
 
@@ -460,7 +569,10 @@ class AddPalViewModel extends AddViewModelBase {
         (failure) => _showError(failure.message),
         (response) {
           print('PAL created successfully: ${response.message}');
-          _updateStateWithControllers(status: AddPalStateStatus.success);
+          _updateStateWithControllers(
+            status: AddPalStateStatus.success,
+            successMessage: response.message,
+          );
         },
       );
     } catch (e) {
@@ -469,22 +581,14 @@ class AddPalViewModel extends AddViewModelBase {
   }
 
   bool _validateRequiredFields(AddPalState state) {
-    print('DEBUG: _validateRequiredFields called');
-    print('DEBUG: name: ${state.name}');
-    print('DEBUG: lastName: ${state.lastName}');
-    print('DEBUG: gender: ${state.gender}');
-    print('DEBUG: dateOfBirth: ${_dateOfBirthController.text}');
-
     if (state.name?.trim().isEmpty ??
-        true || state.lastName!.trim().isEmpty ??
+        true ??
         true || state.gender!.isEmpty ??
         true || _dateOfBirthController.text.trim().isEmpty) {
-      print('DEBUG: Validation failed - showing error');
       _showError(
           'First name, last name, gender, and date of birth are required.');
       return false;
     }
-    print('DEBUG: Validation passed');
     return true;
   }
 
@@ -502,7 +606,6 @@ class AddPalViewModel extends AddViewModelBase {
   }
 
   void _showError(String message) {
-    print('DEBUG: _showError called with message: $message');
     _updateStateWithControllers(
       errorMessage: message,
       status: AddPalStateStatus.error,

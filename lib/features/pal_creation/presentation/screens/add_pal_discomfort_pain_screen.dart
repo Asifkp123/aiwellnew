@@ -15,10 +15,12 @@ class AddPalDiscomfortOrPainScreen extends StatefulWidget {
   const AddPalDiscomfortOrPainScreen({super.key, required this.viewModelBase});
 
   @override
-  _AddPalDiscomfortOrPainScreenState createState() => _AddPalDiscomfortOrPainScreenState();
+  _AddPalDiscomfortOrPainScreenState createState() =>
+      _AddPalDiscomfortOrPainScreenState();
 }
 
-class _AddPalDiscomfortOrPainScreenState extends State<AddPalDiscomfortOrPainScreen> {
+class _AddPalDiscomfortOrPainScreenState
+    extends State<AddPalDiscomfortOrPainScreen> {
   @override
   void initState() {
     super.initState();
@@ -58,11 +60,13 @@ class _AddPalDiscomfortOrPainScreenState extends State<AddPalDiscomfortOrPainScr
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 40),
-                    const BackButtonWithPointWidget(currentPoints: 120, totalPoints: 120),
+                    const BackButtonWithPointWidget(
+                        currentPoints: 120, totalPoints: 120),
                     const SizedBox(height: 60),
-                     LargePurpleText("Are they feeling any discomfort or pain today?"),
+                    LargePurpleText(
+                        "Are they feeling any discomfort or pain today?"),
                     const SizedBox(height: 16),
-                     NormalGreyText("Aiwel would be happy if you are pain free"),
+                    NormalGreyText("Aiwel would be happy if you are pain free"),
                     const SizedBox(height: 16),
                     SelectableListView(
                       items: widget.viewModelBase.discomfortList,
@@ -90,14 +94,16 @@ class _AddPalDiscomfortOrPainScreenState extends State<AddPalDiscomfortOrPainScr
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => AddPalConfirmationSubmitScreen(viewModelBase: widget.viewModelBase),
+                  builder: (context) => AddPalConfirmationSubmitScreen(
+                      viewModelBase: widget.viewModelBase),
                 ),
               );
             },
             gradient: splashGradient(),
             fontColor: Theme.of(context).primaryColorLight,
           ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
         );
       },
     );

@@ -41,34 +41,37 @@ class LabelButton extends StatelessWidget {
       onPressed: onTap == null
           ? null
           : !loading
-          ? () {
-        FocusManager.instance.primaryFocus?.unfocus();
-        onTap!();
-      }
-          : null,
-      height: 48,
-      minWidth: double.infinity,
+              ? () {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                  onTap!();
+                }
+              : null,
+      height: 55,
+      minWidth: double.infinity - 20,
       elevation: 0.0,
-      disabledColor: disabledColor ?? Theme.of(context).primaryColor.withOpacity(0.5),
-      color: gradient == null ? (bgColor ?? Theme.of(context).primaryColor) : Colors.transparent,
+      disabledColor:
+          disabledColor ?? Theme.of(context).primaryColor.withOpacity(0.5),
+      color: gradient == null
+          ? (bgColor ?? Theme.of(context).primaryColor)
+          : Colors.transparent,
       shape: shape,
       child: loading
           ? const SizedBox(
-        height: 20,
-        width: 20,
-        child: CircularProgressIndicator(
-          color: Colors.white,
-          strokeWidth: 2,
-        ),
-      )
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2,
+              ),
+            )
           : Text(
-        label,
-        style: TextStyle(
-          color: fontColor ?? Theme.of(context).colorScheme.onPrimary,
-          fontWeight: FontWeight.w700,
-          fontSize: fontSize ?? 15,
-        ),
-      ),
+              label,
+              style: TextStyle(
+                color: fontColor ?? Theme.of(context).colorScheme.onPrimary,
+                fontWeight: FontWeight.w700,
+                fontSize: fontSize ?? 15,
+              ),
+            ),
     );
 
     if (gradient != null) {
@@ -82,9 +85,9 @@ class LabelButton extends StatelessWidget {
     }
 
     return Padding(
-      padding: padding ?? EdgeInsets.symmetric(horizontal: buttonPadding, vertical: 16),
+      padding: padding ??
+          EdgeInsets.symmetric(horizontal: buttonPadding , vertical: 16),
       child: button,
     );
   }
-
 }

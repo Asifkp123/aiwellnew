@@ -23,8 +23,8 @@ class WorkoutScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double width=MediaQuery.of(context).size.width;
-    double height=MediaQuery.of(context).size.height;
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
 
     return StreamBuilder<SignInState>(
       stream: viewModelBase.stateStream,
@@ -64,17 +64,20 @@ class WorkoutScreen extends StatelessWidget {
                       children: [
                         CircleContainer(
                           filled: true,
-                          onTap: () => Navigator.pushNamed(context, '/emotianScreen'),
+                          onTap: () =>
+                              Navigator.pushNamed(context, '/emotianScreen'),
                         ),
                         SizedBox(width: 5),
                         CircleContainer(
                           filled: true,
-                          onTap: () => Navigator.pushNamed(context, '/sleepQualityScreen'),
+                          onTap: () => Navigator.pushNamed(
+                              context, '/sleepQualityScreen'),
                         ),
                         SizedBox(width: 5),
                         CircleContainer(
                           filled: true,
-                          onTap: () => Navigator.pushNamed(context, '/workoutScreen'),
+                          onTap: () =>
+                              Navigator.pushNamed(context, '/workoutScreen'),
                         ),
                       ],
                     ),
@@ -98,8 +101,10 @@ class WorkoutScreen extends StatelessWidget {
 
                     SelectableListView(
                       items: viewModelBase.displayedWorkouts,
-                      selectedValue: state.selectedWorkout, // Use state.selectedMood instead of direct field access
-                      onItemSelected: viewModelBase.selectWorkout, // Use the method from the view model
+                      selectedValue: state
+                          .selectedWorkout, // Use state.selectedMood instead of direct field access
+                      onItemSelected: viewModelBase
+                          .selectWorkout, // Use the method from the view model
                     ),
                   ],
                 ),
@@ -111,29 +116,46 @@ class WorkoutScreen extends StatelessWidget {
             onTap: () async {
               if (state.selectedWorkout == null) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  errorSnackBarWidget("Please pick your workout level to move forward."),
+                  errorSnackBarWidget(
+                    "Please pick your workout level to move forward.",
+                  ),
                 );
                 return;
               }
 
               final result = await viewModelBase.submitProfile();
               result.fold(
-                    (failure) {
-                      ScaffoldMessenger.of(context)!.showSnackBar(
-
-                        commonSnackBarWidget(
-                          content: "Please fill in all fields to proceed.",
-                          type: SnackBarType.error,
-                        ),
-                      );
-
-                      Navigator.pushNamed(context, ProfileScreen.routeName);
+                (failure) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    commonSnackBarWidget(
+                      content: failure.message,
+                      type: SnackBarType.error,
+                    ),
+                  );
+                  // Optionally: Do not navigate immediately, let user see the error
+                  // Navigator.pushNamed(context, ProfileScreen.routeName);
                 },
-                    (success) {
-                  if (success) {
+                (response) async {
+                  if (response.success) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      commonSnackBarWidget(
+                        content:
+                            response.message,
+                        type: SnackBarType.message,
+                      ),
+                    );
+                    // Wait a moment for the snackbar to show, then navigate
+                    await Future.delayed(const Duration(milliseconds: 500));
                     Navigator.pushNamed(context, HomeScreen.routeName);
                   } else {
-                    Navigator.pushNamed(context, OtpScreen.routeName);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      commonSnackBarWidget(
+                        content: response.message ?? "Profile update failed.",
+                        type: SnackBarType.error,
+                      ),
+                    );
+                    // Optionally: Do not navigate immediately, let user see the error
+                    // Navigator.pushNamed(context, ProfileScreen.routeName);
                   }
                 },
               );
@@ -141,10 +163,8 @@ class WorkoutScreen extends StatelessWidget {
             gradient: splashGradient(),
             fontColor: Theme.of(context).primaryColorLight,
           ),
-
-
-          floatingActionButtonLocation: FloatingActionButtonLocation
-              .centerFloat,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
         );
       },
     );

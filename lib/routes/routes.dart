@@ -1,5 +1,8 @@
 import 'package:aiwel/features/auth/presentation/screens/profile_screens/profile_screen.dart';
 import 'package:aiwel/features/home/home_screen.dart';
+import 'package:aiwel/features/pal_creation/presentation/screens/add_pal_completion_congrats_screen.dart';
+import 'package:aiwel/features/medicine_reminder/presentation/screens/medicine_reminder_screen.dart';
+import 'package:aiwel/features/medicine_reminder/di/medicine_injection.dart';
 import 'package:flutter/material.dart';
 
 import '../features/auth/presentation/screens/otp_screen.dart';
@@ -21,12 +24,15 @@ import '../features/pal_creation/presentation/screens/add_pal_sensitive_rest_les
 import '../features/pal_creation/presentation/screens/add_pal_sleep_pattern_screen.dart';
 import '../features/pal_creation/presentation/screens/add_pal_sleepbeen_screen.dart';
 import '../features/pal_creation/presentation/screens/add_pal_splash_screen.dart';
+import '../features/pal_creation/presentation/screens/add_pal_congratulations_screen.dart';
 
-
-Future<Widget> routeNavigator(String routeName, {Map<String, dynamic>? viewModels, Map<String, dynamic>? arguments}) async {
-  dynamic viewModel = arguments?['viewModelBase'] ?? viewModels?[routeName] ?? viewModels?[SigninSignupScreen.routeName];
-  dynamic addPalVeiewModel = viewModels?["AddPalViewModel"] ?? viewModels?[AddPalProfileCreationScreen.routeName];
-
+Future<Widget> routeNavigator(String routeName,
+    {Map<String, dynamic>? viewModels, Map<String, dynamic>? arguments}) async {
+  dynamic viewModel = arguments?['viewModelBase'] ??
+      viewModels?[routeName] ??
+      viewModels?[SigninSignupScreen.routeName];
+  dynamic addPalVeiewModel = viewModels?["AddPalViewModel"] ??
+      viewModels?[AddPalProfileCreationScreen.routeName];
 
   switch (routeName) {
     case SigninSignupScreen.routeName:
@@ -48,37 +54,43 @@ Future<Widget> routeNavigator(String routeName, {Map<String, dynamic>? viewModel
     case AddPalSplashScreen.routeName:
       return AddPalSplashScreen(viewModelBase: addPalVeiewModel);
 
-      case AddPalDiagnosisScreen.routeName:
+    case AddPalDiagnosisScreen.routeName:
       return AddPalDiagnosisScreen(viewModelBase: addPalVeiewModel);
 
-      case AddPalAbleToWalkScreen.routeName:
+    case AddPalAbleToWalkScreen.routeName:
       return AddPalAbleToWalkScreen(viewModelBase: addPalVeiewModel);
 
-      case AddPalNeedWalkerStickScreen.routeName:
+    case AddPalNeedWalkerStickScreen.routeName:
       return AddPalNeedWalkerStickScreen(viewModelBase: addPalVeiewModel);
-      case AddPalRestingBedScreen.routeName:
+    case AddPalRestingBedScreen.routeName:
       return AddPalRestingBedScreen(viewModelBase: addPalVeiewModel);
-      case AddPalMemoryChangesConfutionScreen.routeName:
-      return AddPalMemoryChangesConfutionScreen(viewModelBase: addPalVeiewModel);
+    case AddPalMemoryChangesConfutionScreen.routeName:
+      return AddPalMemoryChangesConfutionScreen(
+          viewModelBase: addPalVeiewModel);
 
-      case AddPalSensitiveRestLessScreen.routeName:
+    case AddPalSensitiveRestLessScreen.routeName:
       return AddPalSensitiveRestLessScreen(viewModelBase: addPalVeiewModel);
-      case AddPalDownQuiteScreen.routeName:
+    case AddPalDownQuiteScreen.routeName:
       return AddPalDownQuiteScreen(viewModelBase: addPalVeiewModel);
 
-      case AddPalMoodSelectionScreen.routeName:
+    case AddPalMoodSelectionScreen.routeName:
       return AddPalMoodSelectionScreen(viewModelBase: addPalVeiewModel);
 
-
-      case AddPalSleepPatternScreen.routeName:
+    case AddPalSleepPatternScreen.routeName:
       return AddPalSleepPatternScreen(viewModelBase: addPalVeiewModel);
-      case AddPalSleepbeenScreen.routeName:
+    case AddPalSleepbeenScreen.routeName:
       return AddPalSleepbeenScreen(viewModelBase: addPalVeiewModel);
 
-      case AddPalDiscomfortOrPainScreen.routeName:
+    case AddPalDiscomfortOrPainScreen.routeName:
       return AddPalDiscomfortOrPainScreen(viewModelBase: addPalVeiewModel);
-      case AddPalConfirmationSubmitScreen.routeName:
+    case AddPalConfirmationSubmitScreen.routeName:
       return AddPalConfirmationSubmitScreen(viewModelBase: addPalVeiewModel);
+    case AddPalCompletionCongratsScreen.routeName:
+      return AddPalCompletionCongratsScreen(viewModelBase: addPalVeiewModel);
+    case MedicineReminderScreen.routeName:
+      return MedicineReminderScreen(
+          viewModel: arguments?['viewModel'] ??
+              MedicineInjection.medicineReminderViewModel);
     default:
       return AddPalProfileCreationScreen(viewModelBase: addPalVeiewModel);
   }

@@ -27,23 +27,22 @@ class SelctablelistviewPalCreation extends StatelessWidget {
         itemBuilder: (context, index) {
           final item = items[index];
           // Map bool? to the corresponding item ("Yes" or "No")
-          final isSelected = selectedValue != null && (
-              (selectedValue! && item == 'Yes') ||
-                  (!selectedValue! && item == 'No')
-          );
+          final isSelected = selectedValue != null &&
+              ((selectedValue! && item == 'Yes') ||
+                  (!selectedValue! && item == 'No'));
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 6.0),
             child: GestureDetector(
               onTap: () => onItemSelected(item),
               child: Container(
                 width: double.infinity,
-                height: 60,
+                height: 70,
                 decoration: BoxDecoration(
                   border: Border.all(
                     width: 2,
                     color: isSelected
                         ? splashGradient().colors.first.withOpacity(0.5)
-                        : lightTheme.hintColor,
+                        : lightTheme.focusColor,
                   ),
                   borderRadius: BorderRadius.circular(10),
                 ),

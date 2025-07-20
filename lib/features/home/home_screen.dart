@@ -2,11 +2,13 @@ import 'dart:ui';
 import 'package:aiwel/components/buttons/label_button.dart';
 import 'package:aiwel/components/text_widgets/text_widgets.dart';
 import 'package:aiwel/features/auth/presentation/screens/signin_signup_screen.dart';
+import 'package:aiwel/features/medicine_reminder/presentation/screens/medicine_reminder_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../../../../components/constants.dart';
 import '../../components/theme/light_theme.dart';
+import '../pal_creation/presentation/screens/add_pal_splash_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   static const String routeName = '/homeScreen';
@@ -17,7 +19,6 @@ class HomeScreen extends StatelessWidget {
     final customColors = Theme.of(context).extension<CustomColors>()!;
 
     return Scaffold(
-
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -40,73 +41,79 @@ class HomeScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Container(
-
-                padding: const EdgeInsets.all(2),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.8),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    width: 3,
-                    color: customColors.containerBorderColor,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.8),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        width: 3,
+                        color: customColors.containerBorderColor,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SvgPicture.asset("$svgPath/Heart Icon Home.svg"),
+                        PurpleBoldText(
+                          "123",
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SvgPicture.asset("$svgPath/Heart Icon Home.svg"),
-                    PurpleBoldText("123",),
-                  ],
-                ),
+                ],
               ),
-            ],
-          ),
               LargePurpleText("Good Morning Arjun,"),
               // const SizedBox(height: 0),
 
               MediumPurpleText("You are doing amazing work! "),
-          
-          
+
               // const SizedBox(height: 250),
               // Logo
               MediumPurpleText("Home "),
               GlassEffectWidget(
-
-                width: 200  ,
+                width: 200,
                 height: 200,
                 child: Column(
-                children: [
-                  Row(
-                    children: [
-                      SvgPicture.asset("$svgPath/mood Emoji.svg"),
-                      LargePurpleText(" Mood"),
+                  children: [
+                    Row(
+                      children: [
+                        SvgPicture.asset("$svgPath/mood Emoji.svg"),
+                        LargePurpleText(" Mood"),
+                      ],
+                    ),
+                    NormalGreyText("How are you feeling today?"),
+                  ],
+                ),
+              ),
 
-                    ],
-                  ),
-                  NormalGreyText("How are you feeling today?"), 
-                ],
-              ),),
-          
               MediumPurpleText("Logout  "),
-          
+
               // gradientDivider(),
               const SizedBox(height: 30),
               LabelButton(
                 label: 'Add Pal',
                 onTap: () {
                   // Navigator.pushNamed(context, '/signinSignup');
-                  // Navigator.pushNamed(context, SigninSignupScreen.routeName);
-          
+                  Navigator.pushNamed(context, AddPalSplashScreen.routeName);
                 },
                 gradient: splashGradient(),
                 // bgColor: const Color(0xffF6F6F6),
                 fontColor: Theme.of(context).primaryColorLight,
               ),
-          
-          
+              const SizedBox(height: 16),
+              LabelButton(
+                label: 'Medicine Reminder',
+                onTap: () {
+                  Navigator.pushNamed(
+                      context, MedicineReminderScreen.routeName);
+                },
+                gradient: splashGradient(),
+                fontColor: Theme.of(context).primaryColorLight,
+              ),
             ],
           ),
         ),
@@ -120,7 +127,10 @@ class GlassEffectWidget extends StatelessWidget {
   final double width;
   final double height;
   const GlassEffectWidget({
-    super.key, required this.child, required this.width, required this.height,
+    super.key,
+    required this.child,
+    required this.width,
+    required this.height,
   });
 
   @override
@@ -133,7 +143,6 @@ class GlassEffectWidget extends StatelessWidget {
           width: width,
           height: height,
           padding: EdgeInsets.all(5),
-     
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.2),
             borderRadius: BorderRadius.circular(20),
@@ -142,7 +151,7 @@ class GlassEffectWidget extends StatelessWidget {
               color: Colors.white,
             ),
           ),
-child: child,
+          child: child,
         ),
       ),
     );

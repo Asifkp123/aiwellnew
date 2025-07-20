@@ -49,16 +49,21 @@ class AddPalRestingBedScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(height: 40),
-                    BackButtonWithPointWidget(currentPoints: 50, totalPoints: 120),
+                    BackButtonWithPointWidget(
+                        currentPoints: 50, totalPoints: 120),
                     SizedBox(height: 60),
-                    LargePurpleText("Are they spending most of their time resting in bed these days?"),
+                    LargePurpleText(
+                        "Are they spending most of their time resting in bed these days?"),
                     SizedBox(height: 16),
-                    NormalGreyText("Aiwel helps your pal in a personalized way."),
+                    NormalGreyText(
+                        "Aiwel really want them out of the bed and lead a normal life."),
                     const SizedBox(height: 16),
                     SelctablelistviewPalCreation(
                       items: viewModelBase.yesOrNoList,
-                      selectedValue: state.is_bedridden, // Use is_bedridden instead of selectedAbleToWalk
-                      onItemSelected: viewModelBase.setIsBedridden, // Use setIsBedridden instead of yesOrNoSelected
+                      selectedValue: state
+                          .is_bedridden, // Use is_bedridden instead of selectedAbleToWalk
+                      onItemSelected: viewModelBase
+                          .setIsBedridden, // Use setIsBedridden instead of yesOrNoSelected
                     ),
                     if (state.errorMessage != null) ...[
                       const SizedBox(height: 16),
@@ -78,9 +83,8 @@ class AddPalRestingBedScreen extends StatelessWidget {
             onTap: () {
               // Check if a selection has been made
               if (state.is_bedridden == null) {
-                ScaffoldMessenger.of(context)!.showSnackBar(
-
-                commonSnackBarWidget(
+                ScaffoldMessenger.of(context)!
+                    .showSnackBar(commonSnackBarWidget(
                   content: "Please select an option before continuing.",
                   type: SnackBarType.error,
                 ));
@@ -96,7 +100,8 @@ class AddPalRestingBedScreen extends StatelessWidget {
             gradient: splashGradient(),
             fontColor: Theme.of(context).primaryColorLight,
           ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
         );
       },
     );

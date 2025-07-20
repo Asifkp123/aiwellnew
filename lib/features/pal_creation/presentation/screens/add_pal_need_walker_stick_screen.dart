@@ -51,16 +51,20 @@ class AddPalNeedWalkerStickScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(height: 40),
-                    BackButtonWithPointWidget(currentPoints: 40, totalPoints: 120),
+                    BackButtonWithPointWidget(
+                        currentPoints: 40, totalPoints: 120),
                     SizedBox(height: 60),
-                    LargePurpleText("Do they need a little help to move around, like a walker or stick?"),
+                    LargePurpleText(
+                        "Do they need a little help to move around, like a walker or stick?"),
                     SizedBox(height: 16),
-                    NormalGreyText("Aiwel really want them out of the bed and lead a normal life."),
+                    NormalGreyText("Aiwel has dedicated support equipments"),
                     const SizedBox(height: 16),
                     SelctablelistviewPalCreation(
                       items: viewModelBase.yesOrNoList,
-                      selectedValue: state.needs_walking_aid, // Use needs_walking_aid instead of selectedAbleToWalk
-                      onItemSelected: viewModelBase.setNeedsWalkingAid, // Correct method for this question
+                      selectedValue: state
+                          .needs_walking_aid, // Use needs_walking_aid instead of selectedAbleToWalk
+                      onItemSelected: viewModelBase
+                          .setNeedsWalkingAid, // Correct method for this question
                     ),
                     if (state.errorMessage != null) ...[
                       const SizedBox(height: 16),
@@ -80,9 +84,8 @@ class AddPalNeedWalkerStickScreen extends StatelessWidget {
             onTap: () {
               // Check if a selection has been made
               if (state.needs_walking_aid == null) {
-                ScaffoldMessenger.of(context)!.showSnackBar(
-
-                commonSnackBarWidget(
+                ScaffoldMessenger.of(context)!
+                    .showSnackBar(commonSnackBarWidget(
                   content: "Please select an option before continuing.",
                   type: SnackBarType.error,
                 ));
@@ -99,7 +102,8 @@ class AddPalNeedWalkerStickScreen extends StatelessWidget {
             gradient: splashGradient(),
             fontColor: Theme.of(context).primaryColorLight,
           ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
         );
       },
     );

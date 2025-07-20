@@ -17,19 +17,20 @@ class SubmitProfileResponse {
     required this.updatedFields,
   });
 
-  // Factory constructor to create an instance from JSON
   factory SubmitProfileResponse.fromJson(Map<String, dynamic> json) {
     return SubmitProfileResponse(
-      success: json['success'] as bool,
-      message: json['message'] as String,
-      userId: json['user_id'] as String,
-      role: json['role'] as String,
-      approvalStatus: json['approval_status'] as bool,
-      updatedFields: List<String>.from(json['updated_fields'] as List<dynamic>),
+      success: json['success'] as bool? ?? false,
+      message: json['message'] as String? ?? '',
+      userId: json['user_id'] as String? ?? '',
+      role: json['role'] as String? ?? '',
+      approvalStatus: json['approval_status'] as bool? ?? false,
+      updatedFields: (json['updated_fields'] as List<dynamic>?)
+              ?.map((field) => field.toString())
+              .toList() ??
+          [],
     );
   }
 
-  // Convert the object back to JSON (optional, if needed for serialization)
   Map<String, dynamic> toJson() {
     return {
       'success': success,

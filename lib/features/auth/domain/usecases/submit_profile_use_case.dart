@@ -4,7 +4,7 @@ import '../../data/repositories/auth_repository.dart';
 import '../../data/models/api/submit_profile_response.dart';
 
 abstract class SubmitProfileUseCaseBase {
-  Future<Either<Failure, bool>> execute({
+  Future<Either<Failure, SubmitProfileResponse>> execute({
     required String firstName,
     required String lastName,
     required String gender,
@@ -21,7 +21,7 @@ class SubmitProfileUseCase implements SubmitProfileUseCaseBase {
   SubmitProfileUseCase({required this.authRepository});
 
   @override
-  Future<Either<Failure, bool>> execute({
+  Future<Either<Failure, SubmitProfileResponse>> execute({
     required String firstName,
     required String lastName,
     required String gender,
@@ -39,9 +39,6 @@ class SubmitProfileUseCase implements SubmitProfileUseCaseBase {
       sleepQuality: sleepQuality,
       physicalActivity: physicalActivity,
     );
-    return result.fold(
-          (failure) => Left(failure),
-          (response) => Right(response.success),
-    );
+    return result;
   }
 }

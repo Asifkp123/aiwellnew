@@ -34,6 +34,7 @@ final ThemeData lightTheme = ThemeData(
   dividerTheme: const DividerThemeData(color: Color(0xFFEDEEF3), thickness: 1),
   hintColor: const Color(0xFF878CA7).withOpacity(0.7),
   canvasColor: Colors.white,
+  focusColor: const Color(0xFF878CA7).withOpacity(0.4),
   useMaterial3: true,
   appBarTheme: AppBarTheme(
     backgroundColor: Colors.white,

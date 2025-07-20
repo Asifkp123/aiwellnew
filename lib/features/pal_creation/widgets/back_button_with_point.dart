@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../../../components/constants.dart';
+import '../../../components/theme/light_theme.dart';
 
 class BackButtonWithPointWidget extends StatelessWidget {
   final int currentPoints;
@@ -15,6 +16,8 @@ class BackButtonWithPointWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final customColors = Theme.of(context).extension<CustomColors>()!;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -33,8 +36,14 @@ class BackButtonWithPointWidget extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: const Color(0xFFF1E6FD),
+            // color: const Color(0xFFF1E6FD),
+            color: Colors.white.withOpacity(0.8),
+
             borderRadius: BorderRadius.circular(32),
+            border: Border.all(
+              width: 3,
+              color: customColors.containerBorderColor,
+            ),
           ),
           child: Row(
             children: [

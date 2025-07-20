@@ -16,7 +16,6 @@ class ProfileScreen extends StatelessWidget {
 
   const ProfileScreen({super.key, required this.viewModelBase});
 
-
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<SignInState>(
@@ -76,7 +75,8 @@ class ProfileScreen extends StatelessWidget {
                       child: SimpleTextField(
                         hintText: "Date of Birth",
                         controller: viewModelBase.dateOfBirthController,
-                        suffixIcon: Icon(Icons.calendar_month, color: Theme.of(context).hintColor),
+                        suffixIcon: Icon(Icons.calendar_month,
+                            color: Theme.of(context).hintColor),
                         isEnabled: true,
                         keyboardType: TextInputType.datetime,
                         textInputAction: TextInputAction.next,
@@ -93,7 +93,8 @@ class ProfileScreen extends StatelessWidget {
                         letterSpacing: 0.1,
                         color: Theme.of(context).hintColor,
                       ),
-                      suffixIcon: Icon(Icons.keyboard_arrow_down, color: Theme.of(context).hintColor),
+                      suffixIcon: Icon(Icons.keyboard_arrow_down,
+                          color: Theme.of(context).hintColor),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -107,17 +108,18 @@ class ProfileScreen extends StatelessWidget {
                     value: state.gender,
                     items: ['Male', 'Female', 'Other']
                         .map((gender) => DropdownMenuItem(
-                      value: gender,
-                      child: Text(
-                        gender,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          letterSpacing: 0.1,
-                          color: Colors.black, // Dropdown menu item text color
-                        ),
-                      ),
-                    ))
+                              value: gender,
+                              child: Text(
+                                gender,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 0.1,
+                                  color: Colors
+                                      .black, // Dropdown menu item text color
+                                ),
+                              ),
+                            ))
                         .toList(),
                     onChanged: (value) {
                       viewModelBase.genderController.text = value ?? '';
@@ -136,33 +138,33 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           floatingActionButton: LabelButton(
+            // padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             label: 'Let’s get started',
             onTap: () {
               if (viewModelBase.nameController.text.isEmpty ||
                   viewModelBase.dateOfBirthController.text.isEmpty ||
                   viewModelBase.genderController.text.isEmpty) {
-                 // ScaffoldMessenger.of(context).showSnackBar(
-                 //     errorSnackBarWidget( "Please fill in all fields to proceed.")
-                 //  );
+                // ScaffoldMessenger.of(context).showSnackBar(
+                //     errorSnackBarWidget( "Please fill in all fields to proceed.")
+                //  );
 
                 ScaffoldMessenger.of(context)!.showSnackBar(
-
                   commonSnackBarWidget(
                     content: "Please fill in all fields to proceed.",
                     type: SnackBarType.error,
                   ),
                 );
 
-
-
                 return;
               }
-              Navigator.pushNamed(context, EmotianScreen.routeName, arguments: viewModelBase);
+              Navigator.pushNamed(context, EmotianScreen.routeName,
+                  arguments: viewModelBase);
             },
             gradient: splashGradient(),
             fontColor: Theme.of(context).primaryColorLight,
           ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
         );
       },
     );

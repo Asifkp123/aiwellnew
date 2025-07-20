@@ -1,4 +1,6 @@
 import 'package:aiwel/features/home/home_screen.dart';
+import 'package:aiwel/features/pal_creation/presentation/screens/add_pal_completion_congrats_screen.dart';
+import 'package:aiwel/features/pal_creation/presentation/screens/add_pal_congratulations_screen.dart';
 import 'package:aiwel/features/pal_creation/presentation/view_models/add_pal_view_model.dart';
 import 'package:aiwel/features/pal_creation/widgets/QuestionnaireSection.dart';
 import 'package:aiwel/features/pal_creation/widgets/back_button_with_point.dart';
@@ -131,20 +133,20 @@ class _AddPalConfirmationSubmitScreenState
                   'DEBUG: submitPalData completed, status: ${updatedState.status}');
 
               if (updatedState.status == AddPalStateStatus.success) {
-                // Show success snackbar
+                // Show success snackbar with response message
                 ScaffoldMessenger.of(context).showSnackBar(
                   commonSnackBarWidget(
-                    content: 'Profile created successfully!',
+                    content: updatedState.successMessage! ,
                     type: SnackBarType.message,
                   ),
                 );
 
                 // Wait a bit for the success snackbar to show before navigating
-                await Future.delayed(const Duration(seconds: 2));
+                await Future.delayed(const Duration(seconds: 1));
                 if (mounted) {
                   Navigator.pushNamed(
                     context,
-                    HomeScreen.routeName,
+                    AddPalCompletionCongratsScreen.routeName,
                   );
                 }
               } else if (updatedState.status == AddPalStateStatus.error &&

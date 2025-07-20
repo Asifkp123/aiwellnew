@@ -20,14 +20,13 @@ class SigninSignupScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       viewModelBase.clearErrorMessage();
-
     });
     return Scaffold(
       body: SingleChildScrollView(
         child: Center(
           child: Container(
             width: double.infinity,
-            height:1000,
+            height: 1000,
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
@@ -49,18 +48,17 @@ class SigninSignupScreen extends StatelessWidget {
                 final state = snapshot.data!;
                 final isLoading = state.isLoading;
                 final isOtpSent = state.isOtpSent;
-        
+
                 // Show SnackBar for feedback messages
                 if (state.feedbackMessage != null) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       successSnackBarWidget(state.feedbackMessage!),
-        
                     );
                     viewModelBase.clearFeedback();
                   });
                 }
-        
+
                 return Padding(
                   padding: const EdgeInsets.all(scaffoldPadding),
                   child: Column(
@@ -68,9 +66,9 @@ class SigninSignupScreen extends StatelessWidget {
                     children: [
                       const SizedBox(height: 130),
                       const SizedBox(height: 50),
-                       LargePurpleText("Hey there!"),
+                      LargePurpleText("Hey there!"),
                       const SizedBox(height: 16),
-                       NormalGreyText("What’s the best way to reach you?"),
+                      NormalGreyText("What’s the best way to reach you?"),
                       const SizedBox(height: 32),
                       SimpleTextField(
                         hintText: "Enter email/ phone number",
@@ -80,7 +78,7 @@ class SigninSignupScreen extends StatelessWidget {
                         keyboardType: TextInputType.emailAddress,
                         textInputAction: TextInputAction.done,
                       ),
-        
+
                       //
                       if (state.errorMessage != null && !isOtpSent) ...[
                         const SizedBox(height: 8),
@@ -139,30 +137,30 @@ class SigninSignupScreen extends StatelessWidget {
                         onTap: isLoading
                             ? null
                             : () async {
-                          final result = await viewModelBase.requestOtp();
-                          result.fold(
-                                (failure) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                errorSnackBarWidget(failure.message),
-                              );
-                            },
-                                (success) {
-                              Navigator.pushNamed(
-                                context,
-                                OtpScreen.routeName,
-                                arguments: viewModelBase,
-                              ).then((_) {
-                                viewModelBase.clearErrorMessage();
-                              });
-                              viewModelBase.clearOtpSentFlag();
-                            },
-                          );
-                        },
+                                final result = await viewModelBase.requestOtp();
+                                result.fold(
+                                  (failure) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      errorSnackBarWidget(failure.message),
+                                    );
+                                  },
+                                  (success) {
+                                    Navigator.pushNamed(
+                                      context,
+                                      OtpScreen.routeName,
+                                      arguments: viewModelBase,
+                                    ).then((_) {
+                                      viewModelBase.clearErrorMessage();
+                                    });
+                                    viewModelBase.clearOtpSentFlag();
+                                  },
+                                );
+                              },
                         gradient: splashGradient(),
                         fontColor: Theme.of(context).primaryColorLight,
                       ),
                       const SizedBox(height: 250),
-        
+
                       Center(
                         child: SvgPicture.asset(
                           '$svgPath/applogo.svg',

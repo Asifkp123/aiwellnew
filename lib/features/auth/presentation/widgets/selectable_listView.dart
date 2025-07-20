@@ -33,13 +33,13 @@ class SelectableListView extends StatelessWidget {
               onTap: () => onItemSelected(item),
               child: Container(
                 width: double.infinity,
-                height: 60,
+                height: 65,
                 decoration: BoxDecoration(
                   border: Border.all(
                     width: 2,
                     color: isSelected
                         ? splashGradient().colors.first.withOpacity(0.5)
-                        : lightTheme.hintColor,
+                        : lightTheme.focusColor,
                   ),
                   borderRadius: BorderRadius.circular(10),
                 ),

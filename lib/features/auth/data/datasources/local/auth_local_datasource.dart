@@ -15,10 +15,13 @@ abstract class AuthLocalDataSourceBase {
   Future<int?> getRefreshTokenExpiry();
   Future<void> clearTokens();
   Future<String?> getToken();
+  Future<void> saveApprovalStatus(bool approvalStatus);
+  Future<bool?> getApprovalStatus();
 }
 
 class AuthLocalDataSourceImpl implements AuthLocalDataSourceBase {
-  static const MethodChannel _channel = MethodChannel('com.qurig.aiwel/secure_storage');
+  static const MethodChannel _channel =
+      MethodChannel('com.qurig.aiwel/secure_storage');
 
   static const String _accessTokenKey = 'access_token';
   static const String _accessTokenExpiryKey = 'access_token_expiry';
@@ -58,7 +61,8 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSourceBase {
   @override
   Future<int?> getAccessTokenExpiry() async {
     try {
-      final expiry = await _channel.invokeMethod('getToken', {'key': _accessTokenExpiryKey});
+      final expiry = await _channel
+          .invokeMethod('getToken', {'key': _accessTokenExpiryKey});
       return expiry != null ? int.tryParse(expiry) : null;
     } catch (e) {
       throw Failure('Failed to retrieve access token expiry: $e');
@@ -77,7 +81,8 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSourceBase {
   @override
   Future<int?> getRefreshTokenExpiry() async {
     try {
-      final expiry = await _channel.invokeMethod('getToken', {'key': _refreshTokenExpiryKey});
+      final expiry = await _channel
+          .invokeMethod('getToken', {'key': _refreshTokenExpiryKey});
       return expiry != null ? int.tryParse(expiry) : null;
     } catch (e) {
       throw Failure('Failed to retrieve refresh token expiry: $e');
@@ -95,4 +100,27 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSourceBase {
 
   @override
   Future<String?> getToken() async => getAccessToken();
+
+  @override
+  Future<void> saveApprovalStatus(bool approvalStatus) async {
+    try {
+      await _channel.invokeMethod(
+          'saveApprovalStatus', {'approval_status': approvalStatus.toString()});
+    } catch (e) {
+      throw Failure('Failed to save approval status: $e');
+    }
+  }
+
+  @override
+  Future<bool?> getApprovalStatus() async {
+    try {
+      final status = await _channel.invokeMethod('getApprovalStatus');
+      if (status == null) return null;
+      if (status is bool) return status;
+      if (status is String) return status.toLowerCase() == 'true';
+      return null;
+    } catch (e) {
+      throw Failure('Failed to retrieve approval status: $e');
+    }
+  }
 }

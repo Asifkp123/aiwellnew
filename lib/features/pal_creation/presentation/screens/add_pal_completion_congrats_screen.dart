@@ -54,10 +54,10 @@ class AddPalCompletionCongratsScreen extends StatelessWidget {
 
                   children: [
                     SizedBox(height: 40),
-
                     Align(
                       alignment: Alignment.centerRight,
-                      child: Icon(Icons.close, size: 30, color: lightTheme.colorScheme.surface),
+                      child: Icon(Icons.close,
+                          size: 30, color: lightTheme.colorScheme.surface),
                     ),
                     Spacer(),
                     const SizedBox(height: 100),
@@ -65,12 +65,8 @@ class AddPalCompletionCongratsScreen extends StatelessWidget {
                     const SizedBox(height: 16),
                     NormalGreyText("Thank you for caring for your Pal"),
                     const SizedBox(height: 200),
-
                     CarePointsCard(),
                     const SizedBox(height: 100),
-
-
-
                   ],
                 ),
               ),
@@ -78,14 +74,12 @@ class AddPalCompletionCongratsScreen extends StatelessWidget {
           ),
           floatingActionButton: LabelButton(
             label: 'Confirm & continue',
-            onTap: () {
-
-
-            },
+            onTap: () {},
             gradient: splashGradient(),
             fontColor: Theme.of(context).primaryColorLight,
           ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
         );
       },
     );

@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:dartz/dartz.dart';
 import '../../../../core/network/error/failure.dart';
-import '../../data/datasources/local/auth_local_datasource.dart';
+import '../../../../core/services/token_manager.dart';
 import '../../data/datasources/remote/auth_remote_datasource.dart';
 
 abstract class RefreshTokenUseCaseBase {
@@ -11,17 +11,17 @@ abstract class RefreshTokenUseCaseBase {
 
 class RefreshTokenUseCase implements RefreshTokenUseCaseBase {
   final AuthRemoteDataSource authRemoteDataSource;
-  final AuthLocalDataSourceBase authLocalDataSource;
+  final TokenManager tokenManager;
 
   RefreshTokenUseCase({
     required this.authRemoteDataSource,
-    required this.authLocalDataSource,
+    required this.tokenManager,
   });
 
   @override
   Future<Either<Failure, bool>> execute() async {
-    final refreshToken = await authLocalDataSource.getRefreshToken();
-    final refreshTokenExpiry = await authLocalDataSource.getRefreshTokenExpiry();
+    final refreshToken = await tokenManager.getRefreshToken();
+    final refreshTokenExpiry = await tokenManager.getRefreshTokenExpiry();
 
     if (refreshToken == null || refreshTokenExpiry == null) {
       return Left(Failure('No refresh token available'));
@@ -34,15 +34,21 @@ class RefreshTokenUseCase implements RefreshTokenUseCaseBase {
 
     final result = await authRemoteDataSource.refreshToken(refreshToken);
     return result.fold(
-          (failure) => Left(failure),
-          (response) async {
+      (failure) => Left(failure),
+      (response) async {
         if (response.statusCode == 200) {
-          final accessToken = response.headers['authorization']?.replaceAll('Bearer ', '') ?? '';
-          final accessTokenExpiry = int.tryParse(response.headers['x-token-expiry'] ?? '') ?? 0;
-          final newRefreshToken = response.headers['x-refresh-token'] ?? refreshToken;
-          final newRefreshTokenExpiry = int.tryParse(response.headers['x-refresh-expiry'] ?? '') ?? refreshTokenExpiry;
+          final accessToken =
+              response.headers['authorization']?.replaceAll('Bearer ', '') ??
+                  '';
+          final accessTokenExpiry =
+              int.tryParse(response.headers['x-token-expiry'] ?? '') ?? 0;
+          final newRefreshToken =
+              response.headers['x-refresh-token'] ?? refreshToken;
+          final newRefreshTokenExpiry =
+              int.tryParse(response.headers['x-refresh-expiry'] ?? '') ??
+                  refreshTokenExpiry;
 
-          await authLocalDataSource.saveTokens(
+          await tokenManager.saveTokens(
             accessToken: accessToken,
             accessTokenExpiry: accessTokenExpiry,
             refreshToken: newRefreshToken,
@@ -50,8 +56,10 @@ class RefreshTokenUseCase implements RefreshTokenUseCaseBase {
           );
           return Right(true);
         } else {
-          final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
-          final errorMessage = responseBody['message'] ?? 'Token refresh failed: ${response.reasonPhrase}';
+          final responseBody =
+              jsonDecode(response.body) as Map<String, dynamic>;
+          final errorMessage =
+              responseBody['message'] ?? 'Token refresh failed';
           return Left(Failure(errorMessage));
         }
       },

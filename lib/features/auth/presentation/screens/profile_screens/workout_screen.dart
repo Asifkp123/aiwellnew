@@ -14,6 +14,7 @@ import '../../widgets/selectable_listView.dart';
 import '../../widgets/slider_animation.dart';
 import '../otp_screen.dart';
 import '../signin_signup_screen.dart';
+import '../../../../../core/state/app_state_manager.dart';
 
 class WorkoutScreen extends StatelessWidget {
   static const String routeName = '/workoutScreen';
@@ -124,41 +125,27 @@ class WorkoutScreen extends StatelessWidget {
               }
 
               final result = await viewModelBase.submitProfile();
-              result.fold(
-                (failure) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    commonSnackBarWidget(
-                      content: failure.message,
-                      type: SnackBarType.error,
-                    ),
-                  );
-                  // Optionally: Do not navigate immediately, let user see the error
-                  // Navigator.pushNamed(context, ProfileScreen.routeName);
-                },
-                (response) async {
-                  if (response.success) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      commonSnackBarWidget(
-                        content:
-                            response.message,
-                        type: SnackBarType.message,
-                      ),
-                    );
-                    // Wait a moment for the snackbar to show, then navigate
-                    await Future.delayed(const Duration(milliseconds: 500));
-                    Navigator.pushNamed(context, HomeScreen.routeName);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      commonSnackBarWidget(
-                        content: response.message ?? "Profile update failed.",
-                        type: SnackBarType.error,
-                      ),
-                    );
-                    // Optionally: Do not navigate immediately, let user see the error
-                    // Navigator.pushNamed(context, ProfileScreen.routeName);
-                  }
-                },
-              );
+
+              if (result.error != null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  commonSnackBarWidget(
+                    content: result.error!,
+                    type: SnackBarType.error,
+                  ),
+                );
+              } else if (result.successMessage != null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  commonSnackBarWidget(
+                    content: result.successMessage!,
+                    type: SnackBarType.message,
+                  ),
+                );
+
+                // Check if we should navigate to HomeScreen
+                if (result.appState is HomeState) {
+                  Navigator.pushReplacementNamed(context, HomeScreen.routeName);
+                }
+              }
             },
             gradient: splashGradient(),
             fontColor: Theme.of(context).primaryColorLight,

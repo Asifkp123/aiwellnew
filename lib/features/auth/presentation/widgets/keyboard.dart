@@ -21,7 +21,7 @@ class CustomPinInput extends StatefulWidget {
     required this.countdownSeconds,
     required this.canResend,
     required this.onResend,
-    required this.errorMessage,
+    this.errorMessage,
   }) : super(key: key);
 
   @override

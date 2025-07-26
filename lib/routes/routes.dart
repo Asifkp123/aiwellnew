@@ -88,10 +88,9 @@ Future<Widget> routeNavigator(String routeName,
     case AddPalCompletionCongratsScreen.routeName:
       return AddPalCompletionCongratsScreen(viewModelBase: addPalVeiewModel);
     case MedicineReminderScreen.routeName:
-      return MedicineReminderScreen(
-          viewModel: arguments?['viewModel'] ??
-              MedicineInjection.medicineReminderViewModel);
+      return MedicineReminderScreen();
     default:
-      return AddPalProfileCreationScreen(viewModelBase: addPalVeiewModel);
+      // return AddPalProfileCreationScreen(viewModelBase: addPalVeiewModel);
+      return MedicineReminderScreen();
   }
 }

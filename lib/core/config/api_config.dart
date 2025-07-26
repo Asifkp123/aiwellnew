@@ -1,5 +1,6 @@
 // lib/core/config/api_config.dart
 import '../../features/auth/data/datasources/local/auth_local_datasource.dart';
+import '../services/token_manager.dart';
 
 class ApiConfig {
   static const String baseUrl = 'http://api-test.aiwel.org/api/v1';
@@ -14,9 +15,14 @@ class ApiConfig {
       };
 
   static Future<Map<String, String>> getAuthenticatedHeaders() async {
-    final authLocalDataSource = AuthLocalDataSourceImpl();
+    final tokenManager = await TokenManager.getInstance();
+
+    final authLocalDataSource = AuthLocalDataSourceImpl(tokenManager);
     final accessToken = await authLocalDataSource.getAccessToken();
+    print(accessToken);
+    print("accessTokenaccessToken");
     if (accessToken == null) return defaultHeaders;
+
     return {
       ...defaultHeaders,
       'Authorization': 'Bearer $accessToken',

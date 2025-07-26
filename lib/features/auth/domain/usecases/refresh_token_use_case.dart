@@ -21,6 +21,8 @@ class RefreshTokenUseCase implements RefreshTokenUseCaseBase {
   @override
   Future<Either<Failure, bool>> execute() async {
     final refreshToken = await tokenManager.getRefreshToken();
+    print(refreshToken);
+    print("refreshToken fetched succesfully");
     final refreshTokenExpiry = await tokenManager.getRefreshTokenExpiry();
 
     if (refreshToken == null || refreshTokenExpiry == null) {
@@ -34,8 +36,12 @@ class RefreshTokenUseCase implements RefreshTokenUseCaseBase {
 
     final result = await authRemoteDataSource.refreshToken(refreshToken);
     return result.fold(
-      (failure) => Left(failure),
+      (failure) async {
+        print("Error occurred while refreshing token: ${failure.message}");
+        return Left(failure);
+      },
       (response) async {
+        print("Response received from remote data source: $response");
         if (response.statusCode == 200) {
           final accessToken =
               response.headers['authorization']?.replaceAll('Bearer ', '') ??

@@ -26,6 +26,8 @@ abstract class AuthRepository {
   });
   Future<String?> getAccessToken();
   Future<int?> getAccessTokenExpiry();
+  Future<String?> getRefreshToken();
+  Future<int?> getRefreshTokenExpiry();
   Future<bool?> getApprovalStatus();
 }
 
@@ -43,8 +45,20 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, OtpRequestSuccess>> requestOtp(
       {String? email, String? phoneNumber}) async {
-    return await authRemoteDataSource.requestOtp(
+    final result = await authRemoteDataSource.requestOtp(
         email: email, phoneNumber: phoneNumber);
+
+    return result.fold(
+      (failure) => Left(failure),
+      (apiResponse) {
+        if (apiResponse.isSuccess && apiResponse.data != null) {
+          return Right(OtpRequestSuccess.fromJson(apiResponse.data));
+        } else {
+          final errorMessage = apiResponse.errorMessage ?? 'OTP request failed';
+          return Left(Failure(errorMessage));
+        }
+      },
+    );
   }
 
   @override
@@ -78,7 +92,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String sleepQuality,
     required String physicalActivity,
   }) async {
-    return await authRemoteDataSource.submitProfile(
+    final result = await authRemoteDataSource.submitProfile(
       firstName: firstName,
       lastName: lastName,
       gender: gender,
@@ -86,6 +100,19 @@ class AuthRepositoryImpl implements AuthRepository {
       dominantEmotion: dominantEmotion,
       sleepQuality: sleepQuality,
       physicalActivity: physicalActivity,
+    );
+
+    return result.fold(
+      (failure) => Left(failure),
+      (apiResponse) {
+        if (apiResponse.isSuccess && apiResponse.data != null) {
+          return Right(SubmitProfileResponse.fromJson(apiResponse.data));
+        } else {
+          final errorMessage =
+              apiResponse.errorMessage ?? 'Profile submission failed';
+          return Left(Failure(errorMessage));
+        }
+      },
     );
   }
 
@@ -97,6 +124,16 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<int?> getAccessTokenExpiry() async {
     return await _tokenManager.getAccessTokenExpiry();
+  }
+
+  @override
+  Future<String?> getRefreshToken() async {
+    return await _tokenManager.getRefreshToken();
+  }
+
+  @override
+  Future<int?> getRefreshTokenExpiry() async {
+    return await _tokenManager.getRefreshTokenExpiry();
   }
 
   @override

@@ -157,8 +157,11 @@ class ProfileScreen extends StatelessWidget {
 
                 return;
               }
-              Navigator.pushNamed(context, EmotianScreen.routeName,
-                  arguments: viewModelBase);
+              Navigator.pushNamed(
+                context,
+                EmotianScreen.routeName,
+                arguments: {'viewModelBase': viewModelBase},
+              );
             },
             gradient: splashGradient(),
             fontColor: Theme.of(context).primaryColorLight,

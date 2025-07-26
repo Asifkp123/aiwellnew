@@ -1,91 +1,98 @@
 import 'dart:convert';
+import 'package:aiwel/features/auth/data/repositories/auth_repository.dart';
 import 'package:dartz/dartz.dart';
 import '../../../../core/network/error/failure.dart';
 import '../../../../core/services/token_manager.dart';
-import '../../data/repositories/auth_repository.dart';
-import '../../data/models/api/verify_otp_response.dart';
+import '../../../../core/state/app_state_manager.dart';
+import '../repositories/auth_repository.dart';
 import '../entities/otp_verification.dart';
 
 class VerifyOtpParams {
   final String identifier;
   final String otp;
+  VerifyOtpParams(this.identifier, this.otp);
+}
+class VerifyOtpResult {
+  final String? error;
+  final String? successMessage;
+  final AppState? appState;
 
-  VerifyOtpParams({
-    required this.identifier,
-    required this.otp,
+  VerifyOtpResult({
+    this.error,
+    this.successMessage,
+    this.appState,
   });
 }
 
-abstract class VerifyOtpUseCaseBase {
-  Future<Either<Failure, OtpVerification>> execute(VerifyOtpParams params);
+abstract class VerifyOtpUseCase {
+  Future<VerifyOtpResult> execute(VerifyOtpParams params);
 }
 
-class VerifyOtpUseCase implements VerifyOtpUseCaseBase {
-  final AuthRepository _authRepository;
+class VerifyOtpUseCaseImpl implements VerifyOtpUseCase {
+  final AuthRepositoryImpl _authRepository;
   final TokenManager _tokenManager;
 
-  VerifyOtpUseCase({
-    required AuthRepository authRepository,
-    required TokenManager tokenManager,
-  })  : _authRepository = authRepository,
-        _tokenManager = tokenManager;
+  VerifyOtpUseCaseImpl(this._authRepository, this._tokenManager);
 
-  // Business Logic
+  bool _isValidIdentifier(String identifier) =>
+      identifier.isNotEmpty; // Simplified for example
+  bool _isValidOtp(String otp) =>
+      otp.length == 6 && RegExp(r'^\d{6}$').hasMatch(otp);
+
   @override
-  Future<Either<Failure, OtpVerification>> execute(
-      VerifyOtpParams params) async {
-    // Domain Validation
+  Future<VerifyOtpResult> execute(VerifyOtpParams params) async {
     if (!_isValidIdentifier(params.identifier)) {
-      return Left(Failure('Invalid identifier format'));
+      return VerifyOtpResult(
+        error: 'Invalid identifier format',
+        appState: null,
+      );
     }
-
     if (!_isValidOtp(params.otp)) {
-      return Left(Failure('OTP must be exactly 6 digits'));
+      return VerifyOtpResult(
+        error: 'OTP must be exactly 6 digits',
+        appState: null,
+      );
     }
 
-    // Business Rules
-    if (_isExpiredOtp(params.otp)) {
-      return Left(Failure('OTP has expired'));
-    }
-
-    // Repository Call
     final result =
         await _authRepository.verifyOtp(params.identifier, params.otp);
 
-    return result.fold(
-      (failure) => Left(failure),
-      (verification) async {
-        print("herer11");
-        // ✅ BUSINESS LOGIC IN USE CASE - Save tokens and approval status
-        if (verification.accessToken != null && verification.refreshToken != null) {
-          print("herer22");
+    if (result.isLeft()) {
+      // Get the error string from Failure
+      final failure = result.swap().getOrElse(() => Failure('Unknown error'));
+      return VerifyOtpResult(
+        error: failure.message,
+        appState: null,
+      );
+    }
 
-          await _tokenManager.saveTokens(
-            accessToken: verification.accessToken!,
-            accessTokenExpiry: verification.accessTokenExpiry ?? 0,
-            refreshToken: verification.refreshToken!,
-            refreshTokenExpiry: verification.refreshTokenExpiry ?? 0,
-          );
-        }
-        // await _tokenManager.saveApprovalStatus(verification.isApproved);
-        return Right(verification);
-      },
-    );
-  }
+    final verification =
+        result.getOrElse(() => throw Exception('Unexpected error'));
 
-  // Business Logic Validation
-  bool _isValidIdentifier(String identifier) {
-    return identifier.isNotEmpty && identifier.length >= 3;
-  }
+    // Store tokens if present
+    if (verification.accessToken != null && verification.refreshToken != null) {
+      await _tokenManager.saveTokens(
+        accessToken: verification.accessToken!,
+        accessTokenExpiry: verification.accessTokenExpiry ?? 0,
+        refreshToken: verification.refreshToken!,
+        refreshTokenExpiry: verification.refreshTokenExpiry ?? 0,
+      );
+    }
 
-  bool _isValidOtp(String otp) {
-    return otp.length == 6 && RegExp(r'^\d{6}$').hasMatch(otp);
-  }
-
-  // Business Rules
-  bool _isExpiredOtp(String otp) {
-    // This is a placeholder for OTP expiration logic
-    // In real implementation, you would check against stored timestamp
-    return false;
+    if (verification.isApproved) {
+      await AppStateManager.saveAppState(HomeState());
+      return VerifyOtpResult(
+        error: null,
+        successMessage: verification.message,
+        appState: HomeState(),
+      );
+    } else {
+      await AppStateManager.saveAppState(ProfileState());
+      return VerifyOtpResult(
+        error: null,
+        successMessage: verification.message,
+        appState: ProfileState(),
+      );
+    }
   }
 }

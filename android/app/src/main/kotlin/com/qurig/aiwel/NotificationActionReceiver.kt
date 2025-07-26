@@ -77,7 +77,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
                 notificationManager.cancel(notificationId) // Clear the notification
                 val flutterEngine = FlutterEngine(context)
                 flutterEngine.dartExecutor.executeDartEntrypoint(DartExecutor.DartEntrypoint.createDefault())
-                val channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.example.med/notifications")
+                val channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.qurig.aiwel/notifications")
                 channel.invokeMethod("markMedicineTaken", mapOf("id" to id))
             }
         }

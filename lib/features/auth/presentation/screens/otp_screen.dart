@@ -123,23 +123,23 @@ class OtpScreen extends StatelessWidget {
                       CustomPinInput(
                         controller: viewModelBase.otpController,
                         onCompleted: (_) async {
-                          final result = await viewModelBase.verifyOtp();
-                          result.fold(
-                            (failure) {
-                              // Optionally show error
-                            },
-                            (response) {
-                              viewModelBase.clearInputs();
-                              if (response.isApproved == true) {
-                                Navigator.pushReplacementNamed(
-                                    context, HomeScreen.routeName);
-                              } else {
-                                Navigator.pushReplacementNamed(
-                                    context, ProfileScreen.routeName,
-                                    arguments: viewModelBase);
-                              }
-                            },
-                          );
+                          final result = await viewModelBase.verifyOtp(context);
+                          // result.fold(
+                          //   (failure) {
+                          //     // Optionally show error
+                          //   },
+                          //   (response) {
+                          //     viewModelBase.clearInputs();
+                          //     if (response.isApproved == true) {
+                          //       Navigator.pushReplacementNamed(
+                          //           context, HomeScreen.routeName);
+                          //     } else {
+                          //       Navigator.pushReplacementNamed(
+                          //           context, ProfileScreen.routeName,
+                          //           arguments: viewModelBase);
+                          //     }
+                          //   },
+                          // );
                         },
                         isLoading: state.isLoading,
                         countdownSeconds: state.countdownSeconds,

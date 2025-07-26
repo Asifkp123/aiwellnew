@@ -29,16 +29,17 @@ class ApiResponseImpl<T> implements ApiResponse<T> {
     this.headers,
   });
 
-  factory ApiResponseImpl.success(T data, {Map<String, String>? headers}) => ApiResponseImpl<T>(
-    data: data,
-    isSuccess: true,
-    headers: headers,
-  );
+  factory ApiResponseImpl.success(T data, {Map<String, String>? headers}) =>
+      ApiResponseImpl<T>(
+        data: data,
+        isSuccess: true,
+        headers: headers,
+      );
 
   factory ApiResponseImpl.error(String errorMessage) => ApiResponseImpl<T>(
-    errorMessage: errorMessage,
-    isSuccess: false,
-  );
+        errorMessage: errorMessage,
+        isSuccess: false,
+      );
 
   @override
   ApiResponseImpl<T> copyWith({
@@ -63,13 +64,19 @@ class ApiResponseImpl<T> implements ApiResponse<T> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-          other is ApiResponseImpl &&
-              runtimeType == other.runtimeType &&
-              data == other.data &&
-              errorMessage == other.errorMessage &&
-              isSuccess == other.isSuccess &&
-              headers == other.headers;
+      other is ApiResponseImpl &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorMessage == other.errorMessage &&
+          isSuccess == other.isSuccess &&
+          headers == other.headers;
 
   @override
-  int get hashCode => data.hashCode ^ errorMessage.hashCode ^ isSuccess.hashCode ^ headers.hashCode;
+  int get hashCode =>
+      data.hashCode ^
+      errorMessage.hashCode ^
+      isSuccess.hashCode ^
+      headers.hashCode;
 }
+
+

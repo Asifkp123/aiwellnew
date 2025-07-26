@@ -209,31 +209,42 @@ class HttpApiService implements IApiService {
         return ApiResponseImpl.error('Failed to parse response: $e');
       }
     } else {
-      String errorMessage;
-      switch (statusCode) {
-        case 400:
-          errorMessage = 'Bad request';
-          break;
-        case 401:
-          errorMessage = 'Unauthorized';
-          break;
-        case 403:
-          errorMessage = 'Forbidden';
-          break;
-        case 404:
-          errorMessage = 'Resource not found';
-          break;
-        case 500:
-          errorMessage = 'Server error';
-          break;
-        default:
-          errorMessage = 'HTTP error: $statusCode';
-      }
+      String errorMessage = '';
       try {
-        final errorBody = jsonDecode(response.body);
-        errorMessage += ' - ${errorBody['message'] ?? errorBody.toString()}';
+        final errorBody =
+            response.body.isNotEmpty ? jsonDecode(response.body) : {};
+        // Prefer 'detail', then 'message', then fallback
+        if (errorBody is Map<String, dynamic>) {
+          if (errorBody.containsKey('detail')) {
+            errorMessage = errorBody['detail'].toString();
+          } else if (errorBody.containsKey('message')) {
+            errorMessage = errorBody['message'].toString();
+          }
+        }
       } catch (_) {
         // Ignore if response body is not JSON
+      }
+      // Fallback to generic if no detail/message found
+      if (errorMessage.isEmpty) {
+        switch (statusCode) {
+          case 400:
+            errorMessage = 'Bad request';
+            break;
+          case 401:
+            errorMessage = 'Unauthorized';
+            break;
+          case 403:
+            errorMessage = 'Forbidden';
+            break;
+          case 404:
+            errorMessage = 'Resource not found';
+            break;
+          case 500:
+            errorMessage = 'Server error';
+            break;
+          default:
+            errorMessage = 'HTTP error: $statusCode';
+        }
       }
       return ApiResponseImpl.error(errorMessage);
     }

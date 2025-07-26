@@ -9,23 +9,23 @@ import 'package:aiwel/features/home/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../view_models/splash_viewModel.dart';
+import 'package:aiwel/app_wrapper.dart';
+import 'package:aiwel/core/state/app_state_manager.dart';
 
 class SplashScreen extends StatelessWidget {
-  final SplashViewModel viewModel;
+  // final SplashViewModel viewModel;
+  final Map<String, dynamic> viewModels;
 
-  const SplashScreen({Key? key, required this.viewModel}) : super(key: key);
-
+  const SplashScreen(
+      {Key? key, required this.viewModels})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: LabelButton(
-        label: 'Let\u2019s get started',
-        onTap: () async {
-          final route = await viewModel.handleLetsGetStarted();
-          print(route);
-          Navigator.pushReplacementNamed(context, route);
-        },
+        label: 'Let’s get started',
+        onTap: () => viewModels["SplashViewModel"].handleLetsGetStartedNavigation(context),
         gradient: splashGradient(),
         fontColor: Theme.of(context).primaryColorLight,
       ),

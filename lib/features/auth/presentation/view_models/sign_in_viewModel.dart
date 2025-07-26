@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:ffi';
 import 'package:aiwel/features/auth/domain/usecases/get_access_token_expiry_use_case.dart';
+import 'package:aiwel/features/auth/presentation/screens/profile_screens/profile_screen.dart';
+import 'package:aiwel/features/home/home_screen.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -8,6 +10,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/constants/strings.dart';
 import '../../../../core/network/error/failure.dart';
+import '../../../../core/state/app_state_manager.dart';
 import '../../data/datasources/local/auth_local_datasource.dart';
 import '../../data/datasources/remote/auth_remote_datasource.dart';
 import '../../data/models/api/otp_request_success.dart';
@@ -21,6 +24,9 @@ import '../../domain/usecases/verify_otp_use_case.dart';
 import '../../domain/usecases/check_auth_status_use_case.dart';
 import '../../data/models/api/submit_profile_response.dart';
 import '../../domain/entities/otp_verification.dart';
+import '../screens/signin_signup_screen.dart';
+import '../screens/otp_screen.dart';
+import '../../../../../components/snackbars/custom_snackbar.dart';
 
 // Enum for sign-in status
 enum SignInStatus { idle, loading, otpSent, verifyingOtp, success, error }
@@ -72,8 +78,9 @@ abstract class SignInViewModelBase {
 
   Stream<SignInState> get stateStream;
   Future<Either<Failure, OtpRequestSuccess>> requestOtp();
-  Future<Either<Failure, OtpVerification>> verifyOtp();
-  Future<Either<Failure, SubmitProfileResponse>> submitProfile();
+  Future<void> requestOtpWithNavigation(BuildContext context);
+  Future<void> verifyOtp(BuildContext context);
+  Future<SubmitProfileResult> submitProfile();
   void clearInputs();
   void clearError();
   void dispose();
@@ -99,7 +106,7 @@ abstract class SignInViewModelBase {
 // ViewModel for the sign-in feature
 class SignInViewModel implements SignInViewModelBase {
   final RequestOtpUseCase requestOtpUseCase;
-  final VerifyOtpUseCaseBase verifyOtpUseCaseBase;
+  final VerifyOtpUseCase verifyOtpUseCaseBase;
   final SubmitProfileUseCaseBase submitProfileUseCaseBase;
   final AuthLocalDataSourceImpl authLocalDataSourceImpl;
   final GetAccessTokenUseCase getAccessTokenUseCase;
@@ -261,80 +268,104 @@ class SignInViewModel implements SignInViewModelBase {
         _feedbackMessage = "OTP sent successfully!";
         startCountdown();
         _emitState();
+
         return Right(success);
       },
     );
   }
 
   @override
-  Future<Either<Failure, OtpVerification>> verifyOtp() async {
+  Future<void> requestOtpWithNavigation(BuildContext context) async {
+    final result = await requestOtp();
+
+    result.fold(
+      (failure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          commonSnackBarWidget(
+            content: failure.message,
+            type: SnackBarType.error,
+          ),
+        );
+      },
+      (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          commonSnackBarWidget(
+            content: "OTP sent successfully!",
+            type: SnackBarType.message,
+          ),
+        );
+
+        // Navigate to OTP screen
+        Navigator.pushNamed(
+          context,
+          OtpScreen.routeName,
+          arguments: {'viewModelBase': this},
+        );
+      },
+    );
+  }
+
+  Future<void> verifyOtp(BuildContext context) async {
     final otp = _otpController.text.trim();
     if (otp.isEmpty) {
       _errorMessage = Strings.emptyOtpMessage;
       _status = SignInStatus.error;
       _emitState();
-      return Left(Failure(_errorMessage!));
+      return;
     }
-
-    if (otp.length != 6) {
-      _errorMessage = Strings.invalidOtpMessage;
-      _status = SignInStatus.error;
-      _emitState();
-      return Left(Failure(_errorMessage!));
-    }
-
     _status = SignInStatus.verifyingOtp;
-    _errorMessage = null;
     _emitState();
 
-    try {
-      final response = await verifyOtpUseCaseBase.execute(
-        VerifyOtpParams(
-          identifier: _emailController.text.trim(),
-          otp: otp,
-        ),
-      );
-
-      print("response.toString()");
-      return response.fold(
-        (failure) {
-          _errorMessage = failure.message.isNotEmpty
-              ? failure.message
-              : Strings.failedOtpVerificationMessage;
-          _status = SignInStatus.error;
-          _emitState();
-          return Left(failure);
-        },
-        (success) async {
-          // Save tokens or other logic if needed, using OtpVerification fields
-          _status = SignInStatus.success;
-          _feedbackMessage = "Sign-in successful!";
-          resetCountdown();
-          _emitState();
-          clearInputs();
-          return Right(success);
-        },
-      );
-    } catch (e) {
-      _errorMessage = Strings.failedOtpVerificationMessage;
+    final result = await verifyOtpUseCaseBase.execute(
+      VerifyOtpParams(
+        _emailController.text.trim(),
+        otp,
+      ),
+    );
+    if (result.error != null) {
+      _errorMessage = result.error;
       _status = SignInStatus.error;
       _emitState();
-      return Left(Failure(_errorMessage!));
+      return;
+    }
+
+    _status = SignInStatus.success;
+    _feedbackMessage = result.successMessage;
+    _emitState();
+
+    if (result.appState is HomeState) {
+      Navigator.pushReplacementNamed(context, HomeScreen.routeName);
+    } else if (result.appState is ProfileState) {
+      Navigator.pushReplacementNamed(
+        context,
+        ProfileScreen.routeName,
+        arguments: this, // Make sure ProfileScreen handles this correctly
+      );
+    } else {
+      _status = SignInStatus.error;
+      _errorMessage = "Unknown navigation state.";
+      _emitState();
     }
   }
 
   @override
-  Future<Either<Failure, SubmitProfileResponse>> submitProfile() async {
+  Future<SubmitProfileResult> submitProfile() async {
     if (!validateProfile()) {
       _errorMessage = Strings.invalidProfileMessage;
       _status = SignInStatus.error;
       _emitState();
-      return Left(Failure(_errorMessage!));
+      return SubmitProfileResult(
+        error: _errorMessage,
+        appState: null,
+      );
     }
 
     // Ensure valid token before proceeding
     if (!await _ensureValidToken()) {
-      return Left(Failure(_errorMessage ?? Strings.noTokenAvailable));
+      return SubmitProfileResult(
+        error: _errorMessage ?? Strings.noTokenAvailable,
+        appState: null,
+      );
     }
 
     _status = SignInStatus.loading;
@@ -349,7 +380,10 @@ class SignInViewModel implements SignInViewModelBase {
       _errorMessage = Strings.invalidDateFormatMessage;
       _status = SignInStatus.error;
       _emitState();
-      return Left(Failure(_errorMessage!));
+      return SubmitProfileResult(
+        error: _errorMessage,
+        appState: null,
+      );
     }
 
     final result = await submitProfileUseCaseBase.execute(
@@ -362,20 +396,7 @@ class SignInViewModel implements SignInViewModelBase {
       physicalActivity: _selectedWorkout?.toLowerCase() ?? '',
     );
 
-    return result.fold(
-      (failure) {
-        _errorMessage = failure.message;
-        _status = SignInStatus.error;
-        _emitState();
-        return Left(failure);
-      },
-      (response) {
-        _status = SignInStatus.success;
-        _feedbackMessage = response.message ?? "Profile updated successfully.";
-        _emitState();
-        return Right(response);
-      },
-    );
+    return result;
   }
 
   @override

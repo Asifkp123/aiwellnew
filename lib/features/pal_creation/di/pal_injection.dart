@@ -18,7 +18,7 @@ class PalDependencyManager {
       final tokenManager = await TokenManager.getInstance();
 
       // Initialize AuthLocalDataSourceImpl
-      final authLocalDataSource = AuthLocalDataSourceImpl();
+      final authLocalDataSource = AuthLocalDataSourceImpl(  tokenManager);
 
       // Initialize AuthRemoteDataSource
       final authRemoteDataSource = AuthRemoteDataSourceImpl(

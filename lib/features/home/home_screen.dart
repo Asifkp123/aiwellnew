@@ -57,7 +57,7 @@ class HomeScreen extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        SvgPicture.asset("$svgPath/Heart Icon Home.svg"),
+                        // SvgPicture.asset("$svgPath/Heart Icon Home.svg"),
                         PurpleBoldText(
                           "123",
                         ),
@@ -81,7 +81,7 @@ class HomeScreen extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        SvgPicture.asset("$svgPath/mood Emoji.svg"),
+                        // SvgPicture.asset("$svgPath/mood Emoji.svg"),
                         LargePurpleText(" Mood"),
                       ],
                     ),

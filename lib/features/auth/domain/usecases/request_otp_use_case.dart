@@ -3,6 +3,7 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/network/error/failure.dart';
 import '../../data/models/api/otp_request_success.dart';
 import '../../data/repositories/auth_repository.dart';
+import '../repositories/auth_repository.dart';
 
 abstract class RequestOtpUseCaseBase {
   Future<Either<Failure, OtpRequestSuccess>> execute(
@@ -10,7 +11,7 @@ abstract class RequestOtpUseCaseBase {
 }
 
 class RequestOtpUseCase extends RequestOtpUseCaseBase {
-  final AuthRepository repository;
+  final AuthRepositoryImpl repository;
 
   RequestOtpUseCase({required this.repository});
 

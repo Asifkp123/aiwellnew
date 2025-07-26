@@ -62,12 +62,16 @@ class EmotianScreen extends StatelessWidget {
                         SizedBox(width: 5),
                         CircleContainer(
                           filled: false,
-                          onTap: () => Navigator.pushNamed(context, SleepQualityScreen.routeName, arguments: viewModelBase),
+                          onTap: () => Navigator.pushNamed(
+                              context, SleepQualityScreen.routeName,
+                              arguments: viewModelBase),
                         ),
                         SizedBox(width: 5),
                         CircleContainer(
                           filled: false,
-                          onTap: () => Navigator.pushNamed(context, WorkoutScreen.routeName, arguments: viewModelBase),
+                          onTap: () => Navigator.pushNamed(
+                              context, WorkoutScreen.routeName,
+                              arguments: viewModelBase),
                         ),
                       ],
                     ),
@@ -88,8 +92,6 @@ class EmotianScreen extends StatelessWidget {
                     //   ),
                     // ],
                     SizedBox(height: 50),
-
-
                   ],
                 ),
               ),
@@ -98,25 +100,25 @@ class EmotianScreen extends StatelessWidget {
           floatingActionButton: LabelButton(
             label: 'Continue',
             onTap: () {
-
               if (state.selectedMood == null) {
-                    ScaffoldMessenger.of(context)!.showSnackBar(
-
-                      commonSnackBarWidget(
-                        content: "Please fill in all fields to proceed.",
-                        type: SnackBarType.error,
-                      ),
-                    );
+                ScaffoldMessenger.of(context)!.showSnackBar(
+                  commonSnackBarWidget(
+                    content: "Please fill in all fields to proceed.",
+                    type: SnackBarType.error,
+                  ),
+                );
 
                 return;
               }
 
-                  Navigator.pushNamed(context, SleepQualityScreen.routeName, arguments: viewModelBase);
+              Navigator.pushNamed(context, SleepQualityScreen.routeName,
+                  arguments: {'viewModelBase': viewModelBase});
             },
             gradient: splashGradient(),
             fontColor: Theme.of(context).primaryColorLight,
           ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
         );
       },
     );

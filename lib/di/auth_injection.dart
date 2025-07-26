@@ -1,4 +1,5 @@
 import 'package:aiwel/core/network/http_api_services.dart';
+import 'package:aiwel/di/splah_dependency_manager.dart';
 import 'package:aiwel/features/auth/data/datasources/local/auth_local_datasource.dart';
 import 'package:aiwel/features/auth/data/datasources/remote/auth_remote_datasource.dart';
 import 'package:aiwel/features/auth/data/repositories/auth_repository.dart';
@@ -9,9 +10,12 @@ import 'package:aiwel/features/auth/domain/usecases/request_otp_use_case.dart';
 import 'package:aiwel/features/auth/domain/usecases/submit_profile_use_case.dart';
 import 'package:aiwel/features/auth/domain/usecases/verify_otp_use_case.dart';
 import 'package:aiwel/features/auth/presentation/view_models/sign_in_viewModel.dart';
+import 'package:aiwel/features/auth/presentation/view_models/splash_viewModel.dart';
 import 'package:aiwel/features/pal_creation/presentation/view_models/add_pal_view_model.dart';
 import 'package:aiwel/features/pal_creation/di/pal_injection.dart';
 import 'package:aiwel/core/services/token_manager.dart';
+
+import '../features/auth/domain/repositories/auth_repository.dart';
 
 class DependencyManager {
   static Future<SignInViewModel> createSignInViewModel() async {
@@ -19,7 +23,7 @@ class DependencyManager {
       // Initialize TokenManager first
       final tokenManager = await TokenManager.getInstance();
 
-      final authLocalDataSource = AuthLocalDataSourceImpl();
+      final authLocalDataSource = AuthLocalDataSourceImpl(tokenManager);
 
       // Initialize HttpApiService with TokenManager
       final apiService = HttpApiService(
@@ -42,7 +46,7 @@ class DependencyManager {
       (apiService as HttpApiService).refreshTokenUseCase = refreshTokenUseCase;
 
       // Initialize AuthRepository
-      final authRepository = AuthRepositoryImpl(
+      final AuthRepositoryImpl authRepository = AuthRepositoryImpl(
         authRemoteDataSource: authRemoteDataSource,
         authLocalDataSource: authLocalDataSource,
         tokenManager: tokenManager,
@@ -52,9 +56,9 @@ class DependencyManager {
       final requestOtpUseCase = RequestOtpUseCase(repository: authRepository);
       final submitProfileUseCase =
           SubmitProfileUseCase(authRepository: authRepository);
-      final verifyOtpUseCase = VerifyOtpUseCase(
-        authRepository: authRepository,
-        tokenManager: tokenManager,
+      final verifyOtpUseCaseImpl = VerifyOtpUseCaseImpl(
+        authRepository,
+        tokenManager,
       );
       final getAccessTokenUseCase =
           GetAccessTokenUseCase(authRepository: authRepository);
@@ -64,7 +68,7 @@ class DependencyManager {
       // Return SignInViewModel with all dependencies
       return SignInViewModel(
         requestOtpUseCase: requestOtpUseCase,
-        verifyOtpUseCaseBase: verifyOtpUseCase,
+        verifyOtpUseCaseBase: verifyOtpUseCaseImpl,
         authLocalDataSourceImpl: authLocalDataSource,
         submitProfileUseCaseBase: submitProfileUseCase,
         getAccessTokenUseCase: getAccessTokenUseCase,
@@ -84,14 +88,22 @@ class DependencyManager {
       throw Exception('Failed to create AddPalViewModel: $e');
     }
   }
+  static Future<SplashViewModel> createSplashViewModel() async {
+    try {
+      // Use the PAL dependency manager
+      return await SplashDependencyManager.createSplashViewModel();
+    } catch (e) {
+      throw Exception('Failed to create AddPalViewModel: $e');
+    }
+  }
 
-  static Future<AuthRepository> createAuthRepository() async {
+  static Future<AuthRepositoryImpl> createAuthRepository() async {
     try {
       // Initialize TokenManager first
       final tokenManager = await TokenManager.getInstance();
 
       // Initialize MethodChannel-based AuthLocalDataSourceImpl
-      final authLocalDataSource = AuthLocalDataSourceImpl();
+      final authLocalDataSource = AuthLocalDataSourceImpl(tokenManager);
 
       // Initialize HttpApiService with TokenManager
       final apiService = HttpApiService(

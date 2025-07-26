@@ -1,78 +1,78 @@
-import 'package:aiwel/features/auth/presentation/screens/splash_screen.dart';
+import 'package:aiwel/routes/routes.dart';
 import 'package:flutter/material.dart';
 import 'app.dart';
 import 'components/theme/light_theme.dart';
+import 'core/state/app_state_manager.dart';
 import 'di/auth_injection.dart';
-import 'features/auth/presentation/screens/otp_screen.dart';
-import 'features/auth/presentation/screens/sign_in_screen.dart';
+import 'features/auth/presentation/screens/splash_screen.dart';
 import 'features/auth/presentation/screens/signin_signup_screen.dart';
-import 'features/auth/presentation/view_models/sign_in_viewModel.dart';
-import 'features/auth/presentation/view_models/splash_viewModel.dart' as splash;
-import 'features/auth/domain/usecases/check_auth_status_use_case.dart';
-import 'core/services/auth_service.dart';
-
-// final getIt = GetIt.instance;
+import 'features/auth/presentation/screens/profile_screens/profile_screen.dart';
+import 'features/home/home_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  try {
-    // Check authentication status on app startup
-    final authService = AuthService.instance;
-    final authStatus = await authService.getAuthStatus();
 
-    print('App startup - Auth status: $authStatus');
+  try {
+    await AppStateManager.instance.restoreAppState();
 
     final signInViewModel = await DependencyManager.createSignInViewModel();
     final addPalViewModel = await DependencyManager.createAddPalViewModel();
-
-    final authRepository = await DependencyManager.createAuthRepository();
-    final checkAuthStatusUseCase = CheckAuthStatusUseCase(authRepository);
-    final splashViewModel = splash.SplashViewModel(checkAuthStatusUseCase);
+    final splashViewModel = await DependencyManager.createSplashViewModel();
 
     runApp(MyApp(
       viewModels: {
         SigninSignupScreen.routeName: signInViewModel,
-        "AddPalViewModel": addPalViewModel,
-        "SplashViewModel": splashViewModel,
+        ProfileScreen.routeName: signInViewModel,
+        'AddPalViewModel': addPalViewModel,
+        'SplashViewModel': splashViewModel,
       },
-      initialAuthStatus: authStatus,
     ));
   } catch (e) {
-    print('Error initializing app: $e');
-    runApp(const MaterialApp(home: Text('Error initializing app')));
+    print('❌ Error initializing app: $e');
+    runApp(const MaterialApp(
+      home: Scaffold(body: Center(child: Text('Error initializing app'))),
+    ));
   }
 }
-// class MyApp extends StatefulWidget {
-//   const MyApp({super.key});
-//
-//   @override
-//   State<MyApp> createState() => _MyAppState();
-// }
-//
-// class _MyAppState extends State<MyApp> {
-//   late final SignInViewModelBase _signInViewModel;
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     _signInViewModel = getIt<SignInViewModelBase>();
-//   }
-//
-//   @override
-//   void dispose() {
-//     _signInViewModel.dispose();
-//     super.dispose();
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       debugShowCheckedModeBanner: false,
-//       title: 'Aiwel',
-//       theme: lightTheme,
-//       themeMode: ThemeMode.light,
-//       // home: SignInScreen(viewModelBase: _signInViewModel),
-//       home: OtpScreen(),
-//     );
-//   }
-// }
+
+class MyApp extends StatelessWidget {
+  final Map<String, dynamic> viewModels;
+  const MyApp({Key? key, required this.viewModels}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return
+        MaterialApp(
+          title: 'Aiwel',
+          theme: lightTheme,
+          themeMode: ThemeMode.light,
+          debugShowCheckedModeBanner: false,
+          scaffoldMessengerKey: rootScaffoldMessengerKey,
+          navigatorKey: navigatorKey,
+          home: SplashScreen(viewModels: viewModels),
+          onGenerateRoute: (RouteSettings routeSettings) => PageRouteBuilder<void>(
+            settings: routeSettings,
+            pageBuilder: (BuildContext context, Animation<double> animation,
+                Animation<double> secondaryAnimation) {
+              return FutureBuilder<Widget>(
+                future: routeNavigator(routeSettings.name ?? '/', viewModels: viewModels),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return SplashScreen(viewModels: viewModels);
+                  }
+                  if (snapshot.hasError) {
+                    return const Text('Error loading route');
+                  }
+                  return snapshot.data ?? SplashScreen(viewModels: viewModels);
+                },
+              );
+            },
+            transitionsBuilder: (BuildContext context, Animation<double> animation,
+                Animation<double> secondaryAnimation, Widget child) {
+              return child; // No transition animation
+            },
+          ),
+
+    );
+  }
+}

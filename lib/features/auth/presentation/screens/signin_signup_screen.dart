@@ -49,16 +49,6 @@ class SigninSignupScreen extends StatelessWidget {
                 final isLoading = state.isLoading;
                 final isOtpSent = state.isOtpSent;
 
-                // Show SnackBar for feedback messages
-                if (state.feedbackMessage != null) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      successSnackBarWidget(state.feedbackMessage!),
-                    );
-                    viewModelBase.clearFeedback();
-                  });
-                }
-
                 return Padding(
                   padding: const EdgeInsets.all(scaffoldPadding),
                   child: Column(
@@ -90,71 +80,14 @@ class SigninSignupScreen extends StatelessWidget {
                           ),
                         ),
                       ],
-                      // StreamBuilder<SignInState>(
-                      //   stream: viewModelBase.stateStream,
-                      //   initialData: SignInState(status: SignInStatus.idle),
-                      //   builder: (context, snapshot) {
-                      //     final state = snapshot.data!;
-                      //     final isLoading = state.isLoading;
-                      //     final isOtpSent = state.isOtpSent;
-                      //
-                      //     // if (isOtpSent && state.errorMessage == null&& ModalRoute.of(context)?.settings.name == SigninSignupScreen.routeName) {
-                      //     //   print("hrerere");
-                      //     //   WidgetsBinding.instance.addPostFrameCallback((_) {
-                      //     //     Navigator.pushNamed(
-                      //     //       context,
-                      //     //       OtpScreen.routeName,
-                      //     //       arguments: viewModelBase,
-                      //     //     );
-                      //     //     viewModelBase.clearOtpSentFlag();
-                      //     //   });
-                      //     // }
-                      //
-                      //     return LabelButton(
-                      //       label: isLoading ? 'Sending...' : 'Get OTP',
-                      //       onTap: isLoading
-                      //           ? null
-                      //           : () {
-                      //        var result   =viewModelBase.requestOtp();
-                      //        if(result.){
-                      //          WidgetsBinding.instance.addPostFrameCallback((_) {
-                      //            Navigator.pushNamed(
-                      //              context,
-                      //              OtpScreen.routeName,
-                      //              arguments: viewModelBase,
-                      //            );
-                      //            viewModelBase.clearOtpSentFlag();
-                      //          });
-                      //        }
-                      //       },
-                      //       gradient: splashGradient(),
-                      //       fontColor: Theme.of(context).primaryColorLight,
-                      //     );
-                      //   },
-                      // ),
+
                       LabelButton(
                         label: isLoading ? 'Sending...' : 'Get OTP',
                         onTap: isLoading
                             ? null
                             : () async {
-                                final result = await viewModelBase.requestOtp();
-                                result.fold(
-                                  (failure) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      errorSnackBarWidget(failure.message),
-                                    );
-                                  },
-                                  (success) {
-                                    Navigator.pushNamed(
-                                      context,
-                                      OtpScreen.routeName,
-                                      arguments: viewModelBase,
-                                    ).then((_) {
-                                      viewModelBase.clearErrorMessage();
-                                    });
-                                    viewModelBase.clearOtpSentFlag();
-                                  },
-                                );
+                                await viewModelBase
+                                    .requestOtpWithNavigation(context);
                               },
                         gradient: splashGradient(),
                         fontColor: Theme.of(context).primaryColorLight,
@@ -176,37 +109,6 @@ class SigninSignupScreen extends StatelessWidget {
           ),
         ),
       ),
-      // floatingActionButton: StreamBuilder<SignInState>(
-      //   stream: viewModelBase.stateStream,
-      //   initialData: SignInState(status: SignInStatus.idle),
-      //   builder: (context, snapshot) {
-      //     final state = snapshot.data!;
-      //     final isLoading = state.isLoading;
-      //     final isOtpSent = state.isOtpSent;
-      //
-      //     if (isOtpSent && state.errorMessage == null) {
-      //       WidgetsBinding.instance.addPostFrameCallback((_) {
-      //         Navigator.pushNamed(
-      //           context,
-      //           OtpScreen.routeName,
-      //           arguments: viewModelBase,
-      //         );
-      //         viewModelBase.clearOtpSentFlag();
-      //       });
-      //     }
-      //
-      //     return LabelButton(
-      //       label: isLoading ? 'Sending...' : 'Get OTP',
-      //       onTap: isLoading
-      //           ? null
-      //           : () {
-      //         viewModelBase.requestOtp();
-      //       },
-      //       gradient: splashGradient(),
-      //       fontColor: Theme.of(context).primaryColorLight,
-      //     );
-      //   },
-      // ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }

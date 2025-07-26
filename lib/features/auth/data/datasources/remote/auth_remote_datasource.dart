@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import '../../../../../core/config/api_config.dart';
 import '../../../../../core/network/error/failure.dart';
 import '../../../../../core/network/model/api_response.dart';
+import '../../../../../core/services/token_manager.dart';
 import '../../models/api/otp_request_success.dart';
 import '../../models/api/submit_profile_response.dart';
 import '../../models/api/token_resonse.dart';
@@ -12,10 +13,10 @@ import '../local/auth_local_datasource.dart';
 import '../../../../../core/network/api_service.dart';
 
 abstract class AuthRemoteDataSource {
-  Future<Either<Failure, OtpRequestSuccess>> requestOtp(
+  Future<Either<Failure, ApiResponse>> requestOtp(
       {String? email, String? phoneNumber});
   Future<Either<Failure, ApiResponse>> verifyOtp(String identifier, String otp);
-  Future<Either<Failure, SubmitProfileResponse>> submitProfile({
+  Future<Either<Failure, ApiResponse>> submitProfile({
     required String firstName,
     required String lastName,
     required String gender,
@@ -35,33 +36,33 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       {required this.authLocalDataSource, required this.apiService});
 
   @override
-  Future<Either<Failure, OtpRequestSuccess>> requestOtp(
+  Future<Either<Failure, ApiResponse>> requestOtp(
       {String? email, String? phoneNumber}) async {
     print("requestOtp called");
-    try {
-      final payload =
-          email != null ? {'email': email} : {'phone_number': phoneNumber};
-      print("Payload: $payload");
+    return await _performOtpRequest(email: email, phoneNumber: phoneNumber);
+  }
 
-      print("About to call apiService.post");
+  Future<Either<Failure, ApiResponse>> _performOtpRequest(
+      {String? email, String? phoneNumber}) async {
+    try {
+      final body = <String, dynamic>{};
+      if (email != null && email.isNotEmpty) {
+        body['email'] = email;
+      } else if (phoneNumber != null && phoneNumber.isNotEmpty) {
+        body['phone_number'] = phoneNumber;
+      } else {
+        return Left(Failure('Either email or phone number is required'));
+      }
+
       final response = await apiService.post(
         ApiConfig.requestOtpEndpoint,
-        body: payload,
+        body: body,
         headers: ApiConfig.defaultHeaders,
       );
-      print("apiService.post returned");
-      print(response);
-      print("response");
 
-      if (response.isSuccess && response.data != null) {
-        return Right(OtpRequestSuccess(response.data.toString()));
-      } else {
-        final errorMessage = response.errorMessage ?? 'Failed to request OTP';
-        return Left(Failure(errorMessage));
-      }
+      return Right(response);
     } catch (e) {
-      print("Exception in requestOtp: $e");
-      return Left(Failure('Network error: $e'));
+      return Left(Failure('OTP request failed: $e'));
     }
   }
 
@@ -74,30 +75,25 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<Either<Failure, ApiResponse>> _performOtpVerification(
       String identifier, String otp) async {
     try {
-      final payload = {
+      final body = {
         'identifier': identifier,
         'otp': otp,
       };
 
       final response = await apiService.post(
         ApiConfig.verifyOtpEndpoint,
-        body: payload,
+        body: body,
         headers: ApiConfig.defaultHeaders,
       );
 
-      if (response.isSuccess && response.data != null) {
-        return Right(response);
-      } else {
-        final errorMessage = response.errorMessage ?? 'OTP verification failed';
-        return Left(Failure(errorMessage));
-      }
+      return Right(response);
     } catch (e) {
       return Left(Failure('Verification failed: $e'));
     }
   }
 
   @override
-  Future<Either<Failure, SubmitProfileResponse>> submitProfile({
+  Future<Either<Failure, ApiResponse>> submitProfile({
     required String firstName,
     required String lastName,
     required String gender,
@@ -117,7 +113,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     );
   }
 
-  Future<Either<Failure, SubmitProfileResponse>> _performProfileSubmission({
+  Future<Either<Failure, ApiResponse>> _performProfileSubmission({
     required String firstName,
     required String lastName,
     required String gender,
@@ -145,13 +141,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
             .defaultHeaders, // Token will be added automatically by apiService
       );
 
-      if (response.isSuccess && response.data != null) {
-        return Right(SubmitProfileResponse.fromJson(response.data));
-      } else {
-        final errorMessage =
-            response.errorMessage ?? 'Profile submission failed';
-        return Left(Failure(errorMessage));
-      }
+      return Right(response);
     } catch (e) {
       return Left(Failure('Profile submission failed: $e'));
     }
@@ -166,14 +156,32 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<Either<Failure, http.Response>> _performTokenRefresh(
       String refreshToken) async {
     try {
+      // Get access token (if needed for Authorization header)
+      final tokenManager = await TokenManager.getInstance();
+      final authLocalDataSource = AuthLocalDataSourceImpl(tokenManager);
+      final accessToken = await authLocalDataSource.getAccessToken();
+
+      // Debug prints to trace the issue
+      print('=== DEBUG REFRESH TOKEN ===');
+      print('refreshToken: $refreshToken');
+      print('accessToken: $accessToken');
+      print('accessToken is null: ${accessToken == null}');
+      print('accessToken is empty: ${accessToken?.isEmpty}');
+
+      final headers = {
+        ...ApiConfig.defaultHeaders,
+        'Authorization': 'Bearer $refreshToken',
+      };
+      print('Headers being sent: $headers');
+      print('=== END DEBUG ===');
+
       final response = await apiService.post(
         ApiConfig.refreshTokenEndpoint,
-        headers: {
-          ...ApiConfig.defaultHeaders,
-          'X-Refresh-Token': refreshToken,
-        },
+        headers: headers,
       );
-
+      print(ApiConfig.defaultHeaders);
+      print(response);
+      print("responseresponse");
       if (response.isSuccess && response.data != null) {
         return Right(http.Response(
           response.data.toString(),

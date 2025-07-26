@@ -19,6 +19,17 @@ class VerifyOtpResponse {
     this.refreshTokenExpiry,
   });
 
+  /// Create from JSON only (no headers)
+  factory VerifyOtpResponse.fromJson(Map<String, dynamic> json) {
+    return VerifyOtpResponse(
+      message: json['message'] as String? ?? '',
+      isActive: json['is_active'] as bool? ?? false,
+      isDeleted: json['is_deleted'] as bool? ?? false,
+      approvalStatus: json['approval_status'] as bool? ?? false,
+    );
+  }
+
+  /// Create from JSON and headers (for tokens)
   factory VerifyOtpResponse.fromJsonAndHeaders(
       Map<String, dynamic> json, Map<String, String> headers) {
     return VerifyOtpResponse(
@@ -36,13 +47,25 @@ class VerifyOtpResponse {
           : null,
     );
   }
+
+  /// Convert to JSON (for encoding, if needed)
+  Map<String, dynamic> toJson() {
+    return {
+      'message': message,
+      'is_active': isActive,
+      'is_deleted': isDeleted,
+      'approval_status': approvalStatus,
+      // Tokens are not included in the body JSON, only in headers
+    };
+  }
+
   @override
   String toString() {
     return 'VerifyOtpResponse(message: $message, isActive: $isActive, '
-        'isDeleted: $isDeleted, approvalStatus: $approvalStatus,'
-        ' accessToken: $accessToken, accessTokenExpiry: $accessTokenExpiry, refreshToken: $refreshToken, refreshTokenExpiry: $refreshTokenExpiry)';
+        'isDeleted: $isDeleted, approvalStatus: $approvalStatus, '
+        'accessToken: $accessToken, accessTokenExpiry: $accessTokenExpiry, '
+        'refreshToken: $refreshToken, refreshTokenExpiry: $refreshTokenExpiry)';
   }
-
 }
 
 /// VerifyOtpResponse is used to handle the response from the OTP verification API call.

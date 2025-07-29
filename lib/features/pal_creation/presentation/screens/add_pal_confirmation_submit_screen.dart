@@ -103,63 +103,12 @@ class _AddPalConfirmationSubmitScreenState
             ),
           ),
           floatingActionButton: LabelButton(
-            label: 'Confirm & continue',
-            onTap: () async {
-              final currentState =
-                  widget.viewModelBase.getCurrentStateWithControllers();
-              print('Submitting State: $currentState');
-
-              final missingFields = _getMissingFields(currentState);
-              if (missingFields.isNotEmpty) {
-                print('DEBUG: Showing missing fields snackbar');
-                ScaffoldMessenger.of(context).showSnackBar(
-                  commonSnackBarWidget(
-                    content: 'Please complete: ${missingFields.join(', ')}',
-                    type: SnackBarType.error,
-                  ),
-                );
-                return;
-              }
-
-              print('DEBUG: Calling submitPalData');
-
-              // Call submitPalData and handle the result directly
-              await widget.viewModelBase.submitPalData();
-
-              // Get the current state after submission
-              final updatedState =
-                  widget.viewModelBase.getCurrentStateWithControllers();
-              print(
-                  'DEBUG: submitPalData completed, status: ${updatedState.status}');
-
-              if (updatedState.status == AddPalStateStatus.success) {
-                // Show success snackbar with response message
-                ScaffoldMessenger.of(context).showSnackBar(
-                  commonSnackBarWidget(
-                    content: updatedState.successMessage! ,
-                    type: SnackBarType.message,
-                  ),
-                );
-
-                // Wait a bit for the success snackbar to show before navigating
-                await Future.delayed(const Duration(seconds: 1));
-                if (mounted) {
-                  Navigator.pushNamed(
-                    context,
-                    AddPalCompletionCongratsScreen.routeName,
-                  );
-                }
-              } else if (updatedState.status == AddPalStateStatus.error &&
-                  updatedState.errorMessage != null) {
-                // Show error snackbar
-                ScaffoldMessenger.of(context).showSnackBar(
-                  commonSnackBarWidget(
-                    content: updatedState.errorMessage!,
-                    type: SnackBarType.error,
-                  ),
-                );
-              }
-            },
+            label: state.status == AddPalStateStatus.loading 
+                ? 'Submitting...' 
+                : 'Confirm & continue',
+            onTap: state.status == AddPalStateStatus.loading
+                ? null
+                : () => widget.viewModelBase.submitPalData(context),
             gradient: splashGradient(),
             fontColor: Theme.of(context).primaryColorLight,
           ),
@@ -168,22 +117,5 @@ class _AddPalConfirmationSubmitScreenState
         );
       },
     );
-  }
-
-  List<String> _getMissingFields(AddPalState state) {
-    final missing = <String>[];
-    if (state.name?.isNotEmpty != true) missing.add('first name');
-    if (state.lastName?.isNotEmpty != true) missing.add('last name');
-    if (state.gender?.isNotEmpty != true) missing.add('gender');
-    if (state.can_walk == null) missing.add('ability to walk');
-    if (state.needs_walking_aid == null) missing.add('needs walking aid');
-    if (state.is_bedridden == null) missing.add('bedridden status');
-    if (state.has_dementia == null) missing.add('dementia status');
-    if (state.is_agitated == null) missing.add('agitation status');
-    if (state.is_depressed == null) missing.add('depression status');
-    if (state.dominant_emotion == null) missing.add('dominant emotion');
-    if (state.sleep_pattern == null) missing.add('sleep pattern');
-    if (state.sleep_quality == null) missing.add('sleep quality');
-    return missing;
   }
 }

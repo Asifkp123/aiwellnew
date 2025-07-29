@@ -6,7 +6,7 @@ import '../../data/models/api/create_pal_response.dart';
 import '../repositories/pal_repository.dart';
 
 abstract class CreatePalUseCaseBase {
-  Future<Either<Failure, CreatePalResponse>> execute(CreatePalRequest request);
+  Future<Either<String, String>> execute(CreatePalRequest request);
 }
 
 class CreatePalUseCase implements CreatePalUseCaseBase {
@@ -15,7 +15,12 @@ class CreatePalUseCase implements CreatePalUseCaseBase {
   CreatePalUseCase({required this.palRepository});
 
   @override
-  Future<Either<Failure, CreatePalResponse>> execute(CreatePalRequest request) async {
-    return await palRepository.createPal(request);
+  Future<Either<String, String>> execute(CreatePalRequest request) async {
+    final result = await palRepository.createPal(request);
+    
+    return result.fold(
+      (failure) => Left(failure.message), // Error message for snackbar
+      (response) => Right(response.message), // Success message for snackbar
+    );
   }
 } 

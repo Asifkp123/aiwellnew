@@ -18,6 +18,11 @@ class OtpScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final screenHeight = screenSize.height;
+    final screenWidth = screenSize.width;
+    final textScaleFactor = MediaQuery.textScaleFactorOf(context);
+
     return Scaffold(
       body: Center(
         child: Container(
@@ -56,25 +61,28 @@ class OtpScreen extends StatelessWidget {
               }
 
               return Padding(
-                padding: const EdgeInsets.all(scaffoldPadding),
+                padding: EdgeInsets.symmetric(
+                  horizontal: screenWidth * 0.05,
+                  vertical: screenHeight * 0.02,
+                ),
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 100),
+                      SizedBox(height: screenHeight * 0.12),
                       // Center(
                       //   child: SvgPicture.asset(
                       //     '$svgPath/applogo.svg',
-                      //     height: 120,
-                      //     width: 120,
+                      //     height: screenWidth * 0.3,
+                      //     width: screenWidth * 0.3,
                       //   ),
                       // ),
-                      const SizedBox(height: 50),
-                      LargePurpleText("We’ve sent you a code"),
-                      const SizedBox(height: 16),
+                      SizedBox(height: screenHeight * 0.03),
+                      LargePurpleText("We've sent you a code"),
+                      SizedBox(height: screenHeight * 0.02),
                       RichText(
                         text: TextSpan(
                           style: GoogleFonts.poppins(
-                            fontSize: 15,
+                            fontSize: screenWidth * 0.038 * textScaleFactor,
                             color: const Color(0xFF606060),
                             fontWeight: FontWeight.w400,
                             height: 1.5,
@@ -87,7 +95,7 @@ class OtpScreen extends StatelessWidget {
                             TextSpan(
                               text: viewModelBase.emailController.text,
                               style: GoogleFonts.poppins(
-                                fontSize: 15,
+                                fontSize: screenWidth * 0.038 * textScaleFactor,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black,
                               ),
@@ -98,7 +106,7 @@ class OtpScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 15),
+                      // SizedBox(height: screenHeight * 0.018),
 
                       // CustomPinInput(
                       //
@@ -149,7 +157,7 @@ class OtpScreen extends StatelessWidget {
                         errorMessage: state.errorMessage,
                       ),
 
-                      const SizedBox(height: 16),
+                      SizedBox(height: screenHeight * 0.02),
                     ]),
               );
             },

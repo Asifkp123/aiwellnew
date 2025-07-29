@@ -18,6 +18,10 @@ class SigninSignupScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final screenHeight = screenSize.height;
+    final screenWidth = screenSize.width;
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       viewModelBase.clearErrorMessage();
     });
@@ -26,7 +30,7 @@ class SigninSignupScreen extends StatelessWidget {
         child: Center(
           child: Container(
             width: double.infinity,
-            height: 1000,
+            height: screenHeight,
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
@@ -50,16 +54,19 @@ class SigninSignupScreen extends StatelessWidget {
                 final isOtpSent = state.isOtpSent;
 
                 return Padding(
-                  padding: const EdgeInsets.all(scaffoldPadding),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: screenWidth * 0.05,
+                    vertical: screenHeight * 0.02,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 130),
-                      const SizedBox(height: 50),
+                      SizedBox(height: screenHeight * 0.15),
+                      SizedBox(height: screenHeight * 0.06),
                       LargePurpleText("Hey there!"),
-                      const SizedBox(height: 16),
-                      NormalGreyText("What’s the best way to reach you?"),
-                      const SizedBox(height: 32),
+                      SizedBox(height: screenHeight * 0.02),
+                      NormalGreyText("What's the best way to reach you?"),
+                      SizedBox(height: screenHeight * 0.04),
                       SimpleTextField(
                         hintText: "Enter email/ phone number",
                         controller: viewModelBase.emailController,
@@ -71,12 +78,12 @@ class SigninSignupScreen extends StatelessWidget {
 
                       //
                       if (state.errorMessage != null && !isOtpSent) ...[
-                        const SizedBox(height: 8),
+                        SizedBox(height: screenHeight * 0.01),
                         Text(
                           state.errorMessage!,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.red,
-                            fontSize: 12,
+                            fontSize: screenWidth * 0.03,
                           ),
                         ),
                       ],
@@ -92,13 +99,13 @@ class SigninSignupScreen extends StatelessWidget {
                         gradient: splashGradient(),
                         fontColor: Theme.of(context).primaryColorLight,
                       ),
-                      const SizedBox(height: 250),
+                      SizedBox(height: screenHeight * 0.25),
 
                       Center(
                         child: SvgPicture.asset(
                           '$svgPath/applogo.svg',
-                          height: 120,
-                          width: 120,
+                          height: screenWidth * 0.3,
+                          width: screenWidth * 0.3,
                         ),
                       ),
                     ],

@@ -18,7 +18,7 @@ class PalDependencyManager {
       final tokenManager = await TokenManager.getInstance();
 
       // Initialize AuthLocalDataSourceImpl
-      final authLocalDataSource = AuthLocalDataSourceImpl(  tokenManager);
+      final authLocalDataSource = AuthLocalDataSourceImpl(tokenManager);
 
       // Initialize AuthRemoteDataSource
       final authRemoteDataSource = AuthRemoteDataSourceImpl(
@@ -45,9 +45,14 @@ class PalDependencyManager {
         tokenManager: tokenManager,
       );
 
+      // Initialize HttpApiService for PAL operations
+      final apiService = HttpApiService(
+        tokenManager: tokenManager,
+      );
+
       // Initialize PalRemoteDataSource
       final palRemoteDataSource = PalRemoteDataSourceImpl(
-        tokenManager: tokenManager,
+        apiService: apiService,
       );
 
       // Initialize PalRepository
@@ -68,7 +73,8 @@ class PalDependencyManager {
         refreshTokenUseCase: refreshTokenUseCase,
       );
     } catch (e) {
-      throw Exception('Failed to create AddPalViewModel: $e');
+      print('Error creating AddPalViewModel: $e');
+      rethrow;
     }
   }
 }

@@ -1,3 +1,4 @@
+import 'package:aiwel/features/home/home_screen.dart';
 import 'package:aiwel/features/pal_creation/presentation/view_models/add_pal_view_model.dart';
 import 'package:aiwel/features/pal_creation/widgets/CarePointsCard.dart';
 import 'package:aiwel/features/pal_creation/widgets/QuestionnaireSection.dart';
@@ -74,7 +75,11 @@ class AddPalCompletionCongratsScreen extends StatelessWidget {
           ),
           floatingActionButton: LabelButton(
             label: 'Confirm & continue',
-            onTap: () {},
+            onTap: () {
+              Navigator.of(context).pushNamed(
+                HomeScreen.routeName,
+              );
+            },
             gradient: splashGradient(),
             fontColor: Theme.of(context).primaryColorLight,
           ),

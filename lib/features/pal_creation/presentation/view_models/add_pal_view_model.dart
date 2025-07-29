@@ -12,6 +12,8 @@ import '../../../../core/constants/strings.dart';
 import '../../../../core/network/error/failure.dart';
 import '../../domain/usecases/create_pal_use_case.dart';
 import '../../data/models/api/create_pal_request.dart';
+import '../screens/add_pal_completion_congrats_screen.dart';
+import '../../../../components/snackbars/custom_snackbar.dart';
 
 enum AddPalStateStatus { idle, loading, success, error }
 
@@ -141,7 +143,7 @@ abstract class AddViewModelBase {
   void setSleepQuality(String value);
   void setPainStatus(String value);
   void updateStateWithControllers();
-  Future<void> submitPalData();
+  Future<void> submitPalData(BuildContext context);
 }
 
 class AddPalViewModel extends AddViewModelBase {
@@ -159,12 +161,12 @@ class AddPalViewModel extends AddViewModelBase {
     // Initialize default state
     _currentState = AddPalState(
       status: AddPalStateStatus.idle,
-      can_walk: null,
-      needs_walking_aid: null,
-      is_bedridden: null,
-      has_dementia: null,
-      is_agitated: null,
-      is_depressed: null,
+      can_walk: null, // ✅ No auto-selection
+      needs_walking_aid: null, // ✅ No auto-selection
+      is_bedridden: null, // ✅ No auto-selection
+      has_dementia: null, // ✅ No auto-selection
+      is_agitated: null, // ✅ No auto-selection
+      is_depressed: null, // ✅ No auto-selection
       dominant_emotion: null,
       sleep_pattern: null,
       sleep_quality: null,
@@ -517,18 +519,26 @@ class AddPalViewModel extends AddViewModelBase {
   }
 
   @override
-  Future<void> submitPalData() async {
+  Future<void> submitPalData(BuildContext context) async {
     try {
       final currentState = getCurrentStateWithControllers();
       print('Submitting PAL data: $currentState');
 
-      // Validate required fields
-      if (!_validateRequiredFields(currentState)) {
+      // Check for missing fields first
+      final missingFields = _getMissingFields(currentState);
+      if (missingFields.isNotEmpty) {
+        print('Missing fields: ${missingFields.join(', ')}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          commonSnackBarWidget(
+            content: 'Please complete: ${missingFields.join(', ')}',
+            type: SnackBarType.error,
+          ),
+        );
         return;
       }
 
-      // Ensure valid token before proceeding
-      if (!await _ensureValidToken()) {
+      // Validate required fields
+      if (!_validateRequiredFields(currentState)) {
         return;
       }
 
@@ -566,22 +576,80 @@ class AddPalViewModel extends AddViewModelBase {
 
       final result = await createPalUseCase.execute(request);
       result.fold(
-        (failure) => _showError(failure.message),
-        (response) {
-          print('PAL created successfully: ${response.message}');
+        (errorMessage) {
+          // Show ERROR snackbar
+          ScaffoldMessenger.of(context).showSnackBar(
+            commonSnackBarWidget(
+              content: errorMessage,
+              type: SnackBarType.error,
+            ),
+          );
+          _updateStateWithControllers(
+            status: AddPalStateStatus.error,
+            errorMessage: errorMessage,
+          );
+        },
+        (successMessage) {
+          print('PAL created successfully: $successMessage');
+
           _updateStateWithControllers(
             status: AddPalStateStatus.success,
-            successMessage: response.message,
+            successMessage: successMessage,
           );
+
+          // Navigate to AddPalCompletionCongratsScreen on success
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (context.mounted) {
+              Navigator.pushNamed(
+                context,
+                AddPalCompletionCongratsScreen.routeName,
+                arguments: {'viewModelBase': this},
+              );
+            }
+          });
         },
       );
     } catch (e) {
-      _showError(_getErrorMessage(e));
+      final errorMessage = _getErrorMessage(e);
+
+      // Show ERROR snackbar for exceptions
+      ScaffoldMessenger.of(context).showSnackBar(
+        commonSnackBarWidget(
+          content: errorMessage,
+          type: SnackBarType.error,
+        ),
+      );
+
+      _updateStateWithControllers(
+        status: AddPalStateStatus.error,
+        errorMessage: errorMessage,
+      );
     }
+  }
+
+  // Helper method to check for missing fields
+  List<String> _getMissingFields(AddPalState state) {
+    List<String> missingFields = [];
+
+    if (state.name?.trim().isEmpty ?? true || state.name == null) {
+      missingFields.add('First Name');
+    }
+    if (state.lastName?.trim().isEmpty ?? true || state.lastName == null) {
+      missingFields.add('Last Name');
+    }
+    if (state.gender?.trim().isEmpty ?? true || state.gender == null) {
+      missingFields.add('Gender');
+    }
+    if (_dateOfBirthController.text.trim().isEmpty) {
+      missingFields.add('Date of Birth');
+    }
+
+    return missingFields;
   }
 
   bool _validateRequiredFields(AddPalState state) {
     if (state.name?.trim().isEmpty ??
+        true ??
         true || state.gender!.isEmpty ??
         true || _dateOfBirthController.text.trim().isEmpty) {
       _showError(

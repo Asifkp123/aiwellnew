@@ -3,47 +3,36 @@ import 'package:dartz/dartz.dart';
 import 'package:http/http.dart' as http;
 import '../../../../../core/config/api_config.dart';
 import '../../../../../core/network/error/failure.dart';
+import '../../../../../core/network/model/api_response.dart';
+import '../../../../../core/network/api_service.dart';
 import '../../../../../core/services/token_manager.dart';
 import '../../models/api/create_pal_request.dart';
 import '../../models/api/create_pal_response.dart';
 
 abstract class PalRemoteDataSource {
-  Future<Either<Failure, CreatePalResponse>> createPal(
-      CreatePalRequest request);
+  Future<Either<Failure, ApiResponse>> createPal(CreatePalRequest request);
 }
 
 class PalRemoteDataSourceImpl implements PalRemoteDataSource {
-  final TokenManager tokenManager;
+  final IApiService apiService;
 
-  PalRemoteDataSourceImpl({required this.tokenManager});
+  PalRemoteDataSourceImpl({required this.apiService});
 
   @override
-  Future<Either<Failure, CreatePalResponse>> createPal(
-      CreatePalRequest request) async {
-    // Get the access token
-    final accessToken = await tokenManager.getAccessToken();
-    if (accessToken == null) {
-      return Left(
-          Failure('Authentication token is missing. Please log in again.'));
-    }
-
-    final response = await http.post(
-      Uri.parse(ApiConfig.patientCreationEndPoint),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $accessToken',
-      },
-      body: jsonEncode(request.toJson()),
-    );
-
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
-      return Right(CreatePalResponse.fromJson(responseBody));
-    } else {
-      final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
-      final errorMessage = responseBody['detail'] ?? 'Failed to create PAL';
-
-      return Left(Failure(errorMessage));
+  Future<Either<Failure, ApiResponse>> createPal(CreatePalRequest request) async {
+    try {
+      final apiResponse = await apiService.post(
+        ApiConfig.patientCreationEndPoint,
+        body: request.toJson(),
+      );
+      
+      if (apiResponse.isSuccess) {
+        return Right(apiResponse);
+      } else {
+        return Left(Failure(apiResponse.errorMessage ?? 'Failed to create PAL'));
+      }
+    } catch (e) {
+      return Left(Failure(e.toString()));
     }
   }
 }

@@ -22,7 +22,7 @@ class AddPalRestingBedScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder<AddPalState>(
       stream: viewModelBase.stateStream,
-      initialData: AddPalState(status: AddPalStateStatus.idle),
+      initialData: viewModelBase.getCurrentStateWithControllers(),
       builder: (context, snapshot) {
         final state = snapshot.data!;
         return Scaffold(
@@ -52,8 +52,11 @@ class AddPalRestingBedScreen extends StatelessWidget {
                     BackButtonWithPointWidget(
                         currentPoints: 50, totalPoints: 120),
                     SizedBox(height: 60),
-                    LargePurpleText(
-                        "Are they spending most of their time resting in bed these days?"),
+                    LargePurpleText(state.gender?.toLowerCase() == 'male'
+                        ? "Is he spending most of his time resting in bed these days?"
+                        : state.gender?.toLowerCase() == 'female'
+                            ? "Is she spending most of her time resting in bed these days?"
+                            : "Are they spending most of their time resting in bed these days?"),
                     SizedBox(height: 16),
                     NormalGreyText(
                         "Aiwel really want them out of the bed and lead a normal life."),

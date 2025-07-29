@@ -272,3 +272,54 @@ class PurpleBoldText extends CustomText {
           ),
         );
 }
+class PurpleBold22Text extends CustomText {
+  PurpleBold22Text(
+    super.text, {
+    super.key,
+    super.fontSize,
+    super.align,
+    super.maxLines,
+    super.overflow,
+    super.color,
+  }) : super(
+          style: GoogleFonts.poppins(
+            color: color ?? lightTheme.primaryColor,
+            fontSize: fontSize ?? 22,
+            fontWeight: FontWeight.w600,
+          ),
+        );
+}
+class Black60018Text extends CustomText {
+  Black60018Text(
+    super.text, {
+    super.key,
+    super.fontSize,
+    super.align,
+    super.maxLines,
+    super.overflow,
+    super.color,
+  }) : super(
+          style: GoogleFonts.poppins(
+            color: Color(0xFF2F2F2F),
+            fontSize: fontSize ?? 18,
+            fontWeight: FontWeight.w600,
+          ),
+        );
+}
+class Black40016Text extends CustomText {
+  Black40016Text(
+    super.text, {
+    super.key,
+    super.fontSize,
+    super.align,
+    super.maxLines,
+    super.overflow,
+    super.color,
+  }) : super(
+          style: GoogleFonts.poppins(
+            color: Color(0xFF2F2F2F),
+            fontSize:  16,
+            fontWeight: FontWeight.w400,
+          ),
+        );
+}

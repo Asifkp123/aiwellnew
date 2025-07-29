@@ -21,7 +21,7 @@ class AddPalDownQuiteScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder<AddPalState>(
       stream: viewModelBase.stateStream,
-      initialData: AddPalState(status: AddPalStateStatus.idle),
+      initialData: viewModelBase.getCurrentStateWithControllers(),
       builder: (context, snapshot) {
         final state = snapshot.data!;
         return Scaffold(
@@ -48,16 +48,24 @@ class AddPalDownQuiteScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(height: 40),
-                    BackButtonWithPointWidget(currentPoints: 80, totalPoints: 120),
+                    BackButtonWithPointWidget(
+                        currentPoints: 80, totalPoints: 120),
                     SizedBox(height: 60),
-                    LargePurpleText("Have they seemed down, quiet, or withdrawn recently?"),
+                    LargePurpleText(state.gender?.toLowerCase() == 'male'
+                        ? "Has he seemed down, quiet, or withdrawn recently?"
+                        : state.gender?.toLowerCase() == 'female'
+                            ? "Has she seemed down, quiet, or withdrawn recently?"
+                            : "Have they seemed down, quiet, or withdrawn recently?"),
                     SizedBox(height: 16),
-                    NormalGreyText("Aiwel is the best companion, dont feel depressed."),
+                    NormalGreyText(
+                        "Aiwel is the best companion, dont feel depressed."),
                     const SizedBox(height: 16),
                     SelctablelistviewPalCreation(
                       items: viewModelBase.yesOrNoList,
-                      selectedValue: state.is_depressed, // Use is_depressed instead of selectedAbleToWalk
-                      onItemSelected: viewModelBase.setIsDepressed, // Use setIsDepressed instead of yesOrNoSelected
+                      selectedValue: state
+                          .is_depressed, // Use is_depressed instead of selectedAbleToWalk
+                      onItemSelected: viewModelBase
+                          .setIsDepressed, // Use setIsDepressed instead of yesOrNoSelected
                     ),
                     if (state.errorMessage != null) ...[
                       const SizedBox(height: 16),
@@ -77,8 +85,7 @@ class AddPalDownQuiteScreen extends StatelessWidget {
             onTap: () {
               // Check if a selection has been made
               if (state.is_depressed == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                commonSnackBarWidget(
+                ScaffoldMessenger.of(context).showSnackBar(commonSnackBarWidget(
                   content: "Please select an option before continuing.",
                   type: SnackBarType.error,
                 ));
@@ -94,7 +101,8 @@ class AddPalDownQuiteScreen extends StatelessWidget {
             gradient: splashGradient(),
             fontColor: Theme.of(context).primaryColorLight,
           ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
         );
       },
     );

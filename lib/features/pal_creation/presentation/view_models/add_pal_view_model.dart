@@ -159,12 +159,12 @@ class AddPalViewModel extends AddViewModelBase {
     // Initialize default state
     _currentState = AddPalState(
       status: AddPalStateStatus.idle,
-      can_walk: false,
-      needs_walking_aid: false,
-      is_bedridden: false,
-      has_dementia: false,
-      is_agitated: false,
-      is_depressed: false,
+      can_walk: null,
+      needs_walking_aid: null,
+      is_bedridden: null,
+      has_dementia: null,
+      is_agitated: null,
+      is_depressed: null,
       dominant_emotion: null,
       sleep_pattern: null,
       sleep_quality: null,
@@ -582,7 +582,6 @@ class AddPalViewModel extends AddViewModelBase {
 
   bool _validateRequiredFields(AddPalState state) {
     if (state.name?.trim().isEmpty ??
-        true ??
         true || state.gender!.isEmpty ??
         true || _dateOfBirthController.text.trim().isEmpty) {
       _showError(

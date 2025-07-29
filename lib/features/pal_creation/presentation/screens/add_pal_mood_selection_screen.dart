@@ -22,7 +22,7 @@ class AddPalMoodSelectionScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder<AddPalState>(
       stream: viewModelBase.stateStream,
-      initialData: AddPalState(status: AddPalStateStatus.idle),
+      initialData: viewModelBase.getCurrentStateWithControllers(),
       builder: (context, snapshot) {
         final state = snapshot.data!;
         return Scaffold(
@@ -50,10 +50,17 @@ class AddPalMoodSelectionScreen extends StatelessWidget {
                   children: [
                     SizedBox(height: 40),
 
-                    BackButtonWithPointWidget(currentPoints: 90, totalPoints: 120,),
+                    BackButtonWithPointWidget(
+                      currentPoints: 90,
+                      totalPoints: 120,
+                    ),
                     SizedBox(height: 60),
 
-                    LargePurpleText("What kind of mood have they been in most of the time?"),
+                    LargePurpleText(state.gender?.toLowerCase() == 'male'
+                        ? "What kind of mood has he been in most of the time?"
+                        : state.gender?.toLowerCase() == 'female'
+                            ? "What kind of mood has she been in most of the time?"
+                            : "What kind of mood have they been in most of the time?"),
                     SizedBox(height: 16),
                     NormalGreyText("Aiwel want you to be happy and pleasant "),
                     const SizedBox(height: 16),
@@ -70,8 +77,6 @@ class AddPalMoodSelectionScreen extends StatelessWidget {
                     //   ),
                     // ],
                     SizedBox(height: 50),
-
-
                   ],
                 ),
               ),
@@ -80,17 +85,14 @@ class AddPalMoodSelectionScreen extends StatelessWidget {
           floatingActionButton: LabelButton(
             label: 'Continue',
             onTap: () {
-
               // Check if a selection has been made
               if (state.dominant_emotion == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                    commonSnackBarWidget(
-                      content: "Please select an option before continuing.",
-                      type: SnackBarType.error,
-                    ));
+                ScaffoldMessenger.of(context).showSnackBar(commonSnackBarWidget(
+                  content: "Please select an option before continuing.",
+                  type: SnackBarType.error,
+                ));
                 return;
               }
-
 
               Navigator.pushNamed(
                 context,
@@ -100,7 +102,8 @@ class AddPalMoodSelectionScreen extends StatelessWidget {
             gradient: splashGradient(),
             fontColor: Theme.of(context).primaryColorLight,
           ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
         );
       },
     );

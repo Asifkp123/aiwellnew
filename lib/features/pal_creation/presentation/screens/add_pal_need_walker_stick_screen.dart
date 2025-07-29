@@ -22,7 +22,7 @@ class AddPalNeedWalkerStickScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder<AddPalState>(
       stream: viewModelBase.stateStream,
-      initialData: AddPalState(status: AddPalStateStatus.idle),
+      initialData: viewModelBase.getCurrentStateWithControllers(),
       builder: (context, snapshot) {
         final state = snapshot.data!;
         print(state.needs_walking_aid);
@@ -54,8 +54,11 @@ class AddPalNeedWalkerStickScreen extends StatelessWidget {
                     BackButtonWithPointWidget(
                         currentPoints: 40, totalPoints: 120),
                     SizedBox(height: 60),
-                    LargePurpleText(
-                        "Do they need a little help to move around, like a walker or stick?"),
+                    LargePurpleText(state.gender?.toLowerCase() == 'male'
+                        ? "Does he need a little help to move around, like a walker or stick?"
+                        : state.gender?.toLowerCase() == 'female'
+                            ? "Does she need a little help to move around, like a walker or stick?"
+                            : "Do they need a little help to move around, like a walker or stick?"),
                     SizedBox(height: 16),
                     NormalGreyText("Aiwel has dedicated support equipments"),
                     const SizedBox(height: 16),

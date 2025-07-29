@@ -19,14 +19,15 @@ class AddPalDiagnosisScreen extends StatelessWidget {
 
   const AddPalDiagnosisScreen({super.key, required this.viewModelBase});
 
-
   @override
   Widget build(BuildContext context) {
+
     return StreamBuilder<AddPalState>(
       stream: viewModelBase.stateStream,
-      initialData: AddPalState(status: AddPalStateStatus.idle),
+      initialData: viewModelBase.getCurrentStateWithControllers(),
       builder: (context, snapshot) {
         final state = snapshot.data!;
+
         return Scaffold(
           body: Container(
             width: double.infinity,
@@ -51,18 +52,22 @@ class AddPalDiagnosisScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(height: 40),
-
-                  BackButtonWithPointWidget(currentPoints: 20, totalPoints: 120,),
+                  BackButtonWithPointWidget(
+                    currentPoints: 20,
+                    totalPoints: 120,
+                  ),
                   SizedBox(height: 40),
-
-                  LargePurpleText("What is his primary diagnosis?"),
+                  LargePurpleText(state.gender?.toLowerCase() == 'male'
+                      ? "What is his primary diagnosis?"
+                      : state.gender?.toLowerCase() == 'female'
+                          ? "What is her primary diagnosis?"
+                          : "What is their primary diagnosis?"),
                   SizedBox(height: 16),
                   NormalGreyText("It helps us tailor Aiwel for you."),
                   const SizedBox(height: 32),
                   BigTextformField(
                     controller: viewModelBase.primaryDiagnosisController,
                   ),
-
                 ],
               ),
             ),
@@ -70,10 +75,10 @@ class AddPalDiagnosisScreen extends StatelessWidget {
           floatingActionButton: LabelButton(
             label: 'Continue',
             onTap: () {
-
-              if(viewModelBase.primaryDiagnosisController.text.isEmpty){
+              print(state.gender?.toLowerCase());
+              print("state.gender?.toLowerCase()");
+              if (viewModelBase.primaryDiagnosisController.text.isEmpty) {
                 ScaffoldMessenger.of(context)!.showSnackBar(
-
                   commonSnackBarWidget(
                     content: "Please enter the primary diagnosis.",
                     type: SnackBarType.error,
@@ -85,12 +90,12 @@ class AddPalDiagnosisScreen extends StatelessWidget {
                 context,
                 AddPalAbleToWalkScreen.routeName,
               );
-
             },
             gradient: splashGradient(),
             fontColor: Theme.of(context).primaryColorLight,
           ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
         );
       },
     );

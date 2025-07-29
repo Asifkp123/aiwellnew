@@ -22,7 +22,7 @@ class AddPalSleepbeenScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder<AddPalState>(
       stream: viewModelBase.stateStream,
-      initialData: AddPalState(status: AddPalStateStatus.idle),
+      initialData: viewModelBase.getCurrentStateWithControllers(),
       builder: (context, snapshot) {
         final state = snapshot.data!;
         return Scaffold(
@@ -50,12 +50,20 @@ class AddPalSleepbeenScreen extends StatelessWidget {
                   children: [
                     SizedBox(height: 40),
 
-                    BackButtonWithPointWidget(currentPoints: 110, totalPoints: 120,),
+                    BackButtonWithPointWidget(
+                      currentPoints: 110,
+                      totalPoints: 120,
+                    ),
                     SizedBox(height: 60),
 
-                    LargePurpleText("How well have they been sleeping lately?"),
+                    LargePurpleText(state.gender?.toLowerCase() == 'male'
+                        ? "How well has he been sleeping lately?"
+                        : state.gender?.toLowerCase() == 'female'
+                            ? "How well has she been sleeping lately?"
+                            : "How well have they been sleeping lately?"),
                     SizedBox(height: 16),
-                    NormalGreyText("Aiwel will help you and your pal sleep peacefully"),
+                    NormalGreyText(
+                        "Aiwel will help you and your pal sleep peacefully"),
                     const SizedBox(height: 16),
                     SelectableListView(
                       items: viewModelBase.sleepBeenList,
@@ -70,8 +78,6 @@ class AddPalSleepbeenScreen extends StatelessWidget {
                     //   ),
                     // ],
                     SizedBox(height: 50),
-
-
                   ],
                 ),
               ),
@@ -81,12 +87,11 @@ class AddPalSleepbeenScreen extends StatelessWidget {
             label: 'Continue',
             onTap: () {
               if (state.sleep_quality == null) {
-                ScaffoldMessenger.of(context)!.showSnackBar(
-
-                    commonSnackBarWidget(
-                      content: "Please select an option before continuing.",
-                      type: SnackBarType.error,
-                    ));
+                ScaffoldMessenger.of(context)!
+                    .showSnackBar(commonSnackBarWidget(
+                  content: "Please select an option before continuing.",
+                  type: SnackBarType.error,
+                ));
                 return;
               }
               Navigator.pushNamed(
@@ -97,7 +102,8 @@ class AddPalSleepbeenScreen extends StatelessWidget {
             gradient: splashGradient(),
             fontColor: Theme.of(context).primaryColorLight,
           ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
         );
       },
     );

@@ -26,6 +26,7 @@ import '../../data/models/api/submit_profile_response.dart';
 import '../../domain/entities/otp_verification.dart';
 import '../screens/signin_signup_screen.dart';
 import '../screens/otp_screen.dart';
+import '../../../home/home_screen.dart';
 import '../../../../../components/snackbars/custom_snackbar.dart';
 
 // Enum for sign-in status
@@ -80,7 +81,7 @@ abstract class SignInViewModelBase {
   Future<Either<Failure, OtpRequestSuccess>> requestOtp();
   Future<void> requestOtpWithNavigation(BuildContext context);
   Future<void> verifyOtp(BuildContext context);
-  Future<SubmitProfileResult> submitProfile();
+  Future<SubmitProfileResult> submitProfile(BuildContext context);
   void clearInputs();
   void clearError();
   void dispose();
@@ -349,7 +350,7 @@ class SignInViewModel implements SignInViewModelBase {
   }
 
   @override
-  Future<SubmitProfileResult> submitProfile() async {
+  Future<SubmitProfileResult> submitProfile(BuildContext context) async {
     if (!validateProfile()) {
       _errorMessage = Strings.invalidProfileMessage;
       _status = SignInStatus.error;
@@ -395,6 +396,30 @@ class SignInViewModel implements SignInViewModelBase {
       sleepQuality: _selectedSleep?.toLowerCase() ?? '',
       physicalActivity: _selectedWorkout?.toLowerCase() ?? '',
     );
+
+    // Handle the result with navigation and snackbar
+    if (result.error != null) {
+      // Show error snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        commonSnackBarWidget(
+          content: result.error!,
+          type: SnackBarType.error,
+        ),
+      );
+    } else if (result.successMessage != null) {
+      // Show success snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        commonSnackBarWidget(
+          content: result.successMessage!,
+          type: SnackBarType.message,
+        ),
+      );
+
+      // Navigate to HomeScreen if appState is HomeState
+      if (result.appState is HomeState) {
+        Navigator.pushReplacementNamed(context, HomeScreen.routeName);
+      }
+    }
 
     return result;
   }

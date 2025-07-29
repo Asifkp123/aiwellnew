@@ -21,7 +21,7 @@ class AddPalMemoryChangesConfutionScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder<AddPalState>(
       stream: viewModelBase.stateStream,
-      initialData: AddPalState(status: AddPalStateStatus.idle),
+      initialData: viewModelBase.getCurrentStateWithControllers(),
       builder: (context, snapshot) {
         final state = snapshot.data!;
         return Scaffold(
@@ -48,16 +48,23 @@ class AddPalMemoryChangesConfutionScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(height: 40),
-                    BackButtonWithPointWidget(currentPoints: 60, totalPoints: 120),
+                    BackButtonWithPointWidget(
+                        currentPoints: 60, totalPoints: 120),
                     SizedBox(height: 60),
-                    LargePurpleText("Have you noticed any memory changes or moments of confusion lately?"),
+                    LargePurpleText(state.gender?.toLowerCase() == 'male'
+                        ? "Have you noticed any memory changes or moments of confusion in him lately?"
+                        : state.gender?.toLowerCase() == 'female'
+                            ? "Have you noticed any memory changes or moments of confusion in her lately?"
+                            : "Have you noticed any memory changes or moments of confusion in them lately?"),
                     SizedBox(height: 16),
                     NormalGreyText("Aiwel can help them if they forget"),
                     const SizedBox(height: 16),
                     SelctablelistviewPalCreation(
                       items: viewModelBase.yesOrNoList,
-                      selectedValue: state.has_dementia, // Use has_dementia instead of selectedAbleToWalk
-                      onItemSelected: viewModelBase.setHasDementia, // Use setHasDementia instead of yesOrNoSelected
+                      selectedValue: state
+                          .has_dementia, // Use has_dementia instead of selectedAbleToWalk
+                      onItemSelected: viewModelBase
+                          .setHasDementia, // Use setHasDementia instead of yesOrNoSelected
                     ),
                     if (state.errorMessage != null) ...[
                       const SizedBox(height: 16),
@@ -77,9 +84,8 @@ class AddPalMemoryChangesConfutionScreen extends StatelessWidget {
             onTap: () {
               // Check if a selection has been made
               if (state.has_dementia == null) {
-                ScaffoldMessenger.of(context)!.showSnackBar(
-
-                commonSnackBarWidget(
+                ScaffoldMessenger.of(context)!
+                    .showSnackBar(commonSnackBarWidget(
                   content: "Please select an option before continuing.",
                   type: SnackBarType.error,
                 ));
@@ -95,7 +101,8 @@ class AddPalMemoryChangesConfutionScreen extends StatelessWidget {
             gradient: splashGradient(),
             fontColor: Theme.of(context).primaryColorLight,
           ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
         );
       },
     );

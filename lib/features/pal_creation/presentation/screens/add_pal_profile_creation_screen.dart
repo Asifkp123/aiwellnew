@@ -19,11 +19,16 @@ class AddPalProfileCreationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print(
+        "🌟 AddPalProfileCreationScreen build - viewModelBase: ${viewModelBase.hashCode}");
     return StreamBuilder<AddPalState>(
       stream: viewModelBase.stateStream,
       initialData: AddPalState(status: AddPalStateStatus.idle),
       builder: (context, snapshot) {
         final state = snapshot.data!;
+        print("🌟 ProfileScreen state.gender: ${state.gender}");
+        print(
+            "🌟 ProfileScreen genderController.text: ${viewModelBase.genderController.text}");
         return Scaffold(
           body: Container(
             width: double.infinity,
@@ -48,7 +53,8 @@ class AddPalProfileCreationScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(height: 40),
-                  BackButtonWithPointWidget(currentPoints: 10, totalPoints: 120),
+                  BackButtonWithPointWidget(
+                      currentPoints: 10, totalPoints: 120),
                   SizedBox(height: 40),
                   LargePurpleText("Let’s get to know you better."),
                   SizedBox(height: 16),
@@ -78,7 +84,8 @@ class AddPalProfileCreationScreen extends StatelessWidget {
                       child: SimpleTextField(
                         hintText: "Date of Birth",
                         controller: viewModelBase.dateOfBirthController,
-                        suffixIcon: Icon(Icons.calendar_month, color: Theme.of(context).hintColor),
+                        suffixIcon: Icon(Icons.calendar_month,
+                            color: Theme.of(context).hintColor),
                         isEnabled: true,
                         keyboardType: TextInputType.datetime,
                         textInputAction: TextInputAction.next,
@@ -105,29 +112,34 @@ class AddPalProfileCreationScreen extends StatelessWidget {
                       fontWeight: FontWeight.w500,
                       letterSpacing: 0.1,
                       // color: Colors.black,
-                      color:Theme.of(context).colorScheme.surface,
+                      color: Theme.of(context).colorScheme.surface,
                     ),
                     value: state.gender,
                     items: ['Male', 'Female', 'Other']
-                        .map<DropdownMenuItem<String>>((gender) => DropdownMenuItem<String>(
-                      value: gender,
-                      child: Text(
-                        gender,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          letterSpacing: 0.1,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ))
+                        .map<DropdownMenuItem<String>>(
+                            (gender) => DropdownMenuItem<String>(
+                                  value: gender,
+                                  child: Text(
+                                    gender,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      letterSpacing: 0.1,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ))
                         .toList(),
                     onChanged: (value) {
+                      print("🔥 Gender selected: $value");
                       viewModelBase.genderController.text = value ?? '';
+                      print(
+                          "🔥 Controller updated: ${viewModelBase.genderController.text}");
+                      viewModelBase.updateStateWithControllers(); // Sync controller to state
+                      print("🔥 updateStateWithControllers called");
                       viewModelBase.clearError();
                     },
                   ),
-
                 ],
               ),
             ),
@@ -143,26 +155,25 @@ class AddPalProfileCreationScreen extends StatelessWidget {
                 //  );
 
                 ScaffoldMessenger.of(context)!.showSnackBar(
-
                   commonSnackBarWidget(
                     content: "Please fill in all fields to proceed.",
                     type: SnackBarType.error,
                   ),
                 );
 
-
-
                 return;
               }
               Navigator.pushNamed(
                 context,
                 AddPalDiagnosisScreen.routeName,
+                arguments: {'viewModelBase': viewModelBase},
               );
             },
             gradient: splashGradient(),
             fontColor: Theme.of(context).primaryColorLight,
           ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
         );
       },
     );

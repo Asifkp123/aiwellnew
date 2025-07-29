@@ -31,7 +31,8 @@ Future<Widget> routeNavigator(String routeName,
   dynamic viewModel = arguments?['viewModelBase'] ??
       viewModels?[routeName] ??
       viewModels?[SigninSignupScreen.routeName];
-  dynamic addPalVeiewModel = viewModels?["AddPalViewModel"] ??
+  dynamic addPalVeiewModel = arguments?['viewModelBase'] ??
+      viewModels?["AddPalViewModel"] ??
       viewModels?[AddPalProfileCreationScreen.routeName];
 
   switch (routeName) {

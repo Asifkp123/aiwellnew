@@ -20,7 +20,7 @@ class AddPalSleepPatternScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder<AddPalState>(
       stream: viewModelBase.stateStream,
-      initialData: AddPalState(status: AddPalStateStatus.idle),
+      initialData: viewModelBase.getCurrentStateWithControllers(),
       builder: (context, snapshot) {
         final state = snapshot.data!;
         return Scaffold(
@@ -47,16 +47,23 @@ class AddPalSleepPatternScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(height: 40),
-                    BackButtonWithPointWidget(currentPoints: 100, totalPoints: 120),
+                    BackButtonWithPointWidget(
+                        currentPoints: 100, totalPoints: 120),
                     SizedBox(height: 60),
-                    LargePurpleText("what kind of sleep pattern does the he have?"),
+                    LargePurpleText(state.gender?.toLowerCase() == 'male'
+                        ? "What kind of sleep pattern does he have?"
+                        : state.gender?.toLowerCase() == 'female'
+                            ? "What kind of sleep pattern does she have?"
+                            : "What kind of sleep pattern do they have?"),
                     SizedBox(height: 16),
                     NormalGreyText(" Sleep is the best medicine"),
                     const SizedBox(height: 16),
                     SelectableListView(
                       items: viewModelBase.sleepPatternList,
-                      selectedValue: state.sleep_pattern, // Use sleep_pattern instead of selectedAbleToWalk
-                      onItemSelected: viewModelBase.setSleepPattern, // Use setSleepPattern instead of yesOrNoSelected
+                      selectedValue: state
+                          .sleep_pattern, // Use sleep_pattern instead of selectedAbleToWalk
+                      onItemSelected: viewModelBase
+                          .setSleepPattern, // Use setSleepPattern instead of yesOrNoSelected
                     ),
                     if (state.errorMessage != null) ...[
                       const SizedBox(height: 16),
@@ -76,9 +83,8 @@ class AddPalSleepPatternScreen extends StatelessWidget {
             onTap: () {
               // Check if a selection has been made
               if (state.sleep_pattern == null) {
-                ScaffoldMessenger.of(context)!.showSnackBar(
-
-                commonSnackBarWidget(
+                ScaffoldMessenger.of(context)!
+                    .showSnackBar(commonSnackBarWidget(
                   content: "Please select an option before continuing.",
                   type: SnackBarType.error,
                 ));
@@ -94,7 +100,8 @@ class AddPalSleepPatternScreen extends StatelessWidget {
             gradient: splashGradient(),
             fontColor: Theme.of(context).primaryColorLight,
           ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
         );
       },
     );

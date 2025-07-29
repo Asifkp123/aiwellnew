@@ -21,7 +21,7 @@ class AddPalAbleToWalkScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder<AddPalState>(
       stream: viewModelBase.stateStream,
-      initialData: AddPalState(status: AddPalStateStatus.idle),
+      initialData: viewModelBase.getCurrentStateWithControllers(),
       builder: (context, snapshot) {
         final state = snapshot.data!;
         return Scaffold(
@@ -48,11 +48,17 @@ class AddPalAbleToWalkScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(height: 40),
-                    BackButtonWithPointWidget(currentPoints: 30, totalPoints: 120),
+                    BackButtonWithPointWidget(
+                        currentPoints: 30, totalPoints: 120),
                     SizedBox(height: 60),
-                    LargePurpleText("Are they able to walk?"),
+                    LargePurpleText(state.gender?.toLowerCase() == 'male'
+                        ? "Is he able to walk?"
+                        : state.gender?.toLowerCase() == 'female'
+                            ? "Is she able to walk?"
+                            : "Are they able to walk?"),
                     SizedBox(height: 16),
-                    NormalGreyText("Aiwel helps your pal in a personalized way."),
+                    NormalGreyText(
+                        "Aiwel helps your pal in a personalized way."),
                     const SizedBox(height: 16),
                     SelctablelistviewPalCreation(
                       items: viewModelBase.yesOrNoList,
@@ -77,7 +83,6 @@ class AddPalAbleToWalkScreen extends StatelessWidget {
             onTap: () {
               // Check if a selection has been made
               if (state.selectedAbleToWalk == null) {
-
                 ScaffoldMessenger.of(context).showSnackBar(
                   commonSnackBarWidget(
                     content: "Please select an option before continuing.",
@@ -96,7 +101,8 @@ class AddPalAbleToWalkScreen extends StatelessWidget {
             gradient: splashGradient(),
             fontColor: Theme.of(context).primaryColorLight,
           ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
         );
       },
     );

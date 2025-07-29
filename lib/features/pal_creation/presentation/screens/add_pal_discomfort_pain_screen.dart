@@ -63,8 +63,11 @@ class _AddPalDiscomfortOrPainScreenState
                     const BackButtonWithPointWidget(
                         currentPoints: 120, totalPoints: 120),
                     const SizedBox(height: 60),
-                    LargePurpleText(
-                        "Are they feeling any discomfort or pain today?"),
+                    LargePurpleText(state.gender?.toLowerCase() == 'male'
+                        ? "Is he feeling any discomfort or pain today?"
+                        : state.gender?.toLowerCase() == 'female'
+                            ? "Is she feeling any discomfort or pain today?"
+                            : "Are they feeling any discomfort or pain today?"),
                     const SizedBox(height: 16),
                     NormalGreyText("Aiwel would be happy if you are pain free"),
                     const SizedBox(height: 16),

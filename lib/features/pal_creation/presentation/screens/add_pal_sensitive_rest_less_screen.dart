@@ -21,7 +21,7 @@ class AddPalSensitiveRestLessScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder<AddPalState>(
       stream: viewModelBase.stateStream,
-      initialData: AddPalState(status: AddPalStateStatus.idle),
+      initialData: viewModelBase.getCurrentStateWithControllers(),
       builder: (context, snapshot) {
         final state = snapshot.data!;
         return Scaffold(
@@ -48,16 +48,23 @@ class AddPalSensitiveRestLessScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(height: 40),
-                    BackButtonWithPointWidget(currentPoints: 70, totalPoints: 120),
+                    BackButtonWithPointWidget(
+                        currentPoints: 70, totalPoints: 120),
                     SizedBox(height: 60),
-                    LargePurpleText("Have they been feeling uneasy, restless, or a little more sensitive than usual"),
+                    LargePurpleText(state.gender?.toLowerCase() == 'male'
+                        ? "Has he been feeling uneasy, restless, or a little more sensitive than usual"
+                        : state.gender?.toLowerCase() == 'female'
+                            ? "Has she been feeling uneasy, restless, or a little more sensitive than usual"
+                            : "Have they been feeling uneasy, restless, or a little more sensitive than usual"),
                     SizedBox(height: 16),
                     NormalGreyText("Aiwel will keep you calm"),
                     const SizedBox(height: 16),
                     SelctablelistviewPalCreation(
                       items: viewModelBase.yesOrNoList,
-                      selectedValue: state.is_agitated, // Use is_agitated instead of selectedAbleToWalk
-                      onItemSelected: viewModelBase.setIsAgitated, // Use setIsAgitated instead of yesOrNoSelected
+                      selectedValue: state
+                          .is_agitated, // Use is_agitated instead of selectedAbleToWalk
+                      onItemSelected: viewModelBase
+                          .setIsAgitated, // Use setIsAgitated instead of yesOrNoSelected
                     ),
                     if (state.errorMessage != null) ...[
                       const SizedBox(height: 16),
@@ -77,9 +84,8 @@ class AddPalSensitiveRestLessScreen extends StatelessWidget {
             onTap: () {
               // Check if a selection has been made
               if (state.is_agitated == null) {
-                ScaffoldMessenger.of(context)!.showSnackBar(
-
-                commonSnackBarWidget(
+                ScaffoldMessenger.of(context)!
+                    .showSnackBar(commonSnackBarWidget(
                   content: "Please select an option before continuing.",
                   type: SnackBarType.error,
                 ));
@@ -95,7 +101,8 @@ class AddPalSensitiveRestLessScreen extends StatelessWidget {
             gradient: splashGradient(),
             fontColor: Theme.of(context).primaryColorLight,
           ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
         );
       },
     );

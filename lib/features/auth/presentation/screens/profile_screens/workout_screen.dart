@@ -124,28 +124,7 @@ class WorkoutScreen extends StatelessWidget {
                 return;
               }
 
-              final result = await viewModelBase.submitProfile();
-
-              if (result.error != null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  commonSnackBarWidget(
-                    content: result.error!,
-                    type: SnackBarType.error,
-                  ),
-                );
-              } else if (result.successMessage != null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  commonSnackBarWidget(
-                    content: result.successMessage!,
-                    type: SnackBarType.message,
-                  ),
-                );
-
-                // Check if we should navigate to HomeScreen
-                if (result.appState is HomeState) {
-                  Navigator.pushReplacementNamed(context, HomeScreen.routeName);
-                }
-              }
+              await viewModelBase.submitProfile(context);
             },
             gradient: splashGradient(),
             fontColor: Theme.of(context).primaryColorLight,

@@ -15,6 +15,7 @@ class QuestionnaireSection extends StatelessWidget {
   final String? sleepPattern;
   final String? sleepQuality;
   final String? painStatus;
+  final String? gender; // Added gender parameter
 
   const QuestionnaireSection({
     super.key,
@@ -29,6 +30,7 @@ class QuestionnaireSection extends StatelessWidget {
     required this.sleepPattern,
     required this.sleepQuality,
     required this.painStatus,
+    this.gender, // Added gender parameter
   });
 
   // Helper method to convert bool to display string
@@ -37,49 +39,134 @@ class QuestionnaireSection extends StatelessWidget {
     return value ? 'Yes' : 'No';
   }
 
+  // Helper methods for gender-based pronouns
+  String _getSubjectPronoun() {
+    switch (gender?.toLowerCase()) {
+      case 'male':
+        return 'he';
+      case 'female':
+        return 'she';
+      default:
+        return 'they';
+    }
+  }
+
+  String _getObjectPronoun() {
+    switch (gender?.toLowerCase()) {
+      case 'male':
+        return 'him';
+      case 'female':
+        return 'her';
+      default:
+        return 'them';
+    }
+  }
+
+  String _getPossessivePronoun() {
+    switch (gender?.toLowerCase()) {
+      case 'male':
+        return 'his';
+      case 'female':
+        return 'her';
+      default:
+        return 'their';
+    }
+  }
+
+  String _getVerbForm(String singular, String plural) {
+    return (gender?.toLowerCase() == 'male' || gender?.toLowerCase() == 'female') 
+        ? singular 
+        : plural;
+  }
+
+  // Helper method to generate gender-specific questions
+  String _getDiagnosisQuestion() {
+    return gender?.toLowerCase() == 'male'
+        ? "What is his primary diagnosis?"
+        : gender?.toLowerCase() == 'female'
+            ? "What is her primary diagnosis?"
+            : "What is their primary diagnosis?";
+  }
+
+  String _getWalkingQuestion() {
+    return "${_getVerbForm('Is', 'Are')} ${_getSubjectPronoun()} able to walk?";
+  }
+
+  String _getWalkingAidQuestion() {
+    return "${_getVerbForm('Does', 'Do')} ${_getSubjectPronoun()} need a little help to move around, like a walker or stick?";
+  }
+
+  String _getBedRestQuestion() {
+    return "${_getVerbForm('Is', 'Are')} ${_getSubjectPronoun()} spending most of ${_getPossessivePronoun()} time resting in bed these days?";
+  }
+
+  String _getMemoryQuestion() {
+    return "Have you noticed any memory changes or moments of confusion in ${_getObjectPronoun()} lately?";
+  }
+
+  String _getAgitationQuestion() {
+    return "${_getVerbForm('Has', 'Have')} ${_getSubjectPronoun()} been feeling uneasy, restless, or a little more sensitive than usual?";
+  }
+
+  String _getDepressionQuestion() {
+    return "${_getVerbForm('Has', 'Have')} ${_getSubjectPronoun()} seemed down, quiet, or withdrawn recently?";
+  }
+
+  String _getMoodQuestion() {
+    return "What kind of mood ${_getVerbForm('has', 'have')} ${_getSubjectPronoun()} been in most of the time?";
+  }
+
+  String _getSleepPatternQuestion() {
+    return "What kind of sleep pattern ${_getVerbForm('does', 'do')} ${_getSubjectPronoun()} have?";
+  }
+
+  String _getSleepQualityQuestion() {
+    return "How well ${_getVerbForm('has', 'have')} ${_getSubjectPronoun()} been sleeping lately?";
+  }
+
+  String _getPainQuestion() {
+    return "${_getVerbForm('Is', 'Are')} ${_getSubjectPronoun()} feeling any discomfort or pain today?";
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         QAItem(
-            question: "What is his primary diagnosis?",
+            question: _getDiagnosisQuestion(),
             answer: primaryDiagnosis.isNotEmpty
                 ? primaryDiagnosis
                 : 'Not specified'),
         QAItem(
-            question: "Are they able to walk?",
+            question: _getWalkingQuestion(),
             answer: _boolToDisplayString(canWalk)),
         QAItem(
-            question:
-                "Do they need a little help to move around, like a walker or stick?",
+            question: _getWalkingAidQuestion(),
             answer: _boolToDisplayString(needsWalkingAid)),
         QAItem(
-            question:
-                "Are they spending most of their time resting in bed these days?",
+            question: _getBedRestQuestion(),
             answer: _boolToDisplayString(isBedridden)),
         QAItem(
-            question:
-                "Have you noticed any memory changes or moments of confusion lately?",
+            question: _getMemoryQuestion(),
             answer: _boolToDisplayString(hasDementia)),
         QAItem(
-            question:
-                "Have they been feeling uneasy, restless, or a little more sensitive than usual?",
+            question: _getAgitationQuestion(),
             answer: _boolToDisplayString(isAgitated)),
         QAItem(
-            question: "Have they seemed down, quiet, or withdrawn recently?",
+            question: _getDepressionQuestion(),
             answer: _boolToDisplayString(isDepressed)),
         QAItem(
-            question: "What kind of mood have they been in most of the time?",
+            question: _getMoodQuestion(),
             answer: dominantEmotion ?? 'Not specified'),
         QAItem(
-            question: "What kind of sleep pattern does he have?",
+            question: _getSleepPatternQuestion(),
             answer: sleepPattern ?? 'Not specified'),
         QAItem(
-            question: "How well have they been sleeping lately?",
+            question: _getSleepQualityQuestion(),
             answer: sleepQuality ?? 'Not specified'),
         QAItem(
-            question: "Are they feeling any discomfort or pain today?",
+            question: _getPainQuestion(),
             answer: painStatus ?? 'Not specified'),
         const SizedBox(height: 100),
       ],

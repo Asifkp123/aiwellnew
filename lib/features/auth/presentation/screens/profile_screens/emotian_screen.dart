@@ -6,44 +6,31 @@ import '../../../../../components/buttons/label_button.dart';
 import '../../../../../components/constants.dart';
 import '../../../../../components/snackbars/custom_snackbar.dart';
 import '../../../../../components/text_widgets/text_widgets.dart';
-import '../../view_models/sign_in_viewModel.dart';
+import '../../view_models/profile_view_model.dart';
 import '../../widgets/selectable_listView.dart';
 import '../../widgets/three_circle_conatiner.dart';
 import 'sleep_quality_screen.dart';
 
-class EmotianScreen extends StatelessWidget {
+class EmotionScreen extends StatelessWidget {
   static const String routeName = '/emotianScreen';
-  final SignInViewModelBase viewModelBase;
-  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+  final ProfileViewModelBase viewModelBase;
 
-  EmotianScreen({super.key, required this.viewModelBase}) {
-    // viewModelBase.startAnimationForEmotian(_listKey);
-  }
+  const EmotionScreen({super.key, required this.viewModelBase});
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<SignInState>(
+    return StreamBuilder<ProfileState>(
       stream: viewModelBase.stateStream,
-      initialData: SignInState(status: SignInStatus.idle),
+      initialData: ProfileState(status: ProfileStatus.idle),
       builder: (context, snapshot) {
         final state = snapshot.data!;
         return Scaffold(
           body: SingleChildScrollView(
             child: Container(
               width: double.infinity,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFFE4D6FA),
-                    Color(0xFFF1EAFE),
-                    Color(0xFFFFFFFF),
-                    Color(0xFFF1EAFE),
-                    Color(0xFFE4D6FA),
-                  ],
-                  stops: [0.0, 0.2, 0.5, 0.8, 1.0],
-                ),
+              decoration: BoxDecoration(
+                gradient:
+                    homeBackgroundGradient(context),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),

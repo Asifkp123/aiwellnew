@@ -15,14 +15,17 @@ Future<void> main() async {
   try {
     await AppStateManager.instance.restoreAppState();
 
-    final signInViewModel = await DependencyManager.createSignInViewModel();
+    final authViewModel = await DependencyManager.createAuthViewModel();
+    final profileViewModel = await DependencyManager.createProfileViewModel();
     final addPalViewModel = await DependencyManager.createAddPalViewModel();
     final splashViewModel = await DependencyManager.createSplashViewModel();
 
     runApp(MyApp(
       viewModels: {
-        SigninSignupScreen.routeName: signInViewModel,
-        ProfileScreen.routeName: signInViewModel,
+        SigninSignupScreen.routeName: authViewModel,
+        ProfileScreen.routeName: profileViewModel,
+        'AuthViewModel': authViewModel,
+        'ProfileViewModel': profileViewModel,
         'AddPalViewModel': addPalViewModel,
         'SplashViewModel': splashViewModel,
       },
@@ -41,38 +44,59 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return
-        MaterialApp(
-          title: 'Aiwel',
-          theme: lightTheme,
-          themeMode: ThemeMode.light,
-          debugShowCheckedModeBanner: false,
-          scaffoldMessengerKey: rootScaffoldMessengerKey,
-          navigatorKey: navigatorKey,
-          home: SplashScreen(viewModels: viewModels),
-          onGenerateRoute: (RouteSettings routeSettings) => PageRouteBuilder<void>(
-            settings: routeSettings,
-            pageBuilder: (BuildContext context, Animation<double> animation,
-                Animation<double> secondaryAnimation) {
-              return FutureBuilder<Widget>(
-                future: routeNavigator(routeSettings.name ?? '/', viewModels: viewModels),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return SplashScreen(viewModels: viewModels);
-                  }
-                  if (snapshot.hasError) {
-                    return const Text('Error loading route');
-                  }
-                  return snapshot.data ?? SplashScreen(viewModels: viewModels);
-                },
-              );
-            },
-            transitionsBuilder: (BuildContext context, Animation<double> animation,
-                Animation<double> secondaryAnimation, Widget child) {
-              return child; // No transition animation
-            },
-          ),
+    return MaterialApp(
+      title: 'Aiwel',
+      theme: lightTheme,
+      themeMode: ThemeMode.light,
+      debugShowCheckedModeBanner: false,
+      scaffoldMessengerKey: rootScaffoldMessengerKey,
+      navigatorKey: navigatorKey,
+      // home: SplashScreen(viewModels: viewModels),
+      home: ProfileScreen(viewModelBase: viewModels['ProfileViewModel'],),
 
+      onGenerateRoute: (RouteSettings routeSettings) => PageRouteBuilder<void>(
+        settings: routeSettings,
+        pageBuilder: (BuildContext context, Animation<double> animation,
+            Animation<double> secondaryAnimation) {
+          return FutureBuilder<Widget>(
+            future: routeNavigator(routeSettings.name ?? '/',
+                viewModels: viewModels),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return SplashScreen(viewModels: viewModels);
+              }
+              if (snapshot.hasError) {
+                print(
+                    "❌ Route error for '${routeSettings.name}': ${snapshot.error}");
+                print("📍 Available viewModels: ${viewModels.keys.toList()}");
+                return Scaffold(
+                  body: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('Error loading route: ${routeSettings.name}'),
+                        SizedBox(height: 10),
+                        Text('Error: ${snapshot.error}'),
+                        SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: () => Navigator.pushReplacementNamed(
+                              context, '/signinSignup'),
+                          child: Text('Go to Sign In'),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+              return snapshot.data ?? SplashScreen(viewModels: viewModels);
+            },
+          );
+        },
+        transitionsBuilder: (BuildContext context, Animation<double> animation,
+            Animation<double> secondaryAnimation, Widget child) {
+          return child; // No transition animation
+        },
+      ),
     );
   }
 }

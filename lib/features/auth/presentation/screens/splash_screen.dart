@@ -16,16 +16,28 @@ class SplashScreen extends StatelessWidget {
   // final SplashViewModel viewModel;
   final Map<String, dynamic> viewModels;
 
-  const SplashScreen(
-      {Key? key, required this.viewModels})
-      : super(key: key);
+  const SplashScreen({Key? key, required this.viewModels}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: LabelButton(
         label: 'Let’s get started',
-        onTap: () => viewModels["SplashViewModel"].handleLetsGetStartedNavigation(context),
+        onTap: () {
+          print("🔘 Button clicked");
+          print(
+              "🔍 SplashViewModel exists: ${viewModels["SplashViewModel"] != null}");
+          print("🗂️ Available viewModels: ${viewModels.keys.toList()}");
+
+          if (viewModels["SplashViewModel"] != null) {
+            viewModels["SplashViewModel"]
+                .handleLetsGetStartedNavigation(context);
+          } else {
+            print("❌ SplashViewModel is null!");
+            // Fallback navigation
+            Navigator.pushReplacementNamed(context, '/signinSignup');
+          }
+        },
         gradient: splashGradient(),
         fontColor: Theme.of(context).primaryColorLight,
       ),

@@ -96,6 +96,7 @@ class _AddPalConfirmationSubmitScreenState
                       sleepPattern: state.sleep_pattern,
                       sleepQuality: state.sleep_quality,
                       painStatus: state.pain_status,
+                      gender: state.gender, // Added gender parameter
                     ),
                   ],
                 ),

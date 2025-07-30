@@ -7,12 +7,12 @@ import 'package:aiwel/components/snackbars/success_snackbar.dart';
 import 'package:aiwel/components/text_widgets/text_widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../home/home_screen.dart';
-import '../view_models/sign_in_viewModel.dart';
+import '../view_models/auth_view_model.dart';
 import '../widgets/keyboard.dart';
 
 class OtpScreen extends StatelessWidget {
   static const String routeName = '/otpScreen';
-  final SignInViewModelBase viewModelBase;
+  final AuthViewModelBase viewModelBase;
 
   const OtpScreen({Key? key, required this.viewModelBase}) : super(key: key);
 
@@ -42,16 +42,16 @@ class OtpScreen extends StatelessWidget {
               stops: [0.0, 0.2, 0.5, 0.8, 1.0],
             ),
           ),
-          child: StreamBuilder<SignInState>(
+          child: StreamBuilder<AuthState>(
             stream: viewModelBase.stateStream,
-            initialData: SignInState(status: SignInStatus.idle),
+            initialData: AuthState(status: AuthStatus.idle),
             builder: (context, snapshot) {
               final state = snapshot.data!;
               final isLoading = state.isLoading;
 
               final canResendOtp = state.countdownSeconds == 0 && !isLoading;
               final isCountdownActive = state.countdownSeconds > 0 ||
-                  state.status == SignInStatus.otpSent;
+                  state.status == AuthStatus.otpSent;
 
               if (state.feedbackMessage != null) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {

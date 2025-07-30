@@ -232,21 +232,85 @@ final ThemeData lightTheme = ThemeData(
   ),
   extensions: const <ThemeExtension<dynamic>>[
     CustomColors(
-      containerBorderColor: Color(0xFFF1E2FF),
+      // Background gradient colors
+      backgroundGradientLight: Color(0xFFE4D6FA), // light purple
+      backgroundGradientLighter: Color(0xFFF1EAFE), // even lighter
+      backgroundGradientWhite: Color(0xFFFFFFFF), // white middle
+
+      // Button gradient colors
+      buttonGradientStart: Color(0xFF543474), // button start
+      buttonGradientEnd: Color(0xFF9858D8), // button end
+
+      // Common UI colors
+      containerBorderColor: Color(0xFFF1E2FF), // container borders
+      purpleAccent: Color(0xFF8E2EFF), // purple accent
+      greyText: Color(0xFF606060), // grey text
+      lightPurpleBackground: Color(0xFFF1E6FD), // light background
+      sectionCardBackground: Color(0xFFF9F3FF), // section cards
     ),
   ],
 );
 
 @immutable
 class CustomColors extends ThemeExtension<CustomColors> {
-  final Color containerBorderColor;
+  // Background gradient colors
+  final Color backgroundGradientLight; // Color(0xFFE4D6FA) - light purple
+  final Color backgroundGradientLighter; // Color(0xFFF1EAFE) - even lighter
+  final Color backgroundGradientWhite; // Color(0xFFFFFFFF) - white middle
 
-  const CustomColors({required this.containerBorderColor});
+  // Button gradient colors
+  final Color buttonGradientStart; // Color(0xFF543474) - button start
+  final Color buttonGradientEnd; // Color(0xFF9858D8) - button end
+
+  // Common UI colors
+  final Color containerBorderColor; // Color(0xFFF1E2FF) - container borders
+  final Color purpleAccent; // Color(0xFF8E2EFF) - purple accent
+  final Color greyText; // Color(0xFF606060) - grey text
+  final Color lightPurpleBackground; // Color(0xFFF1E6FD) - light background
+  final Color sectionCardBackground; // Color(0xFFF9F3FF) - section cards
+
+  const CustomColors({
+    required this.backgroundGradientLight,
+    required this.backgroundGradientLighter,
+    required this.backgroundGradientWhite,
+    required this.buttonGradientStart,
+    required this.buttonGradientEnd,
+    required this.containerBorderColor,
+    required this.purpleAccent,
+    required this.greyText,
+    required this.lightPurpleBackground,
+    required this.sectionCardBackground,
+  });
 
   @override
-  CustomColors copyWith({Color? containerBorderColor}) {
+  CustomColors copyWith({
+    Color? backgroundGradientLight,
+    Color? backgroundGradientLighter,
+    Color? backgroundGradientWhite,
+    Color? buttonGradientStart,
+    Color? buttonGradientEnd,
+    Color? containerBorderColor,
+    Color? purpleAccent,
+    Color? greyText,
+    Color? lightPurpleBackground,
+    Color? sectionCardBackground,
+  }) {
     return CustomColors(
+      backgroundGradientLight:
+          backgroundGradientLight ?? this.backgroundGradientLight,
+      backgroundGradientLighter:
+          backgroundGradientLighter ?? this.backgroundGradientLighter,
+      backgroundGradientWhite:
+          backgroundGradientWhite ?? this.backgroundGradientWhite,
+      buttonGradientStart: buttonGradientStart ?? this.buttonGradientStart,
+      buttonGradientEnd: buttonGradientEnd ?? this.buttonGradientEnd,
       containerBorderColor: containerBorderColor ?? this.containerBorderColor,
+      purpleAccent: purpleAccent ?? this.purpleAccent,
+      greyText: greyText ?? this.greyText,
+      lightPurpleBackground:
+          lightPurpleBackground ?? this.lightPurpleBackground,
+      sectionCardBackground:
+          sectionCardBackground ?? this.sectionCardBackground,
     );
   }
 
@@ -254,8 +318,24 @@ class CustomColors extends ThemeExtension<CustomColors> {
   CustomColors lerp(ThemeExtension<CustomColors>? other, double t) {
     if (other is! CustomColors) return this;
     return CustomColors(
+      backgroundGradientLight: Color.lerp(
+          backgroundGradientLight, other.backgroundGradientLight, t)!,
+      backgroundGradientLighter: Color.lerp(
+          backgroundGradientLighter, other.backgroundGradientLighter, t)!,
+      backgroundGradientWhite: Color.lerp(
+          backgroundGradientWhite, other.backgroundGradientWhite, t)!,
+      buttonGradientStart:
+          Color.lerp(buttonGradientStart, other.buttonGradientStart, t)!,
+      buttonGradientEnd:
+          Color.lerp(buttonGradientEnd, other.buttonGradientEnd, t)!,
       containerBorderColor:
           Color.lerp(containerBorderColor, other.containerBorderColor, t)!,
+      purpleAccent: Color.lerp(purpleAccent, other.purpleAccent, t)!,
+      greyText: Color.lerp(greyText, other.greyText, t)!,
+      lightPurpleBackground:
+          Color.lerp(lightPurpleBackground, other.lightPurpleBackground, t)!,
+      sectionCardBackground:
+          Color.lerp(sectionCardBackground, other.sectionCardBackground, t)!,
     );
   }
 }

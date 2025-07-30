@@ -1,24 +1,17 @@
-import 'package:aiwel/features/auth/presentation/screens/profile_screens/profile_screen.dart';
 import 'package:aiwel/features/auth/presentation/widgets/three_circle_conatiner.dart';
-import 'package:aiwel/features/home/home_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../components/buttons/label_button.dart';
 import '../../../../../components/constants.dart';
-import '../../../../../components/snackbars/custom_snackbar.dart';
 import '../../../../../components/snackbars/error_snackbar.dart';
 import '../../../../../components/text_widgets/text_widgets.dart';
-import '../../view_models/sign_in_viewModel.dart';
+import '../../view_models/profile_view_model.dart';
 import '../../widgets/back_button_widget.dart';
 import '../../widgets/selectable_listView.dart';
-import '../../widgets/slider_animation.dart';
-import '../otp_screen.dart';
-import '../signin_signup_screen.dart';
-import '../../../../../core/state/app_state_manager.dart';
 
 class WorkoutScreen extends StatelessWidget {
   static const String routeName = '/workoutScreen';
-  final SignInViewModelBase viewModelBase;
+  final ProfileViewModelBase viewModelBase;
 
   const WorkoutScreen({super.key, required this.viewModelBase});
 
@@ -27,28 +20,18 @@ class WorkoutScreen extends StatelessWidget {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
 
-    return StreamBuilder<SignInState>(
+    return StreamBuilder<ProfileState>(
       stream: viewModelBase.stateStream,
-      initialData: SignInState(status: SignInStatus.idle),
+      initialData: ProfileState(status: ProfileStatus.idle),
       builder: (context, snapshot) {
         final state = snapshot.data!;
         return Scaffold(
           body: SingleChildScrollView(
             child: Container(
               width: double.infinity,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFFE4D6FA), // light purple
-                    Color(0xFFF1EAFE), // even lighter
-                    Color(0xFFFFFFFF), // white middle
-                    Color(0xFFF1EAFE),
-                    Color(0xFFE4D6FA),
-                  ],
-                  stops: [0.0, 0.2, 0.5, 0.8, 1.0],
-                ),
+              decoration: BoxDecoration(
+                gradient:
+                    homeBackgroundGradient(context), // ✅ Now uses theme colors!
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),

@@ -6,40 +6,30 @@ import '../../../../../components/snackbars/custom_snackbar.dart';
 import '../../../../../components/snackbars/error_snackbar.dart';
 import '../../../../../components/text_widgets/text_widgets.dart';
 import '../../../../../components/textfields/simple_textfield.dart';
-import '../../view_models/sign_in_viewModel.dart';
+import '../../view_models/profile_view_model.dart';
 import '../signin_signup_screen.dart';
 import 'emotian_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   static const String routeName = '/profile';
-  final SignInViewModelBase viewModelBase;
+  final ProfileViewModelBase viewModelBase;
 
   const ProfileScreen({super.key, required this.viewModelBase});
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<SignInState>(
+    return StreamBuilder<ProfileState>(
       stream: viewModelBase.stateStream,
-      initialData: SignInState(status: SignInStatus.idle),
+      initialData: ProfileState(status: ProfileStatus.idle),
       builder: (context, snapshot) {
         final state = snapshot.data!;
         return Scaffold(
           body: Container(
             width: double.infinity,
             height: double.infinity,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFFE4D6FA),
-                  Color(0xFFF1EAFE),
-                  Color(0xFFFFFFFF),
-                  Color(0xFFF1EAFE),
-                  Color(0xFFE4D6FA),
-                ],
-                stops: [0.0, 0.2, 0.5, 0.8, 1.0],
-              ),
+            decoration: BoxDecoration(
+              gradient:
+                  homeBackgroundGradient(context), // ✅ Now uses theme colors!
             ),
             child: Padding(
               padding: const EdgeInsets.all(scaffoldPadding),
@@ -105,7 +95,9 @@ class ProfileScreen extends StatelessWidget {
                       letterSpacing: 0.1,
                       color: Colors.black, // Selected item text color
                     ),
-                    value: state.gender,
+                    value: (state.gender?.isEmpty ?? true)
+                        ? null
+                        : state.gender, // ✅ Fix: Handle empty string
                     items: ['Male', 'Female', 'Other']
                         .map((gender) => DropdownMenuItem(
                               value: gender,
@@ -159,11 +151,11 @@ class ProfileScreen extends StatelessWidget {
               }
               Navigator.pushNamed(
                 context,
-                EmotianScreen.routeName,
+                EmotionScreen.routeName,
                 arguments: {'viewModelBase': viewModelBase},
               );
             },
-            gradient: splashGradient(),
+            gradient: splashGradient(context), // ✅ Now uses theme colors!
             fontColor: Theme.of(context).primaryColorLight,
           ),
           floatingActionButtonLocation:

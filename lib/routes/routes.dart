@@ -28,26 +28,42 @@ import '../features/pal_creation/presentation/screens/add_pal_congratulations_sc
 
 Future<Widget> routeNavigator(String routeName,
     {Map<String, dynamic>? viewModels, Map<String, dynamic>? arguments}) async {
-  dynamic viewModel = arguments?['viewModelBase'] ??
-      viewModels?[routeName] ??
+  print("🧭 Navigating to route: '$routeName'");
+  print("📦 Arguments: $arguments");
+  print("🗂️ Available viewModels: ${viewModels?.keys.toList()}");
+
+  // Get appropriate ViewModels
+  dynamic authViewModel = arguments?['viewModelBase'] ??
+      viewModels?['AuthViewModel'] ??
       viewModels?[SigninSignupScreen.routeName];
+
+  dynamic profileViewModel = arguments?['viewModelBase'] ??
+      viewModels?['ProfileViewModel'] ??
+      viewModels?[ProfileScreen.routeName];
+
+  print("🔐 AuthViewModel: ${authViewModel != null ? 'OK' : 'NULL'}");
+  print("👤 ProfileViewModel: ${profileViewModel != null ? 'OK' : 'NULL'}");
+
   dynamic addPalVeiewModel = arguments?['viewModelBase'] ??
       viewModels?["AddPalViewModel"] ??
       viewModels?[AddPalProfileCreationScreen.routeName];
 
   switch (routeName) {
+    // Auth screens - use AuthViewModel
     case SigninSignupScreen.routeName:
-      return SigninSignupScreen(viewModelBase: viewModel);
+      return SigninSignupScreen(viewModelBase: authViewModel);
     case OtpScreen.routeName:
-      return OtpScreen(viewModelBase: viewModel);
-    case EmotianScreen.routeName:
-      return EmotianScreen(viewModelBase: viewModel);
+      return OtpScreen(viewModelBase: authViewModel);
+
+    // Profile screens - use ProfileViewModel
+    case EmotionScreen.routeName:
+      return EmotionScreen(viewModelBase: profileViewModel);
     case WorkoutScreen.routeName:
-      return WorkoutScreen(viewModelBase: viewModel);
+      return WorkoutScreen(viewModelBase: profileViewModel);
     case SleepQualityScreen.routeName:
-      return SleepQualityScreen(viewModelBase: viewModel);
+      return SleepQualityScreen(viewModelBase: profileViewModel);
     case ProfileScreen.routeName:
-      return ProfileScreen(viewModelBase: viewModel);
+      return ProfileScreen(viewModelBase: profileViewModel);
     case HomeScreen.routeName:
       return HomeScreen();
     case AddPalProfileCreationScreen.routeName:

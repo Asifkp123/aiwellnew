@@ -6,12 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import '../../../../components/snackbars/error_snackbar.dart';
 import '../../../../components/snackbars/success_snackbar.dart';
-import '../view_models/sign_in_viewModel.dart';
+import '../view_models/auth_view_model.dart';
 import 'otp_screen.dart';
 
 class SigninSignupScreen extends StatelessWidget {
   static const String routeName = '/signinSignup';
-  final SignInViewModelBase viewModelBase;
+  final AuthViewModelBase viewModelBase;
 
   const SigninSignupScreen({Key? key, required this.viewModelBase})
       : super(key: key);
@@ -45,9 +45,9 @@ class SigninSignupScreen extends StatelessWidget {
                 stops: [0.0, 0.2, 0.5, 0.8, 1.0],
               ),
             ),
-            child: StreamBuilder<SignInState>(
+            child: StreamBuilder<AuthState>(
               stream: viewModelBase.stateStream,
-              initialData: SignInState(status: SignInStatus.idle),
+              initialData: AuthState(status: AuthStatus.idle),
               builder: (context, snapshot) {
                 final state = snapshot.data!;
                 final isLoading = state.isLoading;

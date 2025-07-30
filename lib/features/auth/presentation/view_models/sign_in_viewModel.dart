@@ -339,7 +339,7 @@ class SignInViewModel implements SignInViewModelBase {
     } else if (result.appState is ProfileState) {
       Navigator.pushReplacementNamed(
         context,
-        ProfileScreen.routeName,
+          ProfileScreen.routeName,
         arguments: this, // Make sure ProfileScreen handles this correctly
       );
     } else {

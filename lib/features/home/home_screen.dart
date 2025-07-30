@@ -80,7 +80,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                       child:  Column(
                         children: [
-                          SizedBox(height: screenHeight * 0.05),
+                          SizedBox(height: screenHeight * 0.02),
 
                           // Medication Section
                           MeditationSection(context, screenWidth, screenHeight),

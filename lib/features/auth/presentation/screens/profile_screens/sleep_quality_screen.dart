@@ -35,7 +35,7 @@ class SleepQualityScreen extends StatelessWidget {
               width: double.infinity,
               decoration: BoxDecoration(
                 gradient:
-                    homeBackgroundGradient(context), // ✅ Now uses theme colors!
+                    homeBackgroundGradient(context),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -52,7 +52,7 @@ class SleepQualityScreen extends StatelessWidget {
                         CircleContainer(
                           filled: true,
                           onTap: () =>
-                              Navigator.pushNamed(context, '/emotianScreen'),
+                              Navigator.pushNamed(context, '/emotionScreen'),
                         ),
                         SizedBox(width: 5),
                         CircleContainer(

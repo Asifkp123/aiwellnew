@@ -49,7 +49,7 @@ class WorkoutScreen extends StatelessWidget {
                         CircleContainer(
                           filled: true,
                           onTap: () =>
-                              Navigator.pushNamed(context, '/emotianScreen'),
+                              Navigator.pushNamed(context, '/emotionScreen'),
                         ),
                         SizedBox(width: 5),
                         CircleContainer(

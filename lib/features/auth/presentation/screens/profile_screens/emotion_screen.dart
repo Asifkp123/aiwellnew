@@ -12,7 +12,7 @@ import '../../widgets/three_circle_conatiner.dart';
 import 'sleep_quality_screen.dart';
 
 class EmotionScreen extends StatelessWidget {
-  static const String routeName = '/emotianScreen';
+  static const String routeName = '/emotionScreen';
   final ProfileViewModelBase viewModelBase;
 
   const EmotionScreen({super.key, required this.viewModelBase});
@@ -71,13 +71,6 @@ class EmotionScreen extends StatelessWidget {
                       selectedValue: state.selectedMood,
                       onItemSelected: viewModelBase.selectMood,
                     ),
-                    // if (state.errorMessage != null) ...[
-                    //   const SizedBox(height: 16),
-                    //   Text(
-                    //     state.errorMessage!,
-                    //     style: TextStyle(color: Colors.red),
-                    //   ),
-                    // ],
                     SizedBox(height: 50),
                   ],
                 ),

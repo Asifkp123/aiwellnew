@@ -234,13 +234,7 @@ class ProfileViewModel implements ProfileViewModelBase {
       );
     }
 
-    // Ensure valid token before proceeding
-    if (!await _ensureValidToken()) {
-      return SubmitProfileResult(
-        error: _errorMessage ?? "Authentication failed",
-        appState: null,
-      );
-    }
+
 
     _status = ProfileStatus.loading;
     _emitState();

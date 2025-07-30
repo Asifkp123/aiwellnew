@@ -8,7 +8,7 @@ import '../../../../../components/text_widgets/text_widgets.dart';
 import '../../../../../components/textfields/simple_textfield.dart';
 import '../../view_models/profile_view_model.dart';
 import '../signin_signup_screen.dart';
-import 'emotian_screen.dart';
+import 'emotion_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   static const String routeName = '/profile';
@@ -136,10 +136,6 @@ class ProfileScreen extends StatelessWidget {
               if (viewModelBase.nameController.text.isEmpty ||
                   viewModelBase.dateOfBirthController.text.isEmpty ||
                   viewModelBase.genderController.text.isEmpty) {
-                // ScaffoldMessenger.of(context).showSnackBar(
-                //     errorSnackBarWidget( "Please fill in all fields to proceed.")
-                //  );
-
                 ScaffoldMessenger.of(context)!.showSnackBar(
                   commonSnackBarWidget(
                     content: "Please fill in all fields to proceed.",

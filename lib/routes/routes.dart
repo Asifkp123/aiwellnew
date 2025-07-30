@@ -6,7 +6,7 @@ import 'package:aiwel/features/medicine_reminder/di/medicine_injection.dart';
 import 'package:flutter/material.dart';
 
 import '../features/auth/presentation/screens/otp_screen.dart';
-import '../features/auth/presentation/screens/profile_screens/emotian_screen.dart';
+import '../features/auth/presentation/screens/profile_screens/emotion_screen.dart';
 import '../features/auth/presentation/screens/profile_screens/sleep_quality_screen.dart';
 import '../features/auth/presentation/screens/profile_screens/workout_screen.dart';
 import '../features/auth/presentation/screens/signin_signup_screen.dart';

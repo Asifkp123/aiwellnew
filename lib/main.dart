@@ -51,8 +51,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       scaffoldMessengerKey: rootScaffoldMessengerKey,
       navigatorKey: navigatorKey,
-      // home: SplashScreen(viewModels: viewModels),
-      home: ProfileScreen(viewModelBase: viewModels['ProfileViewModel'],),
+      home: SplashScreen(viewModels: viewModels),
+      // home: ProfileScreen(viewModelBase: viewModels['ProfileViewModel'],),
 
       onGenerateRoute: (RouteSettings routeSettings) => PageRouteBuilder<void>(
         settings: routeSettings,

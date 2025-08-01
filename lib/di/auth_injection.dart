@@ -57,15 +57,15 @@ class DependencyManager {
       // Initialize use cases
       final requestOtpUseCase = RequestOtpUseCase(repository: authRepository);
       final submitProfileUseCase =
-          SubmitProfileUseCase(authRepository: authRepository);
+      SubmitProfileUseCase(authRepository: authRepository);
       final verifyOtpUseCaseImpl = VerifyOtpUseCaseImpl(
         authRepository,
         tokenManager,
       );
       final getAccessTokenUseCase =
-          GetAccessTokenUseCase(authRepository: authRepository);
+      GetAccessTokenUseCase(authRepository: authRepository);
       final getAccessTokenExpiryUseCase =
-          GetAccessTokenExpiryUseCase(authRepository: authRepository);
+      GetAccessTokenExpiryUseCase(authRepository: authRepository);
 
       // Return SignInViewModel with all dependencies
       return SignInViewModel(
@@ -163,9 +163,9 @@ class DependencyManager {
 
       // Initialize use cases for profile
       final submitProfileUseCase =
-          SubmitProfileUseCase(authRepository: authRepository);
+      SubmitProfileUseCase(authRepository: authRepository);
       final getAccessTokenUseCase =
-          GetAccessTokenUseCase(authRepository: authRepository);
+      GetAccessTokenUseCase(authRepository: authRepository);
 
       // Return ProfileViewModel with dependencies
       return ProfileViewModel(

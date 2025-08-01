@@ -8,7 +8,7 @@ import 'features/auth/presentation/screens/splash_screen.dart';
 import 'features/auth/presentation/screens/signin_signup_screen.dart';
 import 'features/auth/presentation/screens/profile_screens/profile_screen.dart';
 import 'features/home/home_screen.dart';
-import 'features/medicine_reminder/presentation/screens/medicine_reminder_screen.dart';
+import 'features/patient/di/patient_injection.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,6 +20,8 @@ Future<void> main() async {
     final profileViewModel = await DependencyManager.createProfileViewModel();
     final addPalViewModel = await DependencyManager.createAddPalViewModel();
     final splashViewModel = await DependencyManager.createSplashViewModel();
+    final patientViewModel =
+        await PatientDependencyManager.createPatientViewModel();
 
     runApp(MyApp(
       viewModels: {
@@ -29,6 +31,7 @@ Future<void> main() async {
         'ProfileViewModel': profileViewModel,
         'AddPalViewModel': addPalViewModel,
         'SplashViewModel': splashViewModel,
+        'PatientViewModel': patientViewModel,
       },
     ));
   } catch (e) {
@@ -52,7 +55,6 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       scaffoldMessengerKey: rootScaffoldMessengerKey,
       navigatorKey: navigatorKey,
-      // home: MedicineReminderScreen(),
       home: SplashScreen(viewModels: viewModels),
       // home: ProfileScreen(viewModelBase: viewModels['ProfileViewModel'],),
 
@@ -68,7 +70,9 @@ class MyApp extends StatelessWidget {
                 return SplashScreen(viewModels: viewModels);
               }
               if (snapshot.hasError) {
-
+                print(
+                    "❌ Route error for '${routeSettings.name}': ${snapshot.error}");
+                print("📍 Available viewModels: ${viewModels.keys.toList()}");
                 return Scaffold(
                   body: Center(
                     child: Column(

@@ -3,6 +3,7 @@ import 'package:aiwel/features/home/home_screen.dart';
 import 'package:aiwel/features/pal_creation/presentation/screens/add_pal_completion_congrats_screen.dart';
 import 'package:aiwel/features/medicine_reminder/presentation/screens/medicine_reminder_screen.dart';
 import 'package:aiwel/features/medicine_reminder/di/medicine_injection.dart';
+import 'package:aiwel/features/patient/presentation/view_models/patient_view_model.dart';
 import 'package:flutter/material.dart';
 
 import '../features/auth/presentation/screens/otp_screen.dart';
@@ -48,6 +49,10 @@ Future<Widget> routeNavigator(String routeName,
       viewModels?["AddPalViewModel"] ??
       viewModels?[AddPalProfileCreationScreen.routeName];
 
+  PatientViewModel? patientViewModel =
+      viewModels?['PatientViewModel'] as PatientViewModel?;
+  print("🏥 PatientViewModel: ${patientViewModel != null ? 'OK' : 'NULL'}");
+
   switch (routeName) {
     // Auth screens - use AuthViewModel
     case SigninSignupScreen.routeName:
@@ -65,7 +70,7 @@ Future<Widget> routeNavigator(String routeName,
     case ProfileScreen.routeName:
       return ProfileScreen(viewModelBase: profileViewModel);
     case HomeScreen.routeName:
-      return HomeScreen();
+      return HomeScreen(patientViewModel: patientViewModel);
     case AddPalProfileCreationScreen.routeName:
       return AddPalProfileCreationScreen(viewModelBase: addPalVeiewModel);
     case AddPalSplashScreen.routeName:

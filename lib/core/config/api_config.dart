@@ -9,6 +9,7 @@ class ApiConfig {
   static const String profileEndpoint = '$baseUrl/profile';
   static const String refreshTokenEndpoint = '$baseUrl/refresh_token';
   static const String patientCreationEndPoint = '$baseUrl/patient';
+  static const String patientListEndpoint = '$baseUrl/patient';
 
   static Map<String, String> get defaultHeaders => {
         'Content-Type': 'application/json',

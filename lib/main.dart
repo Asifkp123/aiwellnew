@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 import 'app.dart';
 import 'components/theme/light_theme.dart';
 import 'core/state/app_state_manager.dart';
+import 'core/managers/credit_manager.dart';
 import 'di/auth_injection.dart';
 import 'features/auth/presentation/screens/splash_screen.dart';
 import 'features/auth/presentation/screens/signin_signup_screen.dart';
 import 'features/auth/presentation/screens/profile_screens/profile_screen.dart';
-import 'features/home/home_screen.dart';
 import 'features/patient/di/patient_injection.dart';
+import 'features/logs/di/logs_injection.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,12 +17,16 @@ Future<void> main() async {
   try {
     await AppStateManager.instance.restoreAppState();
 
+    // Initialize credit manager with default credits (can be updated from user profile later)
+    CreditManager.instance.setTotalCredits(120);
+
     final authViewModel = await DependencyManager.createAuthViewModel();
     final profileViewModel = await DependencyManager.createProfileViewModel();
     final addPalViewModel = await DependencyManager.createAddPalViewModel();
     final splashViewModel = await DependencyManager.createSplashViewModel();
     final patientViewModel =
         await PatientDependencyManager.createPatientViewModel();
+    final logsViewModel = await LogsDependencyManager.createLogsViewModel();
 
     runApp(MyApp(
       viewModels: {
@@ -32,6 +37,7 @@ Future<void> main() async {
         'AddPalViewModel': addPalViewModel,
         'SplashViewModel': splashViewModel,
         'PatientViewModel': patientViewModel,
+        'LogsViewModel': logsViewModel,
       },
     ));
   } catch (e) {

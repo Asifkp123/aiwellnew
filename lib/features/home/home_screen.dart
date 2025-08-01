@@ -11,14 +11,18 @@ import 'package:aiwel/components/text_widgets/text_widgets.dart';
 import 'package:aiwel/features/patient/presentation/view_models/patient_view_model.dart';
 import 'package:aiwel/features/patient/domain/entities/patient.dart';
 import 'package:aiwel/features/pal_creation/presentation/screens/add_pal_splash_screen.dart';
+import 'package:aiwel/features/logs/presentation/view_models/logs_view_model.dart';
+import 'package:aiwel/features/logs/presentation/widgets/credit_display_widget.dart';
+import 'package:aiwel/features/logs/presentation/widgets/mood_selection_bottom_sheet.dart';
 
 import 'package:aiwel/features/medicine_reminder/presentation/screens/medicine_reminder_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   static const String routeName = '/homeScreen';
   final PatientViewModel? patientViewModel;
+  final LogsViewModel? logsViewModel;
 
-  const HomeScreen({super.key, this.patientViewModel});
+  const HomeScreen({super.key, this.patientViewModel, this.logsViewModel});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -28,9 +32,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Load patients when home screen initializes
-    print("🏠 HomeScreen initState called");
-    print("🏥 PatientViewModel available: ${widget.patientViewModel != null}");
+
+
     widget.patientViewModel?.loadPatients();
   }
 
@@ -147,12 +150,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 height: 16,
               ),
               const SizedBox(width: 4),
-              const Text(
-                '120',
-                style: TextStyle(
-                  color: Color(0xFF8E2EFF), // Purple
-                  fontWeight: FontWeight.bold,
-                ),
+              CreditDisplayWidget(
+                fontSize: 14,
+                showIcon: false,
+                textColor: const Color(0xFF8E2EFF), // Purple
               ),
             ],
           ),
@@ -182,17 +183,36 @@ class _HomeScreenState extends State<HomeScreen> {
             Row(
               children: [
                 Expanded(
-                  child: TrackingCardWidget(
-                    icon: null, // No icon for regular content
-                    title: "Mood",
-                    subtitle: "How are you feeling today?",
-                    points: "05",
-                    screenWidth: screenWidth,
-                    screenHeight: screenHeight,
-                    onAddPressed: () {
-                      // Handle mood tracking
-                    },
-                  ),
+                  child: widget.logsViewModel != null
+                      ? StreamBuilder<LogsState>(
+                          stream: widget.logsViewModel!.stateStream,
+                          builder: (context, snapshot) {
+                            final state = snapshot.data;
+                            final todayMoodLogs = _getTodayMoodCount(state);
+
+                            return TrackingCardWidget(
+                              icon: null, // No icon for regular content
+                              title: "Mood",
+                              subtitle: "How are you feeling today?",
+                              points: todayMoodLogs
+                                  .toString()
+                                  .padLeft(2, '0'), // Dynamic points!
+                              screenWidth: screenWidth,
+                              screenHeight: screenHeight,
+                              onAddPressed: () => _showMoodSelection(context),
+                            );
+                          },
+                        )
+                      : TrackingCardWidget(
+                          icon: null,
+                          title: "Mood",
+                          subtitle: "How are you feeling today?",
+                          points: "00",
+                          screenWidth: screenWidth,
+                          screenHeight: screenHeight,
+                          onAddPressed: () =>
+                              print('❌ LogsViewModel not available'),
+                        ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -905,5 +925,39 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  // Helper method to show mood selection bottom sheet
+  void _showMoodSelection(BuildContext context) {
+    if (widget.logsViewModel != null) {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) => MoodSelectionBottomSheet(
+          logsViewModel: widget.logsViewModel!,
+          onMoodSelected: (mood) {
+          },
+        ),
+      );
+    } else {
+      print('❌ LogsViewModel not available');
+    }
+  }
+
+  // Helper method to get today's mood count for dynamic points display
+  int _getTodayMoodCount(LogsState? state) {
+    // For now, return a simple count based on logged moods today
+    // You can enhance this by:
+    // 1. Adding a counter to LogsState
+    // 2. Persisting daily counts in local storage
+    // 3. Fetching today's logs from API
+
+    if (state?.status == LogsStatus.success && state?.selectedMood != null) {
+      // Simple logic: if mood was logged today, show 1, otherwise 0
+      // In real implementation, you'd track multiple logs per day
+      return 1;
+    }
+    return 0;
   }
 }

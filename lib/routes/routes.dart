@@ -2,7 +2,6 @@ import 'package:aiwel/features/auth/presentation/screens/profile_screens/profile
 import 'package:aiwel/features/home/home_screen.dart';
 import 'package:aiwel/features/pal_creation/presentation/screens/add_pal_completion_congrats_screen.dart';
 import 'package:aiwel/features/medicine_reminder/presentation/screens/medicine_reminder_screen.dart';
-import 'package:aiwel/features/medicine_reminder/di/medicine_injection.dart';
 import 'package:aiwel/features/patient/presentation/view_models/patient_view_model.dart';
 import 'package:flutter/material.dart';
 
@@ -25,7 +24,6 @@ import '../features/pal_creation/presentation/screens/add_pal_sensitive_rest_les
 import '../features/pal_creation/presentation/screens/add_pal_sleep_pattern_screen.dart';
 import '../features/pal_creation/presentation/screens/add_pal_sleepbeen_screen.dart';
 import '../features/pal_creation/presentation/screens/add_pal_splash_screen.dart';
-import '../features/pal_creation/presentation/screens/add_pal_congratulations_screen.dart';
 
 Future<Widget> routeNavigator(String routeName,
     {Map<String, dynamic>? viewModels, Map<String, dynamic>? arguments}) async {
@@ -53,6 +51,9 @@ Future<Widget> routeNavigator(String routeName,
       viewModels?['PatientViewModel'] as PatientViewModel?;
   print("🏥 PatientViewModel: ${patientViewModel != null ? 'OK' : 'NULL'}");
 
+  dynamic logsViewModel = viewModels?['LogsViewModel'];
+  print("📝 LogsViewModel: ${logsViewModel != null ? 'OK' : 'NULL'}");
+
   switch (routeName) {
     // Auth screens - use AuthViewModel
     case SigninSignupScreen.routeName:
@@ -70,7 +71,10 @@ Future<Widget> routeNavigator(String routeName,
     case ProfileScreen.routeName:
       return ProfileScreen(viewModelBase: profileViewModel);
     case HomeScreen.routeName:
-      return HomeScreen(patientViewModel: patientViewModel);
+      return HomeScreen(
+        patientViewModel: patientViewModel,
+        logsViewModel: logsViewModel,
+      );
     case AddPalProfileCreationScreen.routeName:
       return AddPalProfileCreationScreen(viewModelBase: addPalVeiewModel);
     case AddPalSplashScreen.routeName:

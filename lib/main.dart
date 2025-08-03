@@ -18,7 +18,7 @@ Future<void> main() async {
     await AppStateManager.instance.restoreAppState();
 
     // Initialize credit manager with default credits (can be updated from user profile later)
-    CreditManager.instance.setTotalCredits(120);
+    // CreditManager.instance.setTotalCredits(120);
 
     final authViewModel = await DependencyManager.createAuthViewModel();
     final profileViewModel = await DependencyManager.createProfileViewModel();

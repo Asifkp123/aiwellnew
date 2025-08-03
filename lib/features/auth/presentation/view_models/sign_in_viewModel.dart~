@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:ffi';
 import 'package:aiwel/features/auth/domain/usecases/get_access_token_expiry_use_case.dart';
+import 'package:aiwel/features/auth/presentation/screens/profile_screens/profile_screen.dart';
+import 'package:aiwel/features/home/home_screen.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -8,6 +10,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/constants/strings.dart';
 import '../../../../core/network/error/failure.dart';
+import '../../../../core/state/app_state_manager.dart';
 import '../../data/datasources/local/auth_local_datasource.dart';
 import '../../data/datasources/remote/auth_remote_datasource.dart';
 import '../../data/models/api/otp_request_success.dart';
@@ -18,6 +21,13 @@ import '../../domain/usecases/refresh_token_use_case.dart';
 import '../../domain/usecases/request_otp_use_case.dart';
 import '../../domain/usecases/submit_profile_use_case.dart';
 import '../../domain/usecases/verify_otp_use_case.dart';
+import '../../domain/usecases/check_auth_status_use_case.dart';
+import '../../data/models/api/submit_profile_response.dart';
+import '../../domain/entities/otp_verification.dart';
+import '../screens/signin_signup_screen.dart';
+import '../screens/otp_screen.dart';
+import '../../../home/home_screen.dart';
+import '../../../../../components/snackbars/custom_snackbar.dart';
 
 // Enum for sign-in status
 enum SignInStatus { idle, loading, otpSent, verifyingOtp, success, error }
@@ -50,8 +60,12 @@ class SignInState {
     this.gender,
   });
 
-  bool get isLoading => status == SignInStatus.loading || status == SignInStatus.verifyingOtp;
-  bool get isOtpSent => status == SignInStatus.otpSent || status == SignInStatus.verifyingOtp || status == SignInStatus.success;
+  bool get isLoading =>
+      status == SignInStatus.loading || status == SignInStatus.verifyingOtp;
+  bool get isOtpSent =>
+      status == SignInStatus.otpSent ||
+      status == SignInStatus.verifyingOtp ||
+      status == SignInStatus.success;
 }
 
 // Abstract interface for the SignInViewModel
@@ -65,8 +79,9 @@ abstract class SignInViewModelBase {
 
   Stream<SignInState> get stateStream;
   Future<Either<Failure, OtpRequestSuccess>> requestOtp();
-  Future<Either<Failure, VerifyOtpResponse>> verifyOtp();
-  Future<Either<Failure, bool>> submitProfile();
+  Future<void> requestOtpWithNavigation(BuildContext context);
+  Future<void> verifyOtp(BuildContext context);
+  Future<SubmitProfileResult> submitProfile(BuildContext context);
   void clearInputs();
   void clearError();
   void dispose();
@@ -92,13 +107,12 @@ abstract class SignInViewModelBase {
 // ViewModel for the sign-in feature
 class SignInViewModel implements SignInViewModelBase {
   final RequestOtpUseCase requestOtpUseCase;
-  final VerifyOtpUseCaseBase verifyOtpUseCaseBase;
+  final VerifyOtpUseCase verifyOtpUseCaseBase;
   final SubmitProfileUseCaseBase submitProfileUseCaseBase;
   final AuthLocalDataSourceImpl authLocalDataSourceImpl;
   final GetAccessTokenUseCase getAccessTokenUseCase;
   final GetAccessTokenExpiryUseCase getAccessTokenExpiryUseCase;
   final RefreshTokenUseCase refreshUseCase;
-
 
   // Controllers for input fields
   final TextEditingController _emailController = TextEditingController();
@@ -109,7 +123,8 @@ class SignInViewModel implements SignInViewModelBase {
   final TextEditingController _genderController = TextEditingController();
 
   // StreamController to emit state changes
-  final StreamController<SignInState> _stateController = StreamController<SignInState>.broadcast();
+  final StreamController<SignInState> _stateController =
+      StreamController<SignInState>.broadcast();
 
   // Current state variables
   SignInStatus _status = SignInStatus.idle;
@@ -129,16 +144,35 @@ class SignInViewModel implements SignInViewModelBase {
 
   // Mood, sleep, and workout options
   final List<String> moodOptions = [
-    'Happy', 'Sad', 'Angry', 'Anxious', 'Calm', 'Confused', 'Tired', 'Excited'
+    'Happy',
+    'Sad',
+    'Angry',
+    'Anxious',
+    'Calm',
+    'Confused',
+    'Tired',
+    'Excited'
   ];
   final List<String> sleepOptions = ['Excellent', 'Good', 'Fair', 'Poor'];
   final List<String> workoutOptions = ['Excellent', 'Good', 'Average', 'Poor'];
 
   final List<String> displayedMoods = [
-    'Happy', 'Sad', 'Angry', 'Anxious', 'Calm', 'Confused', 'Tired', 'Excited'
+    'Happy',
+    'Sad',
+    'Angry',
+    'Anxious',
+    'Calm',
+    'Confused',
+    'Tired',
+    'Excited'
   ];
   final List<String> displayedSleeps = ['Excellent', 'Good', 'Fair', 'Poor'];
-  final List<String> displayedWorkouts = ['Excellent', 'Good', 'Average', 'Poor'];
+  final List<String> displayedWorkouts = [
+    'Excellent',
+    'Good',
+    'Average',
+    'Poor'
+  ];
 
   // Flags to prevent multiple animation calls
   bool _moodAnimationStarted = false;
@@ -201,10 +235,13 @@ class SignInViewModel implements SignInViewModelBase {
       return Left(Failure(_errorMessage!));
     }
 
-    final isEmail = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(identifier);
+    final isEmail =
+        RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(identifier);
+    print(identifier);
+
     final isPhone = RegExp(r'^\+?[1-9]\d{9,14}$').hasMatch(identifier);
     if (!isEmail && !isPhone) {
-      _errorMessage = Strings.invalidEmailMessage;
+      print(_errorMessage);
       _status = SignInStatus.error;
       _emitState();
       return Left(Failure(_errorMessage!));
@@ -220,107 +257,116 @@ class SignInViewModel implements SignInViewModelBase {
     );
 
     return result.fold(
-          (failure) {
+      (failure) {
         _errorMessage = failure.message;
         _status = SignInStatus.error;
         _emitState();
         return Left(failure);
       },
-          (success) {
+      (success) {
         _otpController.clear();
         _status = SignInStatus.otpSent;
         _feedbackMessage = "OTP sent successfully!";
         startCountdown();
         _emitState();
+
         return Right(success);
       },
     );
   }
+
   @override
-  Future<Either<Failure, VerifyOtpResponse>> verifyOtp() async {
+  Future<void> requestOtpWithNavigation(BuildContext context) async {
+    final result = await requestOtp();
+
+    result.fold(
+      (failure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          commonSnackBarWidget(
+            content: failure.message,
+            type: SnackBarType.error,
+          ),
+        );
+      },
+      (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          commonSnackBarWidget(
+            content: "OTP sent successfully!",
+            type: SnackBarType.message,
+          ),
+        );
+
+        // Navigate to OTP screen
+        Navigator.pushNamed(
+          context,
+          OtpScreen.routeName,
+          arguments: {'viewModelBase': this},
+        );
+      },
+    );
+  }
+
+  Future<void> verifyOtp(BuildContext context) async {
     final otp = _otpController.text.trim();
     if (otp.isEmpty) {
       _errorMessage = Strings.emptyOtpMessage;
       _status = SignInStatus.error;
       _emitState();
-      return Left(Failure(_errorMessage!));
+      return;
     }
-
-    if (otp.length != 6) {
-      _errorMessage = Strings.invalidOtpMessage;
-      _status = SignInStatus.error;
-      _emitState();
-      return Left(Failure(_errorMessage!));
-    }
-
     _status = SignInStatus.verifyingOtp;
-    _errorMessage = null;
     _emitState();
 
-    try {
-      final response = await verifyOtpUseCaseBase.execute(
+    final result = await verifyOtpUseCaseBase.execute(
+      VerifyOtpParams(
         _emailController.text.trim(),
         otp,
-      );
-      return response.fold(
-            (failure) {
-          _errorMessage = failure.message.isNotEmpty
-              ? failure.message
-              : Strings.failedOtpVerificationMessage;
-          _status = SignInStatus.error;
-          _emitState();
-          return Left(failure);
-        },
-            (success) async {
-          if (success is TokenResponse) {
-            if (success.accessToken.isEmpty || success.refreshToken.isEmpty) {
-              _errorMessage = Strings.tokenNotFoundMessage;
-              _status = SignInStatus.error;
-              _emitState();
-              return Left(Failure(_errorMessage!));
-            }
-            await authLocalDataSourceImpl.saveTokens(
-              accessToken: success.accessToken,
-              accessTokenExpiry: success.accessTokenExpiry,
-              refreshToken: success.refreshToken,
-              refreshTokenExpiry: success.refreshTokenExpiry,
-            );
-            _status = SignInStatus.success;
-            _feedbackMessage = "Sign-in successful!";
-            _token = success.accessToken;
-            resetCountdown();
-            _emitState();
-            clearInputs();
-            return Right(success);
-          } else {
-            _errorMessage = Strings.tokenNotFoundMessage;
-            _status = SignInStatus.error;
-            _emitState();
-            return Left(Failure(_errorMessage!));
-          }
-        },
-      );
-    } catch (e) {
-      _errorMessage = Strings.failedOtpVerificationMessage;
+      ),
+    );
+    if (result.error != null) {
+      _errorMessage = result.error;
       _status = SignInStatus.error;
       _emitState();
-      return Left(Failure(_errorMessage!));
+      return;
+    }
+
+    _status = SignInStatus.success;
+    _feedbackMessage = result.successMessage;
+    _emitState();
+
+    if (result.appState is HomeState) {
+      Navigator.pushReplacementNamed(context, HomeScreen.routeName);
+    } else if (result.appState is ProfileState) {
+      Navigator.pushReplacementNamed(
+        context,
+        ProfileScreen.routeName,
+        arguments: this, // Make sure ProfileScreen handles this correctly
+      );
+    } else {
+      _status = SignInStatus.error;
+      _errorMessage = "Unknown navigation state.";
+      _emitState();
     }
   }
 
-
   @override
-  Future<Either<Failure, bool>> submitProfile() async {
+  Future<SubmitProfileResult> submitProfile(BuildContext context) async {
     if (!validateProfile()) {
       _errorMessage = Strings.invalidProfileMessage;
       _status = SignInStatus.error;
       _emitState();
-      return Left(Failure(_errorMessage!));
+      return SubmitProfileResult(
+        error: _errorMessage,
+        appState: null,
+      );
     }
 
     // Ensure valid token before proceeding
     if (!await _ensureValidToken()) {
-      return Left(Failure(_errorMessage ?? Strings.noTokenAvailable));
+      return SubmitProfileResult(
+        error: _errorMessage ?? Strings.noTokenAvailable,
+        appState: null,
+      );
     }
 
     _status = SignInStatus.loading;
@@ -328,13 +374,17 @@ class SignInViewModel implements SignInViewModelBase {
 
     String formattedDate;
     try {
-      DateTime parsedDate = DateFormat('dd-MM-yyyy').parse(_dateOfBirthController.text.trim());
+      DateTime parsedDate =
+          DateFormat('dd-MM-yyyy').parse(_dateOfBirthController.text.trim());
       formattedDate = DateFormat('yyyy-MM-dd').format(parsedDate);
     } catch (e) {
       _errorMessage = Strings.invalidDateFormatMessage;
       _status = SignInStatus.error;
       _emitState();
-      return Left(Failure(_errorMessage!));
+      return SubmitProfileResult(
+        error: _errorMessage,
+        appState: null,
+      );
     }
 
     final result = await submitProfileUseCaseBase.execute(
@@ -347,20 +397,31 @@ class SignInViewModel implements SignInViewModelBase {
       physicalActivity: _selectedWorkout?.toLowerCase() ?? '',
     );
 
-    return result.fold(
-          (failure) {
-        _errorMessage = failure.message;
-        _status = SignInStatus.error;
-        _emitState();
-        return Left(failure);
-      },
-          (success) {
-        _status = SignInStatus.success;
-        _feedbackMessage = success ? "Profile submitted successfully!" : "Profile submission failed.";
-        _emitState();
-        return Right(success);
-      },
-    );
+    // Handle the result with navigation and snackbar
+    if (result.error != null) {
+      // Show error snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        commonSnackBarWidget(
+          content: result.error!,
+          type: SnackBarType.error,
+        ),
+      );
+    } else if (result.successMessage != null) {
+      // Show success snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        commonSnackBarWidget(
+          content: result.successMessage!,
+          type: SnackBarType.message,
+        ),
+      );
+
+      // Navigate to HomeScreen if appState is HomeState
+      if (result.appState is HomeState) {
+        Navigator.pushReplacementNamed(context, HomeScreen.routeName);
+      }
+    }
+
+    return result;
   }
 
   @override
@@ -385,109 +446,84 @@ class SignInViewModel implements SignInViewModelBase {
   }
 
   Future<bool> _ensureValidToken() async {
-
-
-
-    String? accessToken;
-    int? accessTokenExpiry;
-
-    // Handle access token
-    final accessTokenResult = await getAccessTokenUseCase.execute();
-    final tokenSuccess = accessTokenResult.fold(
-          (failure) {
+    final result = await getAccessTokenUseCase.execute();
+    return result.fold(
+      (failure) async {
         _errorMessage = failure.message;
         _status = SignInStatus.error;
         _emitState();
+        await logout();
         return false;
       },
-          (value) {
-        accessToken = value;
-        return true;
-      },
-    );
+      (tokenData) async {
+        final accessToken = tokenData.$1;
+        final accessTokenExpiry = tokenData.$2;
 
-    if (!tokenSuccess) {
-      await logout();
-      return false;
-    }
-
-    // Handle access token expiry
-    final accessTokenExpiryResult = await getAccessTokenExpiryUseCase.execute();
-    final expirySuccess = accessTokenExpiryResult.fold(
-          (failure) {
-        _errorMessage = failure.message;
-        _status = SignInStatus.error;
-        _emitState();
-        return false;
-      },
-          (value) {
-        accessTokenExpiry = value;
-        return true;
-      },
-    );
-
-    if (!expirySuccess) {
-      await logout();
-      return false;
-    }
-
-    if (accessToken == null || accessTokenExpiry == null) {
-      _errorMessage = Strings.noTokenAvailable;
-      _status = SignInStatus.error;
-      _emitState();
-      await logout();
-      return false;
-    }
-
-    final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    // const buffer = 300; // 5-minute buffer before expiry
-
-    if (currentTime >= accessTokenExpiry! ) {
-
-      final refreshResult = await refreshUseCase.execute();
-      return refreshResult.fold(
-            (failure) {
-          _errorMessage = failure.message;
+        if (accessToken == null || accessTokenExpiry == null) {
+          _errorMessage = Strings.noTokenAvailable;
           _status = SignInStatus.error;
           _emitState();
+          await logout();
           return false;
-        },
-            (success) async {
-          if (!success) {
-            _errorMessage = Strings.noTokenAfterRefresh;
-            _status = SignInStatus.error;
-            _emitState();
-            await logout();
-            return false;
-          }
-          final newAccessTokenResult = await getAccessTokenUseCase.execute();
-          return newAccessTokenResult.fold(
-                (failure) async {
+        }
+
+        final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+        const buffer = 300; // 5-minute buffer before expiry
+
+        if (currentTime >= accessTokenExpiry - buffer) {
+          // final refreshUseCase = RefreshTokenUseCase(
+          //   authRemoteDataSource: AuthRemoteDataSourceImpl(authLocalDataSource: authLocalDataSourceImpl),
+          //   authLocalDataSource: authLocalDataSourceImpl,
+          // );
+          final refreshResult = await refreshUseCase.execute();
+          return refreshResult.fold(
+            (failure) {
               _errorMessage = failure.message;
               _status = SignInStatus.error;
               _emitState();
-              await logout();
               return false;
             },
-                (newAccessToken) async {
-              if (newAccessToken == null) {
+            (success) async {
+              if (!success) {
                 _errorMessage = Strings.noTokenAfterRefresh;
                 _status = SignInStatus.error;
                 _emitState();
                 await logout();
                 return false;
               }
-              _token = newAccessToken;
-              return true;
+              final newAccessTokenResult =
+                  await getAccessTokenUseCase.execute();
+              return newAccessTokenResult.fold(
+                (failure) async {
+                  _errorMessage = failure.message;
+                  _status = SignInStatus.error;
+                  _emitState();
+                  await logout();
+                  return false;
+                },
+                (newTokenData) async {
+                  final newAccessToken = newTokenData.$1;
+                  if (newAccessToken == null) {
+                    _errorMessage = Strings.noTokenAfterRefresh;
+                    _status = SignInStatus.error;
+                    _emitState();
+                    await logout();
+                    return false;
+                  }
+                  _token = newAccessToken;
+                  return true;
+                },
+              );
             },
           );
-        },
-      );
-    }
+        }
 
-    _token = accessToken;
-    return true;
+        _token = accessToken;
+        return true;
+      },
+    );
   }
+
   @override
   Future<void> logout() async {
     await authLocalDataSourceImpl.clearTokens();
@@ -504,7 +540,9 @@ class SignInViewModel implements SignInViewModelBase {
         _lastNameController.text.trim().isNotEmpty &&
         _dateOfBirthController.text.trim().isNotEmpty &&
         _genderController.text.trim().isNotEmpty &&
-        (_selectedMood != null || _selectedSleep != null || _selectedWorkout != null);
+        (_selectedMood != null ||
+            _selectedSleep != null ||
+            _selectedWorkout != null);
   }
 
   @override
@@ -607,7 +645,8 @@ class SignInViewModel implements SignInViewModelBase {
   }
 
   @override
-  void startAnimationForWorkout(GlobalKey<AnimatedListState> workoutListKey) async {
+  void startAnimationForWorkout(
+      GlobalKey<AnimatedListState> workoutListKey) async {
     if (_workoutAnimationStarted) return;
     _workoutAnimationStarted = true;
     displayedWorkouts.clear();

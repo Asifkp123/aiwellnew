@@ -40,19 +40,8 @@ class _AddPalDiscomfortOrPainScreenState
           body: SingleChildScrollView(
             child: Container(
               width: double.infinity,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFFE4D6FA),
-                    Color(0xFFF1EAFE),
-                    Color(0xFFFFFFFF),
-                    Color(0xFFF1EAFE),
-                    Color(0xFFE4D6FA),
-                  ],
-                  stops: [0.0, 0.2, 0.5, 0.8, 1.0],
-                ),
+              decoration: BoxDecoration(
+                gradient: homeBackgroundGradient(context),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),

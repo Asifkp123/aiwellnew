@@ -1,0 +1,41 @@
+import 'package:flutter/material.dart';
+
+class UserInfoCard extends StatelessWidget {
+  const UserInfoCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: const [
+        InfoRow(label: 'Name', value: 'Arjun Das'),
+        SizedBox(height: 16),
+        InfoRow(label: 'Date of Birth', value: '14-07-1992'),
+        SizedBox(height: 16),
+        InfoRow(label: 'Gender', value: 'Male'),
+      ],
+    );
+  }
+}
+
+class InfoRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const InfoRow({
+    super.key,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Sixteen400GreyText(label),
+        Sixteen400BlackText(value),
+      ],
+    );
+  }
+}

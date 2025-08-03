@@ -16,6 +16,7 @@ import 'package:aiwel/features/logs/presentation/widgets/credit_display_widget.d
 import 'package:aiwel/features/logs/presentation/widgets/mood_selection_bottom_sheet.dart';
 import 'package:aiwel/features/logs/presentation/widgets/workout_selection_bottom_sheet.dart';
 import 'package:aiwel/features/logs/presentation/widgets/sleep_selection_bottom_sheet.dart';
+import 'package:aiwel/features/credit/presentation/view_models/credit_view_model.dart';
 
 import 'package:aiwel/features/medicine_reminder/presentation/screens/medicine_reminder_screen.dart';
 
@@ -25,8 +26,14 @@ class HomeScreen extends StatefulWidget {
   static const String routeName = '/homeScreen';
   final PatientViewModel? patientViewModel;
   final LogsViewModel? logsViewModel;
+  final CreditViewModel? creditViewModel; // ← ADD THIS
 
-  const HomeScreen({super.key, this.patientViewModel, this.logsViewModel});
+  const HomeScreen({
+    super.key,
+    this.patientViewModel,
+    this.logsViewModel,
+    this.creditViewModel, // ← ADD THIS
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -37,7 +44,11 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
+    // Your existing calls
     widget.patientViewModel?.loadPatients();
+
+    // ADD THIS - Load credits when home screen loads
+    widget.creditViewModel?.loadCredits();
   }
 
   @override
@@ -157,6 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 fontSize: 14,
                 showIcon: false,
                 textColor: const Color(0xFF8E2EFF), // Purple
+                creditViewModel: widget.creditViewModel, // ← ADD THIS
               ),
             ],
           ),
@@ -940,10 +952,10 @@ class _HomeScreenState extends State<HomeScreen> {
         // builder: (context) => MoodSelectionBottomSheet(
         //   logsViewModel: widget.logsViewModel!,
         //   onMoodSelected: (mood) {},
-        // ),
+        // ), v
         builder: (context) => MoodTrackerScreen(
-            logsViewModel: widget.logsViewModel!,
-            onMoodSelected: (mood) {},
+          logsViewModel: widget.logsViewModel!,
+          onMoodSelected: (mood) {},
         ),
       );
     } else {

@@ -4,7 +4,8 @@ import 'package:google_fonts/google_fonts.dart'; // Import google_fonts
 final ThemeData lightTheme = ThemeData(
   primaryColorLight: const Color(0xFFFFFFFF), // <-- Add this line
 
-  fontFamily: GoogleFonts.poppins().fontFamily, // Set Poppins as the default font family
+  fontFamily: GoogleFonts.poppins()
+      .fontFamily, // Set Poppins as the default font family
   primaryColor: const Color(0xFF6A1B9A),
   colorScheme: ColorScheme(
     brightness: Brightness.light,
@@ -29,10 +30,12 @@ final ThemeData lightTheme = ThemeData(
   dividerColor: const Color(0xFFEDEEF3),
   highlightColor: Colors.transparent,
   splashColor: Colors.transparent,
+  disabledColor: const Color(0xFF000000),
   scaffoldBackgroundColor: const Color(0xFFFFFFFF),
   dividerTheme: const DividerThemeData(color: Color(0xFFEDEEF3), thickness: 1),
   hintColor: const Color(0xFF878CA7).withOpacity(0.7),
   canvasColor: Colors.white,
+  focusColor: const Color(0xFF878CA7).withOpacity(0.4),
   useMaterial3: true,
   appBarTheme: AppBarTheme(
     backgroundColor: Colors.white,
@@ -54,7 +57,7 @@ final ThemeData lightTheme = ThemeData(
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.all(Radius.circular(8.0)),
     ),
-    textTheme: ButtonTextTheme.,
+    textTheme: ButtonTextTheme.accent,
     colorScheme: const ColorScheme.light(
       secondary: Colors.white,
       primary: Color(0xFF6A1B9A),
@@ -64,14 +67,14 @@ final ThemeData lightTheme = ThemeData(
     style: ButtonStyle(
       elevation: WidgetStateProperty.all<double?>(0.0),
       textStyle: WidgetStateProperty.resolveWith<TextStyle?>(
-            (Set<WidgetState> states) => GoogleFonts.poppins(
+        (Set<WidgetState> states) => GoogleFonts.poppins(
           fontSize: 15,
           fontWeight: FontWeight.w500,
           color: const Color(0xFF6A1B9A),
         ),
       ),
       foregroundColor: WidgetStateProperty.resolveWith<Color?>(
-            (Set<WidgetState> states) => const Color(0xFF6A1B9A),
+        (Set<WidgetState> states) => const Color(0xFF6A1B9A),
       ),
       side: WidgetStateProperty.all<BorderSide?>(
         const BorderSide(color: Color(0xFF6A1B9A), width: 1),
@@ -130,12 +133,11 @@ final ThemeData lightTheme = ThemeData(
     contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 13),
   ),
   textTheme: TextTheme(
-      bodyLarge: GoogleFonts.poppins(
-        color: const Color(0xFF543474),
-        fontSize: 16,
-        fontWeight: FontWeight.w500,
-      ),
-
+    bodyLarge: GoogleFonts.poppins(
+      color: const Color(0xFF543474),
+      fontSize: 16,
+      fontWeight: FontWeight.w500,
+    ),
     headlineMedium: GoogleFonts.poppins(
       color: Color(0xFF543474),
       fontSize: 18,
@@ -205,7 +207,8 @@ final ThemeData lightTheme = ThemeData(
     headerForegroundColor: const Color(0xFF333333),
     dayForegroundColor: WidgetStateProperty.all<Color>(const Color(0xFF333333)),
     rangePickerHeaderForegroundColor: const Color(0xFF333333),
-    yearForegroundColor: WidgetStateProperty.all<Color>(const Color(0xFF333333)),
+    yearForegroundColor:
+        WidgetStateProperty.all<Color>(const Color(0xFF333333)),
     dividerColor: const Color(0xFFEDEEF3),
     weekdayStyle: GoogleFonts.poppins(color: const Color(0xFF333333)),
     headerHeadlineStyle: GoogleFonts.poppins(color: const Color(0xFF333333)),
@@ -217,7 +220,8 @@ final ThemeData lightTheme = ThemeData(
       hintStyle: GoogleFonts.poppins(color: const Color(0xFFC1C1C1)),
     ),
     yearOverlayColor: WidgetStateProperty.all<Color>(const Color(0xFF6A1B9A)),
-    todayForegroundColor: WidgetStateProperty.all<Color>(const Color(0xFF6A1B9A)),
+    todayForegroundColor:
+        WidgetStateProperty.all<Color>(const Color(0xFF6A1B9A)),
   ),
   timePickerTheme: const TimePickerThemeData(
     backgroundColor: Colors.white,
@@ -227,4 +231,32 @@ final ThemeData lightTheme = ThemeData(
     side: BorderSide(color: Color(0xFF6A1B9A), width: 1.5),
     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
   ),
+  extensions: const <ThemeExtension<dynamic>>[
+    CustomColors(
+      containerBorderColor: Color(0xFFF1E2FF),
+    ),
+  ],
 );
+
+@immutable
+class CustomColors extends ThemeExtension<CustomColors> {
+  final Color containerBorderColor;
+
+  const CustomColors({required this.containerBorderColor});
+
+  @override
+  CustomColors copyWith({Color? containerBorderColor}) {
+    return CustomColors(
+      containerBorderColor: containerBorderColor ?? this.containerBorderColor,
+    );
+  }
+
+  @override
+  CustomColors lerp(ThemeExtension<CustomColors>? other, double t) {
+    if (other is! CustomColors) return this;
+    return CustomColors(
+      containerBorderColor:
+          Color.lerp(containerBorderColor, other.containerBorderColor, t)!,
+    );
+  }
+}

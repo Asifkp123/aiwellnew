@@ -1,0 +1,116 @@
+import 'package:dartz/dartz.dart';
+import '../../../../core/network/error/failure.dart';
+import '../../../../core/services/token_manager.dart';
+import '../datasources/local/auth_local_datasource.dart';
+import '../datasources/remote/auth_remote_datasource.dart';
+import '../models/api/otp_request_success.dart';
+import '../models/api/token_resonse.dart';
+import '../models/api/submit_profile_response.dart';
+import '../models/api/verify_otp_response.dart';
+import '../../domain/repositories/auth_repository.dart' as domain;
+import '../../domain/entities/otp_verification.dart';
+
+abstract class AuthRepository {
+  Future<Either<Failure, OtpRequestSuccess>> requestOtp(
+      {String? email, String? phoneNumber});
+  Future<Either<Failure, OtpVerification>> verifyOtp(
+      String identifier, String otp);
+  Future<Either<Failure, SubmitProfileResponse>> submitProfile({
+    required String firstName,
+    required String lastName,
+    required String gender,
+    required String dateOfBirth,
+    required String dominantEmotion,
+    required String sleepQuality,
+    required String physicalActivity,
+  });
+  Future<String?> getAccessToken();
+  Future<int?> getAccessTokenExpiry();
+  Future<bool?> getApprovalStatus();
+}
+
+class AuthRepositoryImpl implements AuthRepository {
+  final AuthRemoteDataSource authRemoteDataSource;
+  final AuthLocalDataSourceBase authLocalDataSource;
+  final TokenManager _tokenManager;
+
+  AuthRepositoryImpl({
+    required this.authRemoteDataSource,
+    required this.authLocalDataSource,
+    required TokenManager tokenManager,
+  }) : _tokenManager = tokenManager;
+
+  @override
+  Future<Either<Failure, OtpRequestSuccess>> requestOtp(
+      {String? email, String? phoneNumber}) async {
+    return await authRemoteDataSource.requestOtp(
+        email: email, phoneNumber: phoneNumber);
+  }
+
+  @override
+  Future<Either<Failure, OtpVerification>> verifyOtp(
+      String identifier, String otp) async {
+    final result = await authRemoteDataSource.verifyOtp(identifier, otp);
+    return result.fold(
+      (failure) => Left(failure),
+      (apiResponse) {
+        if (apiResponse.isSuccess && apiResponse.data != null) {
+          final verifyOtpResponse = VerifyOtpResponse.fromJsonAndHeaders(
+              apiResponse.data, apiResponse.headers ?? {});
+          print(verifyOtpResponse);
+          return Right(OtpVerification.fromResponse(verifyOtpResponse));
+        } else {
+          final errorMessage =
+              apiResponse.errorMessage ?? 'OTP verification failed';
+          return Left(Failure(errorMessage));
+        }
+      },
+    );
+  }
+
+  @override
+  Future<Either<Failure, SubmitProfileResponse>> submitProfile({
+    required String firstName,
+    required String lastName,
+    required String gender,
+    required String dateOfBirth,
+    required String dominantEmotion,
+    required String sleepQuality,
+    required String physicalActivity,
+  }) async {
+    return await authRemoteDataSource.submitProfile(
+      firstName: firstName,
+      lastName: lastName,
+      gender: gender,
+      dateOfBirth: dateOfBirth,
+      dominantEmotion: dominantEmotion,
+      sleepQuality: sleepQuality,
+      physicalActivity: physicalActivity,
+    );
+  }
+
+  @override
+  Future<String?> getAccessToken() async {
+    return await _tokenManager.getAccessToken();
+  }
+
+  @override
+  Future<int?> getAccessTokenExpiry() async {
+    return await _tokenManager.getAccessTokenExpiry();
+  }
+
+  @override
+  Future<bool?> getApprovalStatus() async {
+    return await _tokenManager.getApprovalStatus();
+  }
+
+  @override
+  Future<String?> getRefreshToken() async {
+    return await _tokenManager.getRefreshToken();
+  }
+
+  @override
+  Future<int?> getRefreshTokenExpiry() async {
+    return await _tokenManager.getRefreshTokenExpiry();
+  }
+}

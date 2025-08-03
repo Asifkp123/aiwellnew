@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../../../core/managers/credit_manager.dart';
 import '../../../../components/snackbars/custom_snackbar.dart';
 import '../../domain/usecases/log_mood_use_case.dart';
 import '../../domain/usecases/log_workout_use_case.dart';
@@ -9,6 +8,7 @@ import '../../domain/usecases/log_sleep_use_case.dart';
 import '../../data/models/mood_option.dart';
 import '../../data/models/workout_option.dart';
 import '../../data/models/sleep_option.dart';
+import '../../../credit/presentation/view_models/credit_view_model.dart';
 
 enum LogsStatus { idle, loading, success, error }
 
@@ -44,7 +44,7 @@ class LogsViewModel implements LogsViewModelBase {
   final LogMoodUseCaseBase logMoodUseCase;
   final LogWorkoutUseCaseBase logWorkoutUseCase;
   final LogSleepUseCaseBase logSleepUseCase;
-  final CreditManager creditManager;
+  final CreditViewModel? creditViewModel; // ← ADD THIS
 
   final StreamController<LogsState> _stateController =
       StreamController<LogsState>.broadcast();
@@ -176,8 +176,8 @@ class LogsViewModel implements LogsViewModelBase {
     required this.logMoodUseCase,
     required this.logWorkoutUseCase,
     required this.logSleepUseCase,
-    CreditManager? creditManager,
-  }) : creditManager = creditManager ?? CreditManager.instance {
+    this.creditViewModel, // ← ADD THIS
+  }) {
     _emitState();
   }
 
@@ -242,9 +242,9 @@ class LogsViewModel implements LogsViewModelBase {
           _successMessage = successMsg;
           isSuccess = true;
 
-          // Update credits using the credit manager
-          if (response.totalCreditsAdded > 0) {
-            creditManager.addCredits(response.totalCreditsAdded);
+          // Update credits using CreditViewModel
+          if (response.totalCreditsAdded > 0 && creditViewModel != null) {
+            creditViewModel!.addCreditsFromLog(response.totalCreditsAdded);
           }
 
           print('✅ Mood logged successfully: $_successMessage');
@@ -333,11 +333,11 @@ class LogsViewModel implements LogsViewModelBase {
 
           _status = LogsStatus.success;
           _successMessage = successMsg;
-          //
-          // // Update credits using the credit manager
-          // if (response.totalCreditsAdded > 0) {
-          //   creditManager.addCredits(response.totalCreditsAdded);
-          // }
+
+          // Update credits using CreditViewModel
+          if (response.totalCreditsAdded > 0 && creditViewModel != null) {
+            creditViewModel!.addCreditsFromLog(response.totalCreditsAdded);
+          }
 
           print('✅ Workout logged successfully: $_successMessage');
           print('💰 Credits added: ${response.totalCreditsAdded}');
@@ -426,9 +426,9 @@ class LogsViewModel implements LogsViewModelBase {
           _status = LogsStatus.success;
           _successMessage = successMsg;
 
-          // Update credits using the credit manager
-          if (response.totalCreditsAdded > 0) {
-            creditManager.addCredits(response.totalCreditsAdded);
+          // Update credits using CreditViewModel
+          if (response.totalCreditsAdded > 0 && creditViewModel != null) {
+            creditViewModel!.addCreditsFromLog(response.totalCreditsAdded);
           }
 
           print('✅ Sleep logged successfully: $_successMessage');

@@ -33,19 +33,8 @@ class AddPalProfileCreationScreen extends StatelessWidget {
           body: Container(
             width: double.infinity,
             height: double.infinity,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFFE4D6FA),
-                  Color(0xFFF1EAFE),
-                  Color(0xFFFFFFFF),
-                  Color(0xFFF1EAFE),
-                  Color(0xFFE4D6FA),
-                ],
-                stops: [0.0, 0.2, 0.5, 0.8, 1.0],
-              ),
+            decoration: BoxDecoration(
+              gradient: homeBackgroundGradient(context),
             ),
             child: Padding(
               padding: const EdgeInsets.all(scaffoldPadding),
@@ -135,7 +124,8 @@ class AddPalProfileCreationScreen extends StatelessWidget {
                       viewModelBase.genderController.text = value ?? '';
                       print(
                           "🔥 Controller updated: ${viewModelBase.genderController.text}");
-                      viewModelBase.updateStateWithControllers(); // Sync controller to state
+                      viewModelBase
+                          .updateStateWithControllers(); // Sync controller to state
                       print("🔥 updateStateWithControllers called");
                       viewModelBase.clearError();
                     },

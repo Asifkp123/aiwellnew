@@ -1,11 +1,10 @@
-import 'package:aiwel/features/home/widgets/small_add_button.dart';
 import 'package:flutter/material.dart';
 import 'package:aiwel/components/text_widgets/text_widgets.dart';
 import 'package:aiwel/components/constants.dart';
 import 'package:flutter_svg/svg.dart';
 
-import '../../../components/theme/light_theme.dart';
 import 'glass_effect_widget.dart';
+import '../../../components/theme/light_theme.dart';
 
 class TrackingCardWidget extends StatelessWidget {
   final dynamic icon; // Changed to dynamic to accept both IconData and String
@@ -47,10 +46,15 @@ class TrackingCardWidget extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        // mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
-              // Removed icon from regular content - user only wants it in full width
+              // Only show icon if not full width and icon is provided
+              if (!isFullWidth && icon != null) ...[
+                _buildIconWidget(context, size: iconSize ?? 20),
+                const SizedBox(width: 6),
+              ],
               Expanded(child: PurpleBold22Text(title)),
             ],
           ),
@@ -61,12 +65,13 @@ class TrackingCardWidget extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 30),
+
+          // const Spacer(),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildPointsRow(context),
-              _buildSmallAddButton(context,
-                  buttonHeight: 32), // More height for regular content
+              _buildSmallAddButton(context),
             ],
           ),
         ],
@@ -75,44 +80,32 @@ class TrackingCardWidget extends StatelessWidget {
   }
 
   Widget _buildFullWidthContent(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    _buildIconWidget(context, size: iconSize ?? 30),
-                    const SizedBox(width: 5),
-                    MediumPurpleText(title),
-                    Spacer(),
-                    _buildPointsRow(context),
-                  ],
+    return Row(
+      children: [
+        _buildIconWidget(context, size: iconSize ?? 22),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              MediumPurpleText(title),
+              const SizedBox(height: 2),
+              Flexible(
+                child: NormalGreyText(
+                  subtitle,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
-                Row(
-                  children: [
-                    Expanded(
-                      child: NormalGreyText(
-                        subtitle,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    buildSmallAddButtonForFulWidth(context,
-                        buttonHeight: 32), // Less height for full-width content
-                  ],
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+        _buildPointsRow(context),
+        const SizedBox(width: 12),
+        _buildSmallAddButton(context),
+      ],
     );
   }
 
@@ -175,39 +168,31 @@ class TrackingCardWidget extends StatelessWidget {
         ),
         PurpleBoldText(
           fontSize: 13,
-          "05",
+          points,
         ),
       ],
     );
   }
 
-  Widget _buildSmallAddButton(BuildContext context, {double? buttonHeight}) {
-    final height = buttonHeight ?? 25;
-    return SizedBox(
-      height: height,
-      child: Container(
-        decoration: BoxDecoration(
-          color: lightTheme.primaryColor,
-
+  Widget _buildSmallAddButton(BuildContext context) {
+    return Container(
+      height: 32,
+      decoration: BoxDecoration(
+        color: lightTheme.primaryColor,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: MaterialButton(
+        onPressed: onAddPressed ?? () {},
+        minWidth: 50,
+        elevation: 0,
+        color: Colors.transparent,
+        shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
         ),
-        child: MaterialButton(
-          onPressed: onAddPressed ?? () {},
-          minWidth: 50,
-          elevation: 0,
-          color: Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-          padding: EdgeInsets.symmetric(
-            horizontal: 8,
-            vertical:
-                height < 20 ? 0 : 4, // No vertical padding for small buttons
-          ),
-          child: RegularWhiteText(
-            "Add",
-            fontSize: 12,
-          ),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: RegularWhiteText(
+          "Add",
+          fontSize: 12,
         ),
       ),
     );

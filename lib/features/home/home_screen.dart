@@ -14,8 +14,12 @@ import 'package:aiwel/features/pal_creation/presentation/screens/add_pal_splash_
 import 'package:aiwel/features/logs/presentation/view_models/logs_view_model.dart';
 import 'package:aiwel/features/logs/presentation/widgets/credit_display_widget.dart';
 import 'package:aiwel/features/logs/presentation/widgets/mood_selection_bottom_sheet.dart';
+import 'package:aiwel/features/logs/presentation/widgets/workout_selection_bottom_sheet.dart';
+import 'package:aiwel/features/logs/presentation/widgets/sleep_selection_bottom_sheet.dart';
 
 import 'package:aiwel/features/medicine_reminder/presentation/screens/medicine_reminder_screen.dart';
+
+import '../logs/presentation/widgets/mood_selection_alert.dart';
 
 class HomeScreen extends StatefulWidget {
   static const String routeName = '/homeScreen';
@@ -32,7 +36,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-
 
     widget.patientViewModel?.loadPatients();
   }
@@ -223,9 +226,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     points: "05",
                     screenWidth: screenWidth,
                     screenHeight: screenHeight,
-                    onAddPressed: () {
-                      // Handle workout tracking
-                    },
+                    onAddPressed: () => _showWorkoutSelection(context),
                   ),
                 ),
               ],
@@ -242,7 +243,8 @@ class _HomeScreenState extends State<HomeScreen> {
               iconSize: 20, // Controllable size for the smile.svg
               isFullWidth: true,
               onAddPressed: () {
-                // Handle sleep tracking
+                print("🔥 Sleep card onAddPressed calledss!");
+                _showSleepSelection(context);
               },
             ),
           ],
@@ -929,14 +931,57 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Helper method to show mood selection bottom sheet
   void _showMoodSelection(BuildContext context) {
+    print("sdkkfskfksdfk");
     if (widget.logsViewModel != null) {
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
-        builder: (context) => MoodSelectionBottomSheet(
+        // builder: (context) => MoodSelectionBottomSheet(
+        //   logsViewModel: widget.logsViewModel!,
+        //   onMoodSelected: (mood) {},
+        // ),
+        builder: (context) => MoodTrackerScreen(
+            logsViewModel: widget.logsViewModel!,
+            onMoodSelected: (mood) {},
+        ),
+      );
+    } else {
+      print('❌ LogsViewModel not available');
+    }
+  }
+
+  // Helper method to show workout selection bottom sheet
+  void _showWorkoutSelection(BuildContext context) {
+    if (widget.logsViewModel != null) {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) => WorkoutSelectionBottomSheet(
           logsViewModel: widget.logsViewModel!,
-          onMoodSelected: (mood) {
+          onWorkoutSelected: (workoutData) {},
+        ),
+      );
+    } else {
+      print('❌ LogsViewModel not available');
+    }
+  }
+
+  // Helper method to show sleep selection bottom sheet
+  void _showSleepSelection(BuildContext context) {
+    print("🛌 Sleep card tapped!");
+    print("LogsViewModel available: ${widget.logsViewModel != null}");
+    if (widget.logsViewModel != null) {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) => SleepSelectionBottomSheet(
+          logsViewModel: widget.logsViewModel!,
+          onSleepSelected: (sleepData) {
+            print('✅ Sleep selected and logged: $sleepData');
+            // Additional logic can be added here if needed
           },
         ),
       );

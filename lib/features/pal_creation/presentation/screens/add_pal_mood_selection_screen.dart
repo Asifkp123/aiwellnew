@@ -22,7 +22,7 @@ class AddPalMoodSelectionScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder<AddPalState>(
       stream: viewModelBase.stateStream,
-      initialData: viewModelBase.getCurrentStateWithControllers(),
+      initialData: AddPalState(status: AddPalStateStatus.idle),
       builder: (context, snapshot) {
         final state = snapshot.data!;
         return Scaffold(
@@ -56,11 +56,8 @@ class AddPalMoodSelectionScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 60),
 
-                    LargePurpleText(state.gender?.toLowerCase() == 'male'
-                        ? "What kind of mood has he been in most of the time?"
-                        : state.gender?.toLowerCase() == 'female'
-                            ? "What kind of mood has she been in most of the time?"
-                            : "What kind of mood have they been in most of the time?"),
+                    LargePurpleText(
+                        "What kind of mood have they been in most of the time?"),
                     SizedBox(height: 16),
                     NormalGreyText("Aiwel want you to be happy and pleasant "),
                     const SizedBox(height: 16),

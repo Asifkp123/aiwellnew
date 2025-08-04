@@ -29,10 +29,10 @@ class HomeSectionCard extends StatelessWidget {
         color: Color(0xFFF9F3FF
         ),
         borderRadius: BorderRadius.circular(borderRadius),
-        border: Border.all(
-          width: borderWidth,
-          color: borderColor ?? Colors.white,
-        ),
+        // border: Border.all(
+        //   width: borderWidth,
+        //   color: borderColor ?? Colors.white,
+        // ),
       ),
       child: child,
     );

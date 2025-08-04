@@ -19,6 +19,7 @@ import 'package:aiwel/features/logs/presentation/widgets/sleep_selection_bottom_
 import 'package:aiwel/features/credit/presentation/view_models/credit_view_model.dart';
 
 import 'package:aiwel/features/medicine_reminder/presentation/screens/medicine_reminder_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../logs/presentation/widgets/mood_selection_alert.dart';
 
@@ -286,12 +287,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF8E2EFF),
-                      borderRadius: BorderRadius.circular(16),
+                      // color: const Color(0xFF8E2EFF),
+                      border: Border.all(color: Theme.of(context).primaryColor,),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(
+                    child:  Icon(
                       Icons.add,
-                      color: Colors.white,
+                      color:Theme.of(context).primaryColor,
                       size: 20,
                     ),
                   ),
@@ -373,8 +375,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         return _buildEmptyPalState(
                             screenWidth, screenHeight, context);
                       }
-                      return _buildPatientCarousel(
-                          state.patients, screenWidth, screenHeight, context);
+                      return PatientCarousel(patients: state.patients,screenHeight: screenHeight,screenWidth: screenWidth,);
+                      //   Column(
+                      //   children: [
+                      //     _buildPatientCarousel(
+                      //         state.patients, screenWidth, screenHeight, context),
+                      //     _buildPatientCarouselDots(
+                      //         state.patients, screenWidth),
+                      //   ],
+                      // );
 
                     case PatientStateStatus.idle:
                     default:
@@ -765,9 +774,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildPatientCarousel(List<Patient> patients, double screenWidth,
       double screenHeight, BuildContext context) {
     return SizedBox(
-      height: screenHeight * 0.28,
+      height: screenHeight * 0.15,
       child: PageView.builder(
-        controller: PageController(viewportFraction: 0.85),
+
         itemCount: patients.length,
         itemBuilder: (context, index) {
           final patient = patients[index];
@@ -778,6 +787,23 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         },
       ),
+    );
+  }
+
+  Widget _buildPatientCarouselDots(List<Patient> patients, double screenWidth,) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(patients.length, (index) {
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: index == 0 ? Colors.white : Colors.grey[400],
+          ),
+        );
+      }),
     );
   }
 
@@ -792,14 +818,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFFF1E6FD).withOpacity(0.8),
-              const Color(0xFFE4D6FA).withOpacity(0.9),
-            ],
-          ),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             width: 1,
@@ -853,69 +872,39 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-              if (patient.needsAttention)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.orange[100],
-                    borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: Colors.orange[300]!),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.warning_amber_rounded,
-                        color: Colors.orange[700],
-                        size: 16,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        "Need Attention",
-                        style: TextStyle(
-                          color: Colors.orange[700],
-                          fontSize: screenWidth * 0.03,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              const Spacer(),
+            const Spacer(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF8E2EFF),
-                          shape: BoxShape.circle,
-                        ),
+                  if (patient.needsAttention)
+                    Container(
+                      padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.orange[100],
+                        borderRadius: BorderRadius.circular(15),
+                        border: Border.all(color: Colors.orange[300]!),
                       ),
-                      const SizedBox(width: 4),
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          shape: BoxShape.circle,
-                        ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.warning_amber_rounded,
+                            color: Colors.orange[700],
+                            size: 16,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            "Need Attention",
+                            style: TextStyle(
+                              color: Colors.orange[700],
+                              fontSize: screenWidth * 0.03,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 4),
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
                   Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -1017,4 +1006,213 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     return 0;
   }
+}
+
+class PatientCarousel extends StatefulWidget {
+  final List<Patient> patients;
+  final double screenWidth;
+  final double screenHeight;
+
+  const PatientCarousel({
+    Key? key,
+    required this.patients,
+    required this.screenWidth,
+    required this.screenHeight,
+  }) : super(key: key);
+
+  @override
+  _PatientCarouselState createState() => _PatientCarouselState();
+}
+
+class _PatientCarouselState extends State<PatientCarousel> {
+  late PageController _pageController;
+  int _currentPage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          height: widget.screenHeight * 0.15,
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: widget.patients.length,
+            onPageChanged: (index) {
+              setState(() {
+                _currentPage = index;
+              });
+            },
+            itemBuilder: (context, index) {
+              final patient = widget.patients[index];
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 8),
+                child: _buildPatientCard(
+                    patient, widget.screenWidth, widget.screenHeight, context),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 8),
+        _buildPatientCarouselDots(widget.patients.length),
+      ],
+    );
+  }
+
+  Widget _buildPatientCarouselDots(int count) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(count, (index) {
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          width: _currentPage == index ? 25 : 8,
+          height: _currentPage == index ? 8 : 8,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            // shape:_currentPage == index ? BoxShape.rectangle: BoxShape.circle,
+            color: _currentPage == index ?Theme.of(context).primaryColor : Theme.of(context).primaryColor.withValues(alpha: 0.2),
+          ),
+        );
+      }),
+    );
+  }
+  Widget _buildPatientCard(Patient patient, double screenWidth,
+      double screenHeight, BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        // Navigate to patient profile (to be implemented)
+        // Navigator.pushNamed(context, PatientProfileScreen.routeName, arguments: patient);
+        print("Navigate to patient profile: ${patient.fullName}");
+      },
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            width: 1,
+            color: Colors.white.withOpacity(0.8),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    // radius: 30
+                    width: screenWidth * 0.12,
+                    height: screenWidth * 0.12,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColor,
+                      borderRadius: BorderRadius.circular(20),
+
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      patient.firstName[0].toUpperCase(),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: screenWidth * 0.05,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          patient.fullName,
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.045,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "${patient.age} Years | ${patient.gender}",
+                          style: GoogleFonts.poppins(
+
+                            fontSize: screenWidth * 0.035,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              const Spacer(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  if (patient.needsAttention)
+                    Container(
+                      padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        // color: Colors.orange[100],
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                         SvgPicture.asset("assets/svg/attention_import_icon.svg"),
+                          const SizedBox(width: 4),
+                          Text(
+                            "Need Attention",
+                            style: GoogleFonts.poppins(
+                              color: Colors.black,
+                              fontSize: screenWidth * 0.03,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  Container(
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColor,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      "View Profile",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: screenWidth * 0.03,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
 }

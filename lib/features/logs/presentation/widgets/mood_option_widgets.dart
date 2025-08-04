@@ -40,6 +40,7 @@ class MoodOptionWidget extends StatelessWidget {
           children: [
             CustomImageView(
               imagePath: imagePath ?? '',
+              // color: ,
               height: 36,
               width: 36,
             ),

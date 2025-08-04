@@ -970,7 +970,7 @@ class _HomeScreenState extends State<HomeScreen> {
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
-        builder: (context) => WorkoutSelectionBottomSheet(
+        builder: (context) => WorkoutSelectionAlertDialog(
           logsViewModel: widget.logsViewModel!,
           onWorkoutSelected: (workoutData) {},
         ),
@@ -989,7 +989,7 @@ class _HomeScreenState extends State<HomeScreen> {
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
-        builder: (context) => SleepSelectionBottomSheet(
+        builder: (context) => SleepSelectionAlertDialog(
           logsViewModel: widget.logsViewModel!,
           onSleepSelected: (sleepData) {
             print('✅ Sleep selected and logged: $sleepData');

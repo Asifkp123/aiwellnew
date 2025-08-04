@@ -1,199 +1,182 @@
 import 'package:flutter/material.dart';
+import '../../../../components/constants.dart';
 import '../../../../components/text_widgets/text_widgets.dart';
 import '../../../../components/theme/light_theme.dart';
 import '../view_models/logs_view_model.dart';
 
-class SleepSelectionBottomSheet extends StatefulWidget {
+class SleepSelectionAlertDialog extends StatefulWidget {
   final LogsViewModel logsViewModel;
   final Function(Map<String, String>) onSleepSelected;
 
-  const SleepSelectionBottomSheet({
+  const SleepSelectionAlertDialog({
     Key? key,
     required this.logsViewModel,
     required this.onSleepSelected,
   }) : super(key: key);
 
   @override
-  State<SleepSelectionBottomSheet> createState() =>
-      _SleepSelectionBottomSheetState();
+  State<SleepSelectionAlertDialog> createState() =>
+      _SleepSelectionAlertDialogState();
 }
 
-class _SleepSelectionBottomSheetState extends State<SleepSelectionBottomSheet> {
+class _SleepSelectionAlertDialogState extends State<SleepSelectionAlertDialog> {
   String? selectedQuality;
   String? selectedStartTime;
   String? selectedDuration;
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-
-    return Container(
-      height: screenHeight * 0.7,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
-        ),
+    return AlertDialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
       ),
-      child: Column(
+      title: Column(
+
         children: [
-          // Handle bar
-          Container(
-            margin: const EdgeInsets.only(top: 12),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-
-          const SizedBox(height: 24),
-
-          // Title and close button
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                PurpleBold22Text('Did you sleep well?'),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: Icon(Icons.close, color: Colors.grey[600]),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          // Form fields
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                children: [
-                  // Sleep Quality Dropdown
-                  _buildDropdownField(
-                    label: 'How was your sleep quality?',
-                    value: selectedQuality,
-                    items: LogsViewModel.sleepQualities
-                        .map((quality) => quality.name)
-                        .toList(),
-                    onChanged: (value) =>
-                        setState(() => selectedQuality = value),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Sleep Start Time Dropdown
-                  _buildDropdownField(
-                    label: 'At what time did you go to sleep?',
-                    value: selectedStartTime,
-                    items: LogsViewModel.sleepTimes,
-                    onChanged: (value) =>
-                        setState(() => selectedStartTime = value),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Sleep Duration Dropdown
-                  _buildDropdownField(
-                    label: 'How many hours did you sleep?',
-                    value: selectedDuration,
-                    items: LogsViewModel.sleepDurations,
-                    onChanged: (value) =>
-                        setState(() => selectedDuration = value),
-                  ),
-
-                  const Spacer(),
-
-                  // Action Buttons
-                  Row(
-                    children: [
-                      // Cancel Button
-                      Expanded(
-                        child: SizedBox(
-                          height: 50,
-                          child: OutlinedButton(
-                            onPressed: () => Navigator.pop(context),
-                            style: OutlinedButton.styleFrom(
-                              side: BorderSide(color: Colors.grey[400]!),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: const Text(
-                              'Cancel',
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(width: 16),
-
-                      // Save Button
-                      Expanded(
-                        child: StreamBuilder<LogsState>(
-                          stream: widget.logsViewModel.stateStream,
-                          builder: (context, snapshot) {
-                            final state = snapshot.data;
-                            final isLoading = state?.isLoading ?? false;
-                            final sleepData = _getSleepData();
-                            final canSubmit = widget.logsViewModel
-                                    .isSleepFormValid(sleepData) &&
-                                !isLoading;
-
-                            return SizedBox(
-                              height: 50,
-                              child: ElevatedButton(
-                                onPressed:
-                                    canSubmit ? () => _submitSleep() : null,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: lightTheme.primaryColor,
-                                  disabledBackgroundColor: Colors.grey[300],
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                child: isLoading
-                                    ? const SizedBox(
-                                        height: 20,
-                                        width: 20,
-                                        child: CircularProgressIndicator(
-                                          color: Colors.white,
-                                          strokeWidth: 2,
-                                        ),
-                                      )
-                                    : const Text(
-                                        'Save',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 24),
-                ],
+          Row(
+            children: [
+              Spacer(),
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close, color: Colors.black),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
               ),
-            ),
+            ],
           ),
+          // SizedBox(height: 10),
+          PurpleBold22Text('Did you sleep well?'),
         ],
       ),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Sleep Quality Dropdown
+            _buildDropdownField(
+              label: 'How was your sleep quality?',
+              value: selectedQuality,
+              items: LogsViewModel.sleepQualities
+                  .map((quality) => quality.name)
+                  .toList(),
+              onChanged: (value) =>
+                  setState(() => selectedQuality = value),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Sleep Start Time Dropdown
+            _buildDropdownField(
+              label: 'At what time did you go to sleep?',
+              value: selectedStartTime,
+              items: LogsViewModel.sleepTimes,
+              onChanged: (value) =>
+                  setState(() => selectedStartTime = value),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Sleep Duration Dropdown
+            _buildDropdownField(
+              label: 'How many hours did you sleep?',
+              value: selectedDuration,
+              items: LogsViewModel.sleepDurations,
+              onChanged: (value) =>
+                  setState(() => selectedDuration = value),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Cancel Button
+            Expanded(
+              child: SizedBox(
+                height: 40,
+                // width: 120,
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    side: BorderSide(color: Colors.grey[300]!),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(40),
+                    ),
+                  ),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(
+                      color: Color(0xFF6B46C1),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 12),
+
+            // Save Button
+            Expanded(
+              child: StreamBuilder<LogsState>(
+                stream: widget.logsViewModel.stateStream,
+                builder: (context, snapshot) {
+                  final state = snapshot.data;
+                  final isLoading = state?.isLoading ?? false;
+                  final sleepData = _getSleepData();
+                  final canSubmit = widget.logsViewModel
+                          .isSleepFormValid(sleepData) &&
+                      !isLoading;
+              
+                  return Container(
+                    decoration: BoxDecoration(
+                      gradient: splashGradient(context),
+
+                      borderRadius: BorderRadius.circular(21),
+                    ),
+                    height: 40,
+                    child: ElevatedButton(
+                      onPressed:
+                          canSubmit ? () => _submitSleep() : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        disabledBackgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(40),
+                        ),
+                      ),
+                      child: isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Text(
+                            'Save',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -203,58 +186,32 @@ class _SleepSelectionBottomSheetState extends State<SleepSelectionBottomSheet> {
     required List<String> items,
     required Function(String?) onChanged,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: Colors.black87,
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.grey[300]!),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: value,
+          hint: Text(
+            label,
+            style: TextStyle(color: Colors.grey[600]),
           ),
+          isExpanded: true,
+          items: items.map((String item) {
+            return DropdownMenuItem<String>(
+              value: item,
+              child: Text(item),
+            );
+          }).toList(),
+          onChanged: onChanged,
         ),
-        const SizedBox(height: 8),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey[300]!),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: value,
-              hint: Text(
-                _getHintText(label),
-                style: TextStyle(color: Colors.grey[500]),
-              ),
-              isExpanded: true,
-              items: items.map((String item) {
-                return DropdownMenuItem<String>(
-                  value: item,
-                  child: Text(item),
-                );
-              }).toList(),
-              onChanged: onChanged,
-            ),
-          ),
-        ),
-      ],
+      ),
     );
-  }
-
-  String _getHintText(String label) {
-    switch (label) {
-      case 'How was your sleep quality?':
-        return 'Good';
-      case 'At what time did you go to sleep?':
-        return '10:00 PM';
-      case 'How many hours did you sleep?':
-        return '8 Hrs';
-      default:
-        return 'Select option';
-    }
   }
 
   // ✅ Helper method to get current form data

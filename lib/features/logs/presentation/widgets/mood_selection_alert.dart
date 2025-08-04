@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../components/constants.dart';
 import '../../../../components/custom_image_view.dart';
 import '../../../../components/buttons/custom_button.dart';
 import '../../../../core/constants/image_constant.dart';
@@ -95,7 +96,7 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: appTheme.color800000,
+      backgroundColor: appTheme.transparentCustom,
       body: Center(
         child: Container(
           width: double.infinity,
@@ -139,7 +140,7 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
                   top: 49,
                   left: 26,
                   child: Text(
-                    'How are you feeling todatttty?',
+                    'How are you feeling today?',
                     style: TextStyleHelper.instance.title22Medium
                         .copyWith(height: 1.5),
                   ),
@@ -164,36 +165,51 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
                   right: 16,
                   child: Row(
                     children: [
-                      Expanded(
-                        child: CustomButton(
-                          text: 'Cancel',
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
+
+                               Expanded(
+                          child: SizedBox(
+                            height: 40,
+                            // width: 120,
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.pop(context),
+                              style: OutlinedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                side: BorderSide(color: Colors.grey[300]!),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(40),
+                                ),
+                              ),
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(
+                                  color: Color(0xFF6B46C1),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
+
+
                       const SizedBox(width: 16),
                       Expanded(
                         child: Container(
                           height: 42,
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                const Color(0xFF543474),
-                                appTheme.colorFF9757,
-                              ],
-                            ),
+                            gradient: splashGradient(context),
+
                             borderRadius: BorderRadius.circular(21),
                           ),
                           child: ElevatedButton(
                             onPressed: isLoading ? null : _submitMood,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: appTheme.transparentCustom,
-                              shadowColor: appTheme.transparentCustom,
+                              backgroundColor: Colors.transparent,
+                              disabledBackgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              elevation: 0,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(21),
+                                borderRadius: BorderRadius.circular(40),
                               ),
                             ),
                             child: isLoading
@@ -211,9 +227,8 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
                                     style:
                                         TextStyleHelper.instance.title16Medium,
                                   ),
-                          ),
                         ),
-                      ),
+                      ),)
                     ],
                   ),
                 ),

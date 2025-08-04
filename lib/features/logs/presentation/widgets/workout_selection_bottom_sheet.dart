@@ -1,25 +1,26 @@
 import 'package:flutter/material.dart';
+import '../../../../components/constants.dart';
 import '../../../../components/text_widgets/text_widgets.dart';
 import '../../../../components/theme/light_theme.dart';
 import '../view_models/logs_view_model.dart';
 
-class WorkoutSelectionBottomSheet extends StatefulWidget {
+class WorkoutSelectionAlertDialog extends StatefulWidget {
   final LogsViewModel logsViewModel;
   final Function(Map<String, String>) onWorkoutSelected;
 
-  const WorkoutSelectionBottomSheet({
+  const WorkoutSelectionAlertDialog({
     Key? key,
     required this.logsViewModel,
     required this.onWorkoutSelected,
   }) : super(key: key);
 
   @override
-  State<WorkoutSelectionBottomSheet> createState() =>
-      _WorkoutSelectionBottomSheetState();
+  State<WorkoutSelectionAlertDialog> createState() =>
+      _WorkoutSelectionAlertDialogState();
 }
 
-class _WorkoutSelectionBottomSheetState
-    extends State<WorkoutSelectionBottomSheet> {
+class _WorkoutSelectionAlertDialogState
+    extends State<WorkoutSelectionAlertDialog> {
   String? selectedRating;
   String? selectedType;
   String? selectedTime;
@@ -27,186 +28,168 @@ class _WorkoutSelectionBottomSheetState
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-
-    return Container(
-      height: screenHeight * 0.7,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
-        ),
+    return AlertDialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
       ),
-      child: Column(
+      title: Column(
+
         children: [
-          // Handle bar
-          Container(
-            margin: const EdgeInsets.only(top: 12),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-
-          const SizedBox(height: 24),
-
-          // Title and close button
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                PurpleBold22Text('Did you workout today?'),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: Icon(Icons.close, color: Colors.grey[600]),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          // Form fields
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                children: [
-                  // Rating Dropdown
-                  _buildDropdownField(
-                    label: 'How will you rate your workout?',
-                    value: selectedRating,
-                    items: LogsViewModel.workoutRatings
-                        .map((rating) => rating.name)
-                        .toList(),
-                    onChanged: (value) =>
-                        setState(() => selectedRating = value),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Activity Type Dropdown
-                  _buildDropdownField(
-                    label: 'What did you do?',
-                    value: selectedType,
-                    items: LogsViewModel.workoutTypes
-                        .map((type) => type.name)
-                        .toList(),
-                    onChanged: (value) => setState(() => selectedType = value),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Time Dropdown
-                  _buildDropdownField(
-                    label: 'At what time?',
-                    value: selectedTime,
-                    items: LogsViewModel.workoutTimes,
-                    onChanged: (value) => setState(() => selectedTime = value),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Duration Dropdown
-                  _buildDropdownField(
-                    label: 'How many Hours?',
-                    value: selectedDuration,
-                    items: LogsViewModel.workoutDurations,
-                    onChanged: (value) =>
-                        setState(() => selectedDuration = value),
-                  ),
-
-                  const Spacer(),
-
-                  // Action Buttons
-                  Row(
-                    children: [
-                      // Cancel Button
-                      Expanded(
-                        child: SizedBox(
-                          height: 50,
-                          child: OutlinedButton(
-                            onPressed: () => Navigator.pop(context),
-                            style: OutlinedButton.styleFrom(
-                              side: BorderSide(color: Colors.grey[400]!),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: const Text(
-                              'Cancel',
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(width: 16),
-
-                      // Save Button
-                      Expanded(
-                        child: StreamBuilder<LogsState>(
-                          stream: widget.logsViewModel.stateStream,
-                          builder: (context, snapshot) {
-                            final state = snapshot.data;
-                            final isLoading = state?.isLoading ?? false;
-                            final workoutData = _getWorkoutData();
-                            final canSubmit = widget.logsViewModel
-                                    .isWorkoutFormValid(workoutData) &&
-                                !isLoading;
-
-                            return SizedBox(
-                              height: 50,
-                              child: ElevatedButton(
-                                onPressed:
-                                    canSubmit ? () => _submitWorkout() : null,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: lightTheme.primaryColor,
-                                  disabledBackgroundColor: Colors.grey[300],
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                child: isLoading
-                                    ? const SizedBox(
-                                        height: 20,
-                                        width: 20,
-                                        child: CircularProgressIndicator(
-                                          color: Colors.white,
-                                          strokeWidth: 2,
-                                        ),
-                                      )
-                                    : const Text(
-                                        'Save',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 24),
-                ],
+          Row(
+            children: [
+              Spacer(),
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close, color: Colors.black),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
               ),
-            ),
+            ],
           ),
+          // SizedBox(height: 10),
+          PurpleBold22Text('Did you workout today?'),
         ],
       ),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Rating Dropdown
+            _buildDropdownField(
+              label: 'How will you rate your workout?',
+              value: selectedRating,
+              items: LogsViewModel.workoutRatings
+                  .map((rating) => rating.name)
+                  .toList(),
+              onChanged: (value) =>
+                  setState(() => selectedRating = value),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Activity Type Dropdown
+            _buildDropdownField(
+              label: 'What did you do?',
+              value: selectedType,
+              items: LogsViewModel.workoutTypes
+                  .map((type) => type.name)
+                  .toList(),
+              onChanged: (value) => setState(() => selectedType = value),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Time Dropdown
+            _buildDropdownField(
+              label: 'At what time?',
+              value: selectedTime,
+              items: LogsViewModel.workoutTimes,
+              onChanged: (value) => setState(() => selectedTime = value),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Duration Dropdown
+            _buildDropdownField(
+              label: 'How many Hours?',
+              value: selectedDuration,
+              items: LogsViewModel.workoutDurations,
+              onChanged: (value) =>
+                  setState(() => selectedDuration = value),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Cancel Button
+            Expanded(
+              child: SizedBox(
+                height: 40,
+                // width: 120,
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    side: BorderSide(color: Colors.grey[300]!),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(40),
+                    ),
+                  ),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 12),
+
+            // Save Button
+            Expanded(
+              child: StreamBuilder<LogsState>(
+                stream: widget.logsViewModel.stateStream,
+                builder: (context, snapshot) {
+                  final state = snapshot.data;
+                  final isLoading = state?.isLoading ?? false;
+                  final workoutData = _getWorkoutData();
+                  final canSubmit = widget.logsViewModel
+                          .isWorkoutFormValid(workoutData) &&
+                      !isLoading;
+              
+                  return Container(
+                    decoration: BoxDecoration(
+                      gradient: splashGradient(context),
+              
+                      borderRadius: BorderRadius.circular(21),
+                    ),
+                    height: 40,
+                    child: ElevatedButton(
+                      onPressed:
+                          canSubmit ? () => _submitWorkout() : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        disabledBackgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(40),
+                        ),
+                      ),
+                      child: isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Text(
+                            'Save',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -216,61 +199,35 @@ class _WorkoutSelectionBottomSheetState
     required List<String> items,
     required Function(String?) onChanged,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: Colors.black87,
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.grey[300]!),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: value,
+          hint: Text(
+            label,
+            style: TextStyle(color: Colors.grey[600]),
           ),
+          isExpanded: true,
+          items: items.map((String item) {
+            return DropdownMenuItem<String>(
+              value: item,
+              child: Text(item),
+            );
+          }).toList(),
+          onChanged: onChanged,
         ),
-        const SizedBox(height: 8),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey[300]!),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: value,
-              hint: Text(
-                _getHintText(label),
-                style: TextStyle(color: Colors.grey[500]),
-              ),
-              isExpanded: true,
-              items: items.map((String item) {
-                return DropdownMenuItem<String>(
-                  value: item,
-                  child: Text(item),
-                );
-              }).toList(),
-              onChanged: onChanged,
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 
-  String _getHintText(String label) {
-    switch (label) {
-      case 'How will you rate your workout?':
-        return 'Excellent';
-      case 'What did you do?':
-        return 'Running';
-      case 'At what time?':
-        return '10:00 AM';
-      case 'How many Hours?':
-        return '1 Hr';
-      default:
-        return 'Select option';
-    }
-  }
+
 
   // ✅ Helper method to get current form data
   Map<String, String> _getWorkoutData() {

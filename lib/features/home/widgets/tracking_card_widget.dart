@@ -34,7 +34,8 @@ class TrackingCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return GlassEffectWidget(
       width: double.infinity,
-      height: isFullWidth ? screenHeight * 0.14 : screenHeight * 0.21,
+
+      height: isFullWidth ? screenHeight * 0.12 : screenHeight * 0.19,
       child: isFullWidth
           ? _buildFullWidthContent(context)
           : _buildRegularContent(context),
@@ -43,30 +44,36 @@ class TrackingCardWidget extends StatelessWidget {
 
   Widget _buildRegularContent(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         // mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
+          Column(
             children: [
-              // Only show icon if not full width and icon is provided
-              if (!isFullWidth && icon != null) ...[
-                _buildIconWidget(context, size: iconSize ?? 20),
-                const SizedBox(width: 6),
-              ],
-              Expanded(child: PurpleBold22Text(title)),
+              Row(
+                children: [
+                  // Only show icon if not full width and icon is provided
+                  if (!isFullWidth && icon != null) ...[
+                    _buildIconWidget(context, size: iconSize ?? 20),
+                    const SizedBox(width: 6),
+                  ],
+                  Expanded(child: PurpleBold22Text(title)),
+                ],
+              ),
+              const SizedBox(height: 6),
+              NormalGreyText(
+                subtitle,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+
+
             ],
           ),
-          const SizedBox(height: 6),
-          NormalGreyText(
-            subtitle,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 30),
 
-          // const Spacer(),
+          const Spacer(),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -80,32 +87,41 @@ class TrackingCardWidget extends StatelessWidget {
   }
 
   Widget _buildFullWidthContent(BuildContext context) {
-    return Row(
-      children: [
-        _buildIconWidget(context, size: iconSize ?? 22),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
+    return Padding(
+      padding: const EdgeInsets.all(14.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
+              _buildIconWidget(context, size: iconSize ?? 22),
+              SizedBox(width: 8,),
               MediumPurpleText(title),
-              const SizedBox(height: 2),
-              Flexible(
-                child: NormalGreyText(
-                  subtitle,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
+              Spacer(),
+              _buildPointsRow(context),
+
+
             ],
           ),
-        ),
-        _buildPointsRow(context),
-        const SizedBox(width: 12),
-        _buildSmallAddButton(context),
-      ],
+
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            // mainAxisSize: MainAxisSize.min,
+            children: [
+              NormalGreyText(
+                subtitle,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              _buildSmallAddButton(context),
+
+            ],
+          ),
+          // const SizedBox(width: 12),
+        ],
+      ),
     );
   }
 

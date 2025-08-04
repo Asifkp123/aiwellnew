@@ -170,7 +170,7 @@ class LargePurpleText extends CustomText {
 }
 
 class NormalGreyText extends CustomText {
-  NormalGreyText(
+    NormalGreyText(
     super.text, {
     super.key,
     super.fontSize,
